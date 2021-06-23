@@ -18,12 +18,55 @@
 /*==================
  *  WIDGET USAGE
  *================*/
+
 #ifndef LVX_USE_BTN
 #ifdef CONFIG_LVX_USE_BTN
 #define LVX_USE_BTN CONFIG_LVX_USE_BTN
 #else
-#define CONFIG_LVX_USE_BTN 0
+#define LVX_USE_BTN 0
 #endif
+#endif
+
+#ifndef LVX_USE_RADIO
+#ifdef CONFIG_LVX_USE_RADIO
+#define LVX_USE_RADIO CONFIG_LVX_USE_RADIO
+#else
+#define LVX_USE_RADIO 0
+#endif
+#endif
+
+/*==================
+ *  WIDGET STYLE
+ *================*/
+#define WIDGET_BG_OPA_NORMOL           LV_OPA_100
+#define WIDGET_BG_OPA_PRESSED          LV_OPA_70
+#define WIDGET_BG_OPA_DISABLE          LV_OPA_40
+
+#define WIDGET_BG_COLOR_NORMOL(color)     color
+#define WIDGET_BG_COLOR_PRESSED(color)    lv_color_mix(color, lv_color_black(), WIDGET_BG_OPA_PRESSED)
+#define WIDGET_BG_COLOR_DISABLE(color)    lv_color_mix(color, lv_color_black(), WIDGET_BG_OPA_DISABLE)
+
+#if LVX_USE_RADIO
+#define RADIO_BG_COLOR_PRESSED(color)    WIDGET_BG_COLOR_PRESSED(color)
+#define RADIO_BG_COLOR_DISABLE(color)    WIDGET_BG_COLOR_DISABLE(color)
+/** unchecked */
+#define RADIO_BG_COLOR_UNCHECKED    lv_color_hex(0x1F1F1F)
+#define RADIO_BORDER_COLOR          lv_color_hex(0xFFFFFF)
+#define RADIO_BORDER_WIDTH          3
+#define RADIO_BORDER_OPA            LV_OPA_60
+#define RADIO_BORDER_OPA_PRESSED    LV_OPA_40
+#define RADIO_BORDER_OPA_DISABLE    LV_OPA_20
+
+/** checked */
+#define RADIO_BG_COLOR_CHECKED      lv_color_hex(0x0D84FF)
+#define RADIO_BORDER_WIDTH_CHECKED  0
+#define RADIO_BORDER_OPA_CHECKED    LV_OPA_0
+
+/** checked and pressed */
+#define RADIO_BG_COLOR_CHECKED_PRESSED      RADIO_BG_COLOR_PRESSED(RADIO_BG_COLOR_CHECKED)
+
+/** checked and disable */
+#define RADIO_BG_COLOR_CHECKED_DISABLE      RADIO_BG_COLOR_DISABLE(RADIO_BG_COLOR_CHECKED)
 #endif
 
 #endif // LV_EXT_CONF_H

@@ -36,6 +36,13 @@ config LVX_USE_BTN
     ---help---
       Enable Enable use lvx_btn widgets
 
+config LVX_USE_RADIO
+	bool "LVX_USE_RADIO
+	default y if LVX_USE_WIDGETS
+    depends on LVX_USE_WIDGETS
+    ---help---
+      Enable Enable use lvx_radio widgets
+
 endif
 
 endif
