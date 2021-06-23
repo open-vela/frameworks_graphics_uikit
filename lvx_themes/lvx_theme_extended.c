@@ -29,6 +29,22 @@ typedef struct {
     lv_style_t pad_zero;
     lv_style_t no_radius;
     lv_style_t radius_circle;
+
+#if LVX_USE_BTN
+    lv_style_t btn;
+    lv_style_t btn_pressed;
+    lv_style_t btn_disable;
+#endif
+
+#if LVX_USE_RADIO
+    lv_style_t radio_unchecked;
+    lv_style_t radio_unchecked_pressed;
+    lv_style_t radio_unchecked_disable;
+    lv_style_t radio_checked;
+    lv_style_t radio_checked_pressed;
+    lv_style_t radio_checked_disable;
+#endif
+
 } my_theme_styles_t;
 
 /**********************
@@ -47,10 +63,95 @@ static bool inited;
 /**********************
  *      MACROS
  **********************/
+#if LVX_USE_BTN
+#define BTN_BG_COLOR_DEFAULT           lv_color_hex(0x0D84FF)
+#endif
+
 
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+
+#if LVX_USE_BTN
+static inline void lvx_btn_styles_init(void)
+{
+    style_init_reset(&styles->btn);
+    lv_style_set_radius(&styles->btn, LV_RADIUS_CIRCLE);
+    lv_style_set_bg_opa(&styles->btn, LV_OPA_COVER);
+    lv_style_set_bg_color(&styles->btn, WIDGET_BG_COLOR_NORMOL(BTN_BG_COLOR_DEFAULT));
+    lv_style_set_bg_img_tiled(&styles->btn, false);
+
+    style_init_reset(&styles->btn_pressed);
+    lv_style_set_bg_color(&styles->btn_pressed, WIDGET_BG_COLOR_PRESSED(BTN_BG_COLOR_DEFAULT));
+    lv_style_set_bg_img_opa(&styles->btn_pressed, LV_OPA_70);
+
+    style_init_reset(&styles->btn_disable);
+    lv_style_set_bg_color(&styles->btn_disable, WIDGET_BG_COLOR_DISABLE(BTN_BG_COLOR_DEFAULT));
+    // lv_style_set_bg_img_recolor(&styles->btn_disable, lv_color_hex(0xFF0000));
+    // lv_style_set_bg_img_recolor_opa(&styles->btn_disable, LV_OPA_40);
+    lv_style_set_bg_img_opa(&styles->btn_disable, LV_OPA_40);
+}
+
+static inline void lvx_btn_styles_apply(lv_obj_t* obj)
+{
+    lv_obj_add_style(obj, &styles->btn, LV_STATE_DEFAULT);
+    lv_obj_add_style(obj, &styles->btn_pressed, LV_STATE_DEFAULT | LV_STATE_PRESSED);
+    lv_obj_add_style(obj, &styles->btn_disable, LV_STATE_DEFAULT | LV_STATE_DISABLED);
+}
+#endif
+
+#if LVX_USE_RADIO
+static inline void lvx_radio_styles_init(void)
+{
+    style_init_reset(&styles->radio_unchecked);
+    lv_style_set_bg_color(&styles->radio_unchecked, RADIO_BG_COLOR_UNCHECKED);
+    lv_style_set_bg_opa(&styles->radio_unchecked, LV_OPA_COVER);
+    lv_style_set_border_color(&styles->radio_unchecked, RADIO_BORDER_COLOR);
+    lv_style_set_border_opa(&styles->radio_unchecked, RADIO_BORDER_OPA);
+    lv_style_set_border_width(&styles->radio_unchecked, RADIO_BORDER_WIDTH);
+    lv_style_set_bg_img_opa(&styles->radio_unchecked, LV_OPA_0);
+
+    style_init_reset(&styles->radio_unchecked_pressed);
+    lv_style_set_bg_color(&styles->radio_unchecked_pressed, RADIO_BG_COLOR_UNCHECKED);
+    lv_style_set_border_opa(&styles->radio_unchecked_pressed, RADIO_BORDER_OPA_PRESSED);
+    lv_style_set_bg_img_opa(&styles->radio_unchecked_pressed, LV_OPA_0);
+
+    style_init_reset(&styles->radio_unchecked_disable);
+    lv_style_set_bg_color(&styles->radio_unchecked_disable, RADIO_BG_COLOR_UNCHECKED);
+    lv_style_set_border_opa(&styles->radio_unchecked_disable, RADIO_BORDER_OPA_DISABLE);
+    lv_style_set_bg_img_opa(&styles->radio_unchecked_disable, LV_OPA_0);
+
+    style_init_reset(&styles->radio_checked);
+    lv_style_set_border_opa(&styles->radio_checked, RADIO_BORDER_OPA_CHECKED);
+    lv_style_set_border_width(&styles->radio_checked, RADIO_BORDER_WIDTH_CHECKED);
+    lv_style_set_bg_color(&styles->radio_checked, RADIO_BG_COLOR_CHECKED);
+    lv_style_set_bg_img_opa(&styles->radio_checked, LV_OPA_COVER);
+
+    style_init_reset(&styles->radio_checked_pressed);
+    lv_style_set_bg_color(&styles->radio_checked_pressed, RADIO_BG_COLOR_CHECKED_PRESSED);
+    lv_style_set_bg_img_opa(&styles->radio_checked_pressed, LV_OPA_70);
+
+    style_init_reset(&styles->radio_checked_disable);
+    lv_style_set_bg_color(&styles->radio_checked_disable, RADIO_BG_COLOR_CHECKED_DISABLE);
+    lv_style_set_bg_img_opa(&styles->radio_checked_disable, LV_OPA_40);
+}
+
+static inline void lvx_radio_styles_apply(lv_obj_t* obj)
+{
+    #if LVX_USE_BTN
+    if (lv_obj_has_class(obj, &lvx_btn_class)) {
+        lvx_btn_styles_apply(obj);
+    }
+    #endif
+    lv_obj_add_style(obj, &styles->radio_unchecked, 0);
+    lv_obj_add_style(obj, &styles->radio_unchecked_pressed, LV_STATE_PRESSED);
+    lv_obj_add_style(obj, &styles->radio_unchecked_disable, LV_STATE_DISABLED);
+
+    lv_obj_add_style(obj, &styles->radio_checked, LV_STATE_CHECKED);
+    lv_obj_add_style(obj, &styles->radio_checked_pressed, LV_STATE_CHECKED | LV_STATE_PRESSED);
+    lv_obj_add_style(obj, &styles->radio_checked_disable, LV_STATE_CHECKED | LV_STATE_DISABLED);
+}
+#endif
 
 static void style_init(void)
 {
@@ -70,6 +171,14 @@ static void style_init(void)
 
     style_init_reset(&styles->radius_circle);
     lv_style_set_radius(&styles->radius_circle, LV_RADIUS_CIRCLE);
+
+#if LVX_USE_BTN
+    lvx_btn_styles_init();
+#endif
+
+#if LVX_USE_RADIO
+    lvx_radio_styles_init();
+#endif
 }
 
 /**********************
@@ -116,6 +225,19 @@ static void theme_apply(lv_theme_t* th, lv_obj_t* obj)
     if (lv_obj_check_type(obj, &lv_obj_class)) {
         return;
     }
+
+#if LVX_USE_BTN
+    else if (lv_obj_check_type(obj, &lvx_btn_class)) {
+        lvx_btn_styles_apply(obj);
+        return;
+    }
+#endif
+#if LVX_USE_RADIO
+    else if (lv_obj_check_type(obj, &lvx_radio_class)) {
+        lvx_radio_styles_apply(obj);
+        return;
+    }
+#endif
 }
 
 /**********************
