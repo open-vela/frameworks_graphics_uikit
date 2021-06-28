@@ -45,6 +45,12 @@ typedef struct {
     lv_style_t radio_checked_disable;
 #endif
 
+#if LVX_USE_SWITCH
+    lv_style_t switch_unchecked;
+    lv_style_t switch_checked;
+    lv_style_t switch_knob;
+#endif
+
 } my_theme_styles_t;
 
 /**********************
@@ -153,6 +159,36 @@ static inline void lvx_radio_styles_apply(lv_obj_t* obj)
 }
 #endif
 
+
+#if LVX_USE_SWITCH
+static inline void lvx_switch_styles_init(void)
+{
+    style_init_reset(&styles->switch_unchecked);
+    lv_style_set_bg_color(&styles->switch_unchecked, WIDGET_BG_COLOR_NORMOL(SWITCH_BG_COLOR_DEFAULT));
+    lv_style_set_bg_opa(&styles->switch_unchecked, WIDGET_BG_OPA_NORMOL);
+    lv_style_set_radius(&styles->switch_unchecked, LV_RADIUS_CIRCLE);
+
+    style_init_reset(&styles->switch_checked);
+    lv_style_set_bg_color(&styles->switch_checked, WIDGET_BG_COLOR_NORMOL(SWITCH_BG_COLOR_CHECKED));
+    lv_style_set_bg_opa(&styles->switch_checked, WIDGET_BG_OPA_NORMOL);
+    lv_style_set_radius(&styles->switch_checked, LV_RADIUS_CIRCLE);
+
+    style_init_reset(&styles->switch_knob);
+    lv_style_set_bg_color(&styles->switch_knob, WIDGET_BG_COLOR_NORMOL(SWITCH_KNOB_COLOR));
+    lv_style_set_bg_opa(&styles->switch_knob, WIDGET_BG_OPA_NORMOL);
+
+    lv_style_set_pad_all(&styles->switch_knob, - lv_disp_dpx(theme.disp, SWITCH_KNOB_OFFSET));
+}
+
+static inline void lvx_switch_styles_apply(lv_obj_t* obj)
+{
+    lv_obj_add_style(obj, &styles->switch_unchecked, LV_STATE_DEFAULT);
+    lv_obj_add_style(obj, &styles->switch_checked, LV_STATE_CHECKED);
+    lv_obj_add_style(obj, &styles->radius_circle, LV_PART_KNOB);
+    lv_obj_add_style(obj, &styles->switch_knob, LV_PART_KNOB);
+}
+#endif
+
 static void style_init(void)
 {
     style_init_reset(&styles->bg);
@@ -179,6 +215,11 @@ static void style_init(void)
 #if LVX_USE_RADIO
     lvx_radio_styles_init();
 #endif
+
+#if LVX_USE_SWITCH
+    lvx_switch_styles_init();
+#endif
+
 }
 
 /**********************
@@ -235,6 +276,12 @@ static void theme_apply(lv_theme_t* th, lv_obj_t* obj)
 #if LVX_USE_RADIO
     else if (lv_obj_check_type(obj, &lvx_radio_class)) {
         lvx_radio_styles_apply(obj);
+        return;
+    }
+#endif
+#if LVX_USE_SWITCH
+    else if (lv_obj_check_type(obj, &lvx_switch_class)) {
+        lvx_switch_styles_apply(obj);
         return;
     }
 #endif
