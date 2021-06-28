@@ -35,6 +35,14 @@
 #endif
 #endif
 
+#ifndef LVX_USE_SWITCH
+#ifdef CONFIG_LVX_USE_SWITCH
+#define LVX_USE_SWITCH CONFIG_LVX_USE_SWITCH
+#else
+#define LVX_USE_SWITCH 0
+#endif
+#endif
+
 /*==================
  *  WIDGET STYLE
  *================*/
@@ -45,6 +53,8 @@
 #define WIDGET_BG_COLOR_NORMOL(color)     color
 #define WIDGET_BG_COLOR_PRESSED(color)    lv_color_mix(color, lv_color_black(), WIDGET_BG_OPA_PRESSED)
 #define WIDGET_BG_COLOR_DISABLE(color)    lv_color_mix(color, lv_color_black(), WIDGET_BG_OPA_DISABLE)
+
+#define SYSTEM_COLOR_BLUE           lv_color_hex(0x0D84FF)
 
 #if LVX_USE_RADIO
 #define RADIO_BG_COLOR_PRESSED(color)    WIDGET_BG_COLOR_PRESSED(color)
@@ -58,7 +68,7 @@
 #define RADIO_BORDER_OPA_DISABLE    LV_OPA_20
 
 /** checked */
-#define RADIO_BG_COLOR_CHECKED      lv_color_hex(0x0D84FF)
+#define RADIO_BG_COLOR_CHECKED      SYSTEM_COLOR_BLUE
 #define RADIO_BORDER_WIDTH_CHECKED  0
 #define RADIO_BORDER_OPA_CHECKED    LV_OPA_0
 
@@ -67,6 +77,14 @@
 
 /** checked and disable */
 #define RADIO_BG_COLOR_CHECKED_DISABLE      RADIO_BG_COLOR_DISABLE(RADIO_BG_COLOR_CHECKED)
+#endif
+
+#if LVX_USE_SWITCH
+#define SWITCH_BG_COLOR_DEFAULT           lv_color_hex(0x4C4C4C)
+#define SWITCH_BG_COLOR_CHECKED           SYSTEM_COLOR_BLUE
+
+#define SWITCH_KNOB_OFFSET                13
+#define SWITCH_KNOB_COLOR                 lv_color_hex(0xFFFFFF)
 #endif
 
 #endif // LV_EXT_CONF_H
