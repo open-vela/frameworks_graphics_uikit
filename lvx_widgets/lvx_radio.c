@@ -18,16 +18,14 @@
  *  STATIC PROTOTYPES
  **********************/
 static void lvx_radio_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj);
-static void lvx_radio_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 /**********************
  *  STATIC VARIABLES
  **********************/
 const lv_obj_class_t lvx_radio_class = {
     .constructor_cb = lvx_radio_constructor,
-    .event_cb = lvx_radio_event,
+    .instance_size = sizeof(lvx_radio_t),
     .base_class = &lvx_btn_class,
-    .instance_size = sizeof(lvx_radio_t)
 };
 
 /**********************
@@ -78,32 +76,10 @@ void lvx_radio_set_style_bg_color(lv_obj_t* obj, lv_color_t color)
 static void lvx_radio_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 {
     LV_UNUSED(class_p);
-    lvx_radio_t* radio = (lvx_radio_t* )obj;
 
-    radio->checked = false;
-}
-
-static void lvx_radio_event(const lv_obj_class_t * class_p, lv_event_t * e)
-{
-    lv_res_t res;
-
-    /*Call the ancestor's event handler*/
-    res = lv_obj_event_base(MY_CLASS, e);
-    if (res != LV_RES_OK)
-        return;
-
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * obj = lv_event_get_current_target(e);
-    lvx_radio_t* radio = (lvx_radio_t* )obj;
-
-    if (code == LV_EVENT_CLICKED) {
-        radio->checked = ~radio->checked;
-        if (radio->checked) {
-            lv_obj_add_state(obj, LV_STATE_CHECKED);
-        } else {
-            lv_obj_clear_state(obj, LV_STATE_CHECKED);
-        }
-    }
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_add_flag(obj, LV_OBJ_FLAG_CHECKABLE);
+    lv_obj_add_flag(obj, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
 }
 
 #endif

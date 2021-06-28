@@ -5,6 +5,8 @@
 #include <lvgl/src/lv_conf_internal.h>
 #include <lvgl/lvgl.h>
 
+#include "lv_ext_conf.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -8,8 +8,6 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
-#include "../lv_ext_conf.h"
-
 #include "lvx_widgets.h"
 
 #if (LVX_USE_BTN != 0 && LV_USE_BTN != 0)
@@ -21,8 +19,6 @@ extern "C" {
 /**********************
  *      TYPEDEFS
  **********************/
-
-
 typedef struct {
     lv_btn_t btn;
 }lvx_btn_t;
