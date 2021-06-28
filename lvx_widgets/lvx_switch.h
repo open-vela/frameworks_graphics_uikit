@@ -1,5 +1,5 @@
-#ifndef LV_EXTENSIONS_WIDGETS_RADIO_H_
-#define LV_EXTENSIONS_WIDGETS_RADIO_H_
+#ifndef LV_EXTENSIONS_WIDGETS_SWITCH_H_
+#define LV_EXTENSIONS_WIDGETS_SWITCH_H_
 
 #ifdef __cplusplus
 extern "C" {
@@ -9,9 +9,8 @@ extern "C" {
  *      INCLUDES
  *********************/
 #include "lvx_widgets.h"
-#include "lvx_btn.h"
 
-#if (LVX_USE_RADIO != 0)
+#if (LVX_USE_SWITCH != 0 && (LV_USE_SWITCH != 0))
 
 /*********************
  *      DEFINES
@@ -21,30 +20,27 @@ extern "C" {
  *      TYPEDEFS
  **********************/
 
-
 typedef struct {
-    lvx_btn_t btn;
-}lvx_radio_t;
+    lv_switch_t switcher;
+}lvx_switch_t;
 
-extern const lv_obj_class_t lvx_radio_class;
+extern const lv_obj_class_t lvx_switch_class;
 
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
 
-/* lvx_radio api */
-lv_obj_t* lvx_radio_create(lv_obj_t* parent);
-void lvx_radio_set_img_src(lv_obj_t* obj, void* src);
-void lvx_radio_set_style_bg_color(lv_obj_t* obj, lv_color_t color);
+/* lvx_switch api */
+lv_obj_t* lvx_switch_create(lv_obj_t* parent);
 
 /**********************
  *      MACROS
  **********************/
 
-#endif /* LVX_USE_RADIO */
+#endif /* LVX_USE_SWITCH */
 
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
 
-#endif /* LV_EXTENSIONS_WIDGETS_RADIO_H_ */
+#endif /* LV_EXTENSIONS_WIDGETS_SWITCH_H_ */
