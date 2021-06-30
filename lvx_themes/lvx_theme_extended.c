@@ -51,6 +51,11 @@ typedef struct {
     lv_style_t switch_knob;
 #endif
 
+#if LVX_USE_PICKER
+    lv_style_t picker;
+    lv_style_t picker_selected;
+#endif
+
 } my_theme_styles_t;
 
 /**********************
@@ -189,6 +194,34 @@ static inline void lvx_switch_styles_apply(lv_obj_t* obj)
 }
 #endif
 
+#if LVX_USE_PICKER
+static inline void lvx_picker_styles_init(void)
+{
+    style_init_reset(&styles->picker);
+    lv_style_set_pad_all(&styles->picker, PICKER_PAD_ALL);
+    lv_style_set_pad_gap(&styles->picker, PICKER_PAD_GAP);
+    lv_style_set_text_font(&styles->picker, PICKER_TEXT_FONT_DEFAULT);
+    // lv_style_set_text_font(&styles->picker, &lv_font_montserrat_22);
+    lv_style_set_text_color(&styles->picker, PICKER_TEXT_COLOR_DEFAULT);
+    lv_style_set_text_opa(&styles->picker, PICKER_TEXT_OPA_DEFAULT);
+    lv_style_set_text_align(&styles->picker, PICKER_TEXT_ALIGN_DEFAULT);
+
+    style_init_reset(&styles->picker_selected);
+    lv_style_set_text_font(&styles->picker_selected, PICKER_TEXT_FONT_SELECTED);
+    // lv_style_set_text_font(&styles->picker_selected, &lv_font_montserrat_48);
+    lv_style_set_text_color(&styles->picker_selected, PICKER_TEXT_COLOR_SELECTED);
+    lv_style_set_text_opa(&styles->picker_selected, PICKER_TEXT_OPA_SELECTED);
+    lv_style_set_text_align(&styles->picker_selected, PICKER_TEXT_ALIGN_SELECTED);
+}
+
+static inline void lvx_picker_styles_apply(lv_obj_t* obj)
+{
+    lv_obj_add_style(obj, &styles->bg, 0);
+    lv_obj_add_style(obj, &styles->picker, LV_PART_MAIN);
+    lv_obj_add_style(obj, &styles->picker_selected, LV_PART_SELECTED);
+}
+#endif
+
 static void style_init(void)
 {
     style_init_reset(&styles->bg);
@@ -218,6 +251,10 @@ static void style_init(void)
 
 #if LVX_USE_SWITCH
     lvx_switch_styles_init();
+#endif
+
+#if LVX_USE_PICKER
+    lvx_picker_styles_init();
 #endif
 
 }
@@ -282,6 +319,12 @@ static void theme_apply(lv_theme_t* th, lv_obj_t* obj)
 #if LVX_USE_SWITCH
     else if (lv_obj_check_type(obj, &lvx_switch_class)) {
         lvx_switch_styles_apply(obj);
+        return;
+    }
+#endif
+#if LVX_USE_PICKER
+    else if (lv_obj_check_type(obj, &lvx_picker_class)) {
+        lvx_picker_styles_apply(obj);
         return;
     }
 #endif

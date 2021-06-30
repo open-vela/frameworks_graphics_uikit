@@ -5,6 +5,7 @@
 #include "lvx_themes/lvx_theme_extended.h"
 #include "lvx_widgets/lvx_btn.h"
 #include "lvx_widgets/lvx_radio.h"
+#include "lvx_widgets/lvx_picker.h"
 #include "lvx_widgets/lvx_switch.h"
 
 #endif /* LV_EXT_H */
