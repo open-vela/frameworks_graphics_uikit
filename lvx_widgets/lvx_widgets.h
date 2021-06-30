@@ -17,6 +17,13 @@ extern "C" {
     lv_obj_class_init_obj(obj);                                                \
     return obj;
 
+#define LVXCK(judge, print, ret, next)                                          \
+    if (judge) {                                                               \
+        print;                                                                 \
+        ret;                                                                   \
+        next;                                                                  \
+    }
+
 void lvx_obj_remove_all_event_cb(lv_obj_t* obj);
 
 #if LV_USE_CANVAS != 0
