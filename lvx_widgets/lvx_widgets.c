@@ -120,10 +120,34 @@ lv_area_t lvx_canvas_copy_area(lv_obj_t* dst, lv_obj_t* src,
 /*=====================
  * Setter functions
  *====================*/
+void lvx_obj_set_text_styles(lv_obj_t* obj, text_styles_t* styles,
+                                    lv_style_selector_t selector)
+{
+    AMCK(!styles, , , return);
+
+    lv_obj_set_style_text_font(obj, styles->font, selector);
+    lv_obj_set_style_text_color(obj, styles->color, selector);
+    lv_obj_set_style_text_opa(obj, styles->opa, selector);
+    lv_obj_set_style_text_align(obj, styles->align, selector);
+
+    return;
+}
 
 /*=====================
  * Getter functions
  *====================*/
+void lvx_obj_get_text_styles(lv_obj_t* obj, text_styles_t* styles,
+                             uint32_t part)
+{
+    AMCK(!styles, , , return);
+
+    styles->font = lv_obj_get_style_text_font(obj, part);
+    styles->color = lv_obj_get_style_text_color(obj, part);
+    styles->opa = lv_obj_get_style_text_opa(obj, part);
+    styles->align = lv_obj_get_style_text_align(obj, part);
+
+    return;
+}
 
 /**********************
  *   STATIC FUNCTIONS

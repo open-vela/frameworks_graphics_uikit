@@ -51,6 +51,14 @@
 #endif
 #endif
 
+#ifndef LVX_USE_MSGBOX
+#ifdef CONFIG_LVX_USE_MSGBOX
+#define LVX_USE_MSGBOX CONFIG_LVX_USE_MSGBOX
+#else
+#define LVX_USE_MSGBOX 0
+#endif
+#endif
+
 /*==================
  *  WIDGET STYLE
  *================*/
@@ -64,12 +72,19 @@
 
 #define SYSTEM_COLOR_BLUE                 lv_color_hex(0x0D84FF)
 #define SYSTEM_COLOR_DEFAULT              lv_color_hex(0x000000)
-#define SYSTEM_TEXT_COLOR_WHITE           lv_color_hex(0xFFFFFF)
+#define SYSTEM_COLOR_BTN_GREY             lv_color_hex(0x333333)
+#define SYSTEM_COLOR_WHITE                lv_color_hex(0xFFFFFF)
 
+#if LVX_USE_BTN
+#define BTN_DEFAULT_WIDTH                 110
+#define BTN_DEFAULT_HEIGHT                110
+#endif
 
 #if LVX_USE_RADIO
 #define RADIO_BG_COLOR_PRESSED(color)    WIDGET_BG_COLOR_PRESSED(color)
 #define RADIO_BG_COLOR_DISABLE(color)    WIDGET_BG_COLOR_DISABLE(color)
+#define RADIO_DEFAULT_WIDTH              56
+#define RADIO_DEFAULT_HEIGHT             56
 /** unchecked */
 #define RADIO_BG_COLOR_UNCHECKED    lv_color_hex(0x1F1F1F)
 #define RADIO_BORDER_COLOR          lv_color_hex(0xFFFFFF)
@@ -93,7 +108,8 @@
 #if LVX_USE_SWITCH
 #define SWITCH_BG_COLOR_DEFAULT           lv_color_hex(0x4C4C4C)
 #define SWITCH_BG_COLOR_CHECKED           SYSTEM_COLOR_BLUE
-
+#define SWITCH_DEFAULT_WIDTH              92
+#define SWITCH_DEFAULT_HEIGHT             52
 #define SWITCH_KNOB_OFFSET                13
 #define SWITCH_KNOB_COLOR                 lv_color_hex(0xFFFFFF)
 #endif
@@ -103,14 +119,26 @@
 #define PICKER_PAD_GAP                     10
 
 #define PICKER_TEXT_FONT_DEFAULT           &lv_font_montserrat_28
-#define PICKER_TEXT_COLOR_DEFAULT          SYSTEM_TEXT_COLOR_WHITE
+#define PICKER_TEXT_COLOR_DEFAULT          SYSTEM_COLOR_WHITE
 #define PICKER_TEXT_OPA_DEFAULT            LV_OPA_40
 #define PICKER_TEXT_ALIGN_DEFAULT          LV_TEXT_ALIGN_CENTER
 
 #define PICKER_TEXT_FONT_SELECTED          &lv_font_montserrat_48
-#define PICKER_TEXT_COLOR_SELECTED         SYSTEM_TEXT_COLOR_WHITE
+#define PICKER_TEXT_COLOR_SELECTED         SYSTEM_COLOR_WHITE
 #define PICKER_TEXT_OPA_SELECTED           LV_OPA_COVER
 #define PICKER_TEXT_ALIGN_SELECTED         LV_TEXT_ALIGN_CENTER
+#endif
+
+#if LVX_USE_MSGBOX
+#define MSGBOX_TEXT_FONT_DEFAULT           &lv_font_montserrat_48
+#define MSGBOX_TEXT_COLOR_DEFAULT          SYSTEM_COLOR_WHITE
+#define MSGBOX_TEXT_OPA_DEFAULT            LV_OPA_COVER
+#define MSGBOX_TEXT_ALIGN_DEFAULT          LV_TEXT_ALIGN_CENTER
+
+#define MSGBOX_TEXT_FONT_ITEMS             &lv_font_montserrat_36
+#define MSGBOX_TEXT_COLOR_ITEMS            SYSTEM_COLOR_WHITE
+#define MSGBOX_TEXT_OPA_ITEMS              LV_OPA_COVER
+#define MSGBOX_TEXT_ALIGN_ITEMS            LV_TEXT_ALIGN_LEFT
 #endif
 
 #endif // LV_EXT_CONF_H
