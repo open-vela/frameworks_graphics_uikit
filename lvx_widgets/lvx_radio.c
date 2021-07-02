@@ -24,6 +24,8 @@ static void lvx_radio_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj);
  **********************/
 const lv_obj_class_t lvx_radio_class = {
     .constructor_cb = lvx_radio_constructor,
+    .width_def = RADIO_DEFAULT_WIDTH,
+    .height_def = RADIO_DEFAULT_HEIGHT,
     .instance_size = sizeof(lvx_radio_t),
     .base_class = &lvx_btn_class,
 };

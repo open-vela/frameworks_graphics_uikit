@@ -27,6 +27,8 @@ static inline lv_obj_t* lvx_btn_get_label(lv_obj_t* obj);
 const lv_obj_class_t lvx_btn_class = {
     .constructor_cb = lvx_btn_constructor,
     .event_cb = lvx_btn_event,
+    .width_def = BTN_DEFAULT_WIDTH,
+    .height_def = BTN_DEFAULT_HEIGHT,
     .base_class = &lv_btn_class,
     .instance_size = sizeof(lvx_btn_t),
 };
@@ -82,7 +84,14 @@ void lvx_btn_set_style_text_color(lv_obj_t* obj, lv_color_t color)
     lv_obj_set_style_text_color(label, color, LV_STATE_DEFAULT);
 }
 
-void lvx_btn_set_text_fmt(lv_obj_t* obj, char* fmt, ...)
+void lvx_btn_set_style_text_font(lv_obj_t* obj, const lv_font_t* font)
+{
+    lv_obj_t* label = lvx_btn_get_label(obj);
+
+    lv_obj_set_style_text_font(label, font, LV_STATE_DEFAULT);
+}
+
+void lvx_btn_set_text_fmt(lv_obj_t* obj, const char* fmt, ...)
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
 

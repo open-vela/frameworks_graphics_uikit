@@ -56,6 +56,11 @@ typedef struct {
     lv_style_t picker_selected;
 #endif
 
+#if LVX_USE_MSGBOX
+    lv_style_t msgbox_title;
+    lv_style_t msgbox_body;
+#endif
+
 } my_theme_styles_t;
 
 /**********************
@@ -90,6 +95,7 @@ static inline void lvx_btn_styles_init(void)
     lv_style_set_radius(&styles->btn, LV_RADIUS_CIRCLE);
     lv_style_set_bg_opa(&styles->btn, LV_OPA_COVER);
     lv_style_set_bg_color(&styles->btn, WIDGET_BG_COLOR_NORMOL(BTN_BG_COLOR_DEFAULT));
+    lv_style_set_text_color(&styles->btn, SYSTEM_COLOR_WHITE);
     lv_style_set_bg_img_tiled(&styles->btn, false);
 
     style_init_reset(&styles->btn_pressed);
@@ -222,6 +228,30 @@ static inline void lvx_picker_styles_apply(lv_obj_t* obj)
 }
 #endif
 
+#if LVX_USE_MSGBOX
+static inline void lvx_msgbox_styles_init(void)
+{
+    style_init_reset(&styles->msgbox_title);
+    lv_style_set_text_color(&styles->msgbox_title, MSGBOX_TEXT_COLOR_DEFAULT);
+    lv_style_set_text_font(&styles->msgbox_title, MSGBOX_TEXT_FONT_DEFAULT);
+    lv_style_set_text_align(&styles->msgbox_title, MSGBOX_TEXT_ALIGN_DEFAULT);
+
+    style_init_reset(&styles->msgbox_body);
+    lv_style_set_text_color(&styles->msgbox_body, MSGBOX_TEXT_COLOR_ITEMS);
+    lv_style_set_text_font(&styles->msgbox_body, MSGBOX_TEXT_FONT_ITEMS);
+    lv_style_set_text_align(&styles->msgbox_body, MSGBOX_TEXT_ALIGN_ITEMS);
+}
+
+static inline void lvx_msgbox_styles_apply(lv_obj_t* obj)
+{
+    lv_obj_add_style(obj, &styles->bg, 0);
+    lv_obj_add_style(obj, &styles->radius_circle, LV_PART_MAIN);
+    lv_obj_add_style(obj, &styles->msgbox_title, LV_PART_MAIN);
+    lv_obj_add_style(obj, &styles->msgbox_body, LV_PART_ITEMS);
+
+}
+#endif
+
 static void style_init(void)
 {
     style_init_reset(&styles->bg);
@@ -255,6 +285,10 @@ static void style_init(void)
 
 #if LVX_USE_PICKER
     lvx_picker_styles_init();
+#endif
+
+#if LVX_USE_MSGBOX
+    lvx_msgbox_styles_init();
 #endif
 
 }
@@ -325,6 +359,12 @@ static void theme_apply(lv_theme_t* th, lv_obj_t* obj)
 #if LVX_USE_PICKER
     else if (lv_obj_check_type(obj, &lvx_picker_class)) {
         lvx_picker_styles_apply(obj);
+        return;
+    }
+#endif
+#if LVX_USE_MSGBOX
+    else if (lv_obj_check_type(obj, &lvx_msgbox_class)) {
+        lvx_msgbox_styles_apply(obj);
         return;
     }
 #endif
