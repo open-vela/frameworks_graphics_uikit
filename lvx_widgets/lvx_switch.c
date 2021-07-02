@@ -23,6 +23,8 @@
  **********************/
 const lv_obj_class_t lvx_switch_class = {
     .instance_size = sizeof(lvx_switch_t),
+    .width_def = SWITCH_DEFAULT_WIDTH,
+    .height_def = SWITCH_DEFAULT_HEIGHT,
     .base_class = &lv_switch_class,
 };
 
