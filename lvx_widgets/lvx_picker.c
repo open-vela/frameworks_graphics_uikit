@@ -13,12 +13,6 @@
 /**********************
  *      TYPEDEFS
  **********************/
-typedef struct text_styles {
-    const lv_font_t* font;
-    lv_color_t color;
-    lv_opa_t opa;
-    lv_text_align_t align;
-} text_styles_t;
 
 /**********************
  *  STATIC PROTOTYPES
@@ -31,10 +25,6 @@ static void refr_layout(lv_obj_t* obj);
 static void set_rec_default_style(lv_obj_t* rec);
 static void set_roller_local_style(lv_obj_t* roller);
 static void refr_obj_text_styles(lv_obj_t* obj);
-static void get_obj_text_styles(lv_obj_t* obj, text_styles_t* styles,
-                                uint32_t part);
-static void set_obj_text_styles(lv_obj_t* obj, text_styles_t* styles,
-                                uint32_t part);
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -72,12 +62,12 @@ void lvx_picker_add_options(lv_obj_t* obj, const char* options,
                             lv_roller_mode_t mode)
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
-    LVXCK(!options, LV_LOG_ERROR("options is NULL!\n"), , return );
+    AMCK(!options, LV_LOG_ERROR("options is NULL!\n"), , return );
 
     lvx_picker_t* picker = (lvx_picker_t*)obj;
     uint32_t size = sizeof(lv_obj_t*) * (picker->colume_cnt + 1);
     void* tmp = lv_mem_realloc(picker->colume_array, size);
-    LVXCK(!tmp, LV_LOG_ERROR("cannot malloc roller array!\n"), , return );
+    AMCK(!tmp, LV_LOG_ERROR("cannot malloc roller array!\n"), , return );
     picker->colume_array = tmp;
 
     lv_obj_t* colume = lv_roller_create(obj);
@@ -91,11 +81,11 @@ void lvx_picker_add_options(lv_obj_t* obj, const char* options,
 void lvx_picker_set_options(lv_obj_t* obj, const char** options_array,
                             lv_coord_t col_cnt, lv_roller_mode_t mode)
 {
-    LVXCK(!options_array, LV_LOG_ERROR("options is NULL!\n"), , return );
+    AMCK(!options_array, LV_LOG_ERROR("options is NULL!\n"), , return );
     lvx_picker_t* picker = (lvx_picker_t*)obj;
     uint32_t size = sizeof(lv_obj_t*) * col_cnt;
     lv_obj_t** tmp = lv_mem_alloc(size);
-    LVXCK(!tmp, LV_LOG_ERROR("cannot malloc picker array!\n"), , return );
+    AMCK(!tmp, LV_LOG_ERROR("cannot malloc picker array!\n"), , return );
 
     lv_obj_t* column = NULL;
     if (picker->colume_array) {
@@ -124,7 +114,7 @@ void lvx_picker_set_column_visible_row_count(lv_obj_t* obj, uint8_t index,
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
     lvx_picker_t* picker = (lvx_picker_t*)obj;
-    LVXCK(index >= picker->colume_cnt, LV_LOG_ERROR("index over range\n"), , return );
+    AMCK(index >= picker->colume_cnt, LV_LOG_ERROR("index over range\n"), , return );
     lv_obj_t* column = picker->colume_array[index];
     lv_roller_set_visible_row_count(column, row_cnt);
 }
@@ -142,15 +132,15 @@ void lvx_picker_set_visible_row_count(lv_obj_t* obj, uint8_t row_cnt)
 
 void lvx_picker_set_space_text(lv_obj_t* obj, const char* space_text)
 {
-    LVXCK(!space_text, , , return );
+    AMCK(!space_text, , , return );
     lvx_picker_t* picker = (lvx_picker_t*)obj;
-    LVXCK(picker->colume_cnt < 2, , , return );
+    AMCK(picker->colume_cnt < 2, , , return );
     text_styles_t main;
-    get_obj_text_styles(obj, &main, LV_PART_SELECTED);
+    lvx_obj_get_text_styles(obj, &main, LV_PART_SELECTED);
     /* create spacer */
     for (lv_coord_t i = 0; i < picker->colume_cnt - 1; i++) {
         lv_obj_t* label = lv_label_create(picker->rec);
-        set_obj_text_styles(label, &main, LV_PART_MAIN);
+        lvx_obj_set_text_styles(label, &main, LV_PART_MAIN);
         lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
         lv_label_set_text(label, space_text);
     }
@@ -337,37 +327,17 @@ static void set_roller_local_style(lv_obj_t* picker)
 
 }
 
-static void get_obj_text_styles(lv_obj_t* obj, text_styles_t* styles,
-                                uint32_t part)
-{
-    styles->font = lv_obj_get_style_text_font(obj, part);
-    styles->color = lv_obj_get_style_text_color(obj, part);
-    styles->opa = lv_obj_get_style_text_opa(obj, part);
-    styles->align = lv_obj_get_style_text_align(obj, part);
-    return;
-}
-
-static void set_obj_text_styles(lv_obj_t* obj, text_styles_t* styles,
-                                uint32_t part)
-{
-    lv_obj_set_style_text_font(obj, styles->font, part);
-    lv_obj_set_style_text_color(obj, styles->color, part);
-    lv_obj_set_style_text_opa(obj, styles->opa, part);
-    lv_obj_set_style_text_align(obj, styles->align, part);
-    return;
-}
-
 static void refr_obj_text_styles(lv_obj_t* obj)
 {
     lvx_picker_t* picker = (lvx_picker_t*)obj;
     text_styles_t main, sel;
-    get_obj_text_styles(obj, &main, LV_PART_MAIN);
-    get_obj_text_styles(obj, &sel, LV_PART_SELECTED);
+    lvx_obj_get_text_styles(obj, &main, LV_PART_MAIN);
+    lvx_obj_get_text_styles(obj, &sel, LV_PART_SELECTED);
     lv_obj_t* column = NULL;
     for (lv_coord_t i = 0; i < picker->colume_cnt; i++) {
         column = picker->colume_array[i];
-        set_obj_text_styles(column, &main, LV_PART_MAIN);
-        set_obj_text_styles(column, &sel, LV_PART_SELECTED);
+        lvx_obj_set_text_styles(column, &main, LV_PART_MAIN);
+        lvx_obj_set_text_styles(column, &sel, LV_PART_SELECTED);
     }
 }
 
