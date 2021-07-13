@@ -59,7 +59,7 @@ lv_obj_t* lvx_radio_create(lv_obj_t* parent)
  * Setter functions
  *====================*/
 
-void lvx_radio_set_img_src(lv_obj_t* obj, void* src)
+void lvx_radio_set_img_src(lv_obj_t* obj, const void* src)
 {
     lv_obj_set_style_bg_img_src(obj, src, LV_STATE_CHECKED);
     lv_obj_set_style_bg_img_src(obj, src, LV_STATE_CHECKED | LV_STATE_PRESSED);
