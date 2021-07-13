@@ -31,6 +31,9 @@ CSRCS += lvx_themes/lvx_theme_extended.c
 # end CONFIG_LVX_USE_THEME_EXTENDED
 endif
 
+# c resource
+CSRCS += $(wildcard res/*.c)
+
 # All lvx_widgets depend on theme extension
 CSRCS += $(wildcard lvx_widgets/*.c)
 
