@@ -34,7 +34,7 @@ extern const lv_obj_class_t lvx_radio_class;
 
 /* lvx_radio api */
 lv_obj_t* lvx_radio_create(lv_obj_t* parent);
-void lvx_radio_set_img_src(lv_obj_t* obj, void* src);
+void lvx_radio_set_img_src(lv_obj_t* obj, const void* src);
 void lvx_radio_set_style_bg_color(lv_obj_t* obj, lv_color_t color);
 
 /**********************

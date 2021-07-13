@@ -63,7 +63,7 @@ lv_obj_t* lvx_btn_create(lv_obj_t* parent)
  * Setter functions
  *====================*/
 
-void lvx_btn_set_img_src(lv_obj_t* obj, void* src)
+void lvx_btn_set_img_src(lv_obj_t* obj, const void* src)
 {
     lv_obj_set_style_bg_img_src(obj, src, LV_STATE_DEFAULT);
     lv_obj_set_style_bg_img_src(obj, src, LV_STATE_PRESSED);
