@@ -8,5 +8,6 @@
 #include "lvx_widgets/lvx_radio.h"
 #include "lvx_widgets/lvx_picker.h"
 #include "lvx_widgets/lvx_switch.h"
+#include "lvx_widgets/lvx_arc_scrollbar.h"
 
 #endif /* LV_EXT_H */

@@ -61,6 +61,11 @@ typedef struct {
     lv_style_t msgbox_body;
 #endif
 
+#if LVX_USE_ARC_SCROLLBAR
+    lv_style_t arc_scrollbar_arc;
+    lv_style_t arc_scrollbar_indic;
+#endif
+
 } my_theme_styles_t;
 
 /**********************
@@ -80,9 +85,8 @@ static bool inited;
  *      MACROS
  **********************/
 #if LVX_USE_BTN
-#define BTN_BG_COLOR_DEFAULT           lv_color_hex(0x0D84FF)
+#define BTN_BG_COLOR_DEFAULT lv_color_hex(0x0D84FF)
 #endif
-
 
 /**********************
  *   STATIC FUNCTIONS
@@ -94,17 +98,21 @@ static inline void lvx_btn_styles_init(void)
     style_init_reset(&styles->btn);
     lv_style_set_radius(&styles->btn, LV_RADIUS_CIRCLE);
     lv_style_set_bg_opa(&styles->btn, LV_OPA_COVER);
-    lv_style_set_bg_color(&styles->btn, WIDGET_BG_COLOR_NORMOL(BTN_BG_COLOR_DEFAULT));
+    lv_style_set_bg_color(&styles->btn,
+                          WIDGET_BG_COLOR_NORMOL(BTN_BG_COLOR_DEFAULT));
     lv_style_set_text_color(&styles->btn, SYSTEM_COLOR_WHITE);
     lv_style_set_bg_img_tiled(&styles->btn, false);
 
     style_init_reset(&styles->btn_pressed);
-    lv_style_set_bg_color(&styles->btn_pressed, WIDGET_BG_COLOR_PRESSED(BTN_BG_COLOR_DEFAULT));
+    lv_style_set_bg_color(&styles->btn_pressed,
+                          WIDGET_BG_COLOR_PRESSED(BTN_BG_COLOR_DEFAULT));
     lv_style_set_bg_img_opa(&styles->btn_pressed, LV_OPA_70);
 
     style_init_reset(&styles->btn_disable);
-    lv_style_set_bg_color(&styles->btn_disable, WIDGET_BG_COLOR_DISABLE(BTN_BG_COLOR_DEFAULT));
-    // lv_style_set_bg_img_recolor(&styles->btn_disable, lv_color_hex(0xFF0000));
+    lv_style_set_bg_color(&styles->btn_disable,
+                          WIDGET_BG_COLOR_DISABLE(BTN_BG_COLOR_DEFAULT));
+    // lv_style_set_bg_img_recolor(&styles->btn_disable,
+    // lv_color_hex(0xFF0000));
     // lv_style_set_bg_img_recolor_opa(&styles->btn_disable, LV_OPA_40);
     lv_style_set_bg_img_opa(&styles->btn_disable, LV_OPA_40);
 }
@@ -112,8 +120,10 @@ static inline void lvx_btn_styles_init(void)
 static inline void lvx_btn_styles_apply(lv_obj_t* obj)
 {
     lv_obj_add_style(obj, &styles->btn, LV_STATE_DEFAULT);
-    lv_obj_add_style(obj, &styles->btn_pressed, LV_STATE_DEFAULT | LV_STATE_PRESSED);
-    lv_obj_add_style(obj, &styles->btn_disable, LV_STATE_DEFAULT | LV_STATE_DISABLED);
+    lv_obj_add_style(obj, &styles->btn_pressed,
+                     LV_STATE_DEFAULT | LV_STATE_PRESSED);
+    lv_obj_add_style(obj, &styles->btn_disable,
+                     LV_STATE_DEFAULT | LV_STATE_DISABLED);
 }
 #endif
 
@@ -129,66 +139,78 @@ static inline void lvx_radio_styles_init(void)
     lv_style_set_bg_img_opa(&styles->radio_unchecked, LV_OPA_0);
 
     style_init_reset(&styles->radio_unchecked_pressed);
-    lv_style_set_bg_color(&styles->radio_unchecked_pressed, RADIO_BG_COLOR_UNCHECKED);
-    lv_style_set_border_opa(&styles->radio_unchecked_pressed, RADIO_BORDER_OPA_PRESSED);
+    lv_style_set_bg_color(&styles->radio_unchecked_pressed,
+                          RADIO_BG_COLOR_UNCHECKED);
+    lv_style_set_border_opa(&styles->radio_unchecked_pressed,
+                            RADIO_BORDER_OPA_PRESSED);
     lv_style_set_bg_img_opa(&styles->radio_unchecked_pressed, LV_OPA_0);
 
     style_init_reset(&styles->radio_unchecked_disable);
-    lv_style_set_bg_color(&styles->radio_unchecked_disable, RADIO_BG_COLOR_UNCHECKED);
-    lv_style_set_border_opa(&styles->radio_unchecked_disable, RADIO_BORDER_OPA_DISABLE);
+    lv_style_set_bg_color(&styles->radio_unchecked_disable,
+                          RADIO_BG_COLOR_UNCHECKED);
+    lv_style_set_border_opa(&styles->radio_unchecked_disable,
+                            RADIO_BORDER_OPA_DISABLE);
     lv_style_set_bg_img_opa(&styles->radio_unchecked_disable, LV_OPA_0);
 
     style_init_reset(&styles->radio_checked);
     lv_style_set_border_opa(&styles->radio_checked, RADIO_BORDER_OPA_CHECKED);
-    lv_style_set_border_width(&styles->radio_checked, RADIO_BORDER_WIDTH_CHECKED);
+    lv_style_set_border_width(&styles->radio_checked,
+                              RADIO_BORDER_WIDTH_CHECKED);
     lv_style_set_bg_color(&styles->radio_checked, RADIO_BG_COLOR_CHECKED);
     lv_style_set_bg_img_opa(&styles->radio_checked, LV_OPA_COVER);
 
     style_init_reset(&styles->radio_checked_pressed);
-    lv_style_set_bg_color(&styles->radio_checked_pressed, RADIO_BG_COLOR_CHECKED_PRESSED);
+    lv_style_set_bg_color(&styles->radio_checked_pressed,
+                          RADIO_BG_COLOR_CHECKED_PRESSED);
     lv_style_set_bg_img_opa(&styles->radio_checked_pressed, LV_OPA_70);
 
     style_init_reset(&styles->radio_checked_disable);
-    lv_style_set_bg_color(&styles->radio_checked_disable, RADIO_BG_COLOR_CHECKED_DISABLE);
+    lv_style_set_bg_color(&styles->radio_checked_disable,
+                          RADIO_BG_COLOR_CHECKED_DISABLE);
     lv_style_set_bg_img_opa(&styles->radio_checked_disable, LV_OPA_40);
 }
 
 static inline void lvx_radio_styles_apply(lv_obj_t* obj)
 {
-    #if LVX_USE_BTN
+#if LVX_USE_BTN
     if (lv_obj_has_class(obj, &lvx_btn_class)) {
         lvx_btn_styles_apply(obj);
     }
-    #endif
+#endif
     lv_obj_add_style(obj, &styles->radio_unchecked, 0);
     lv_obj_add_style(obj, &styles->radio_unchecked_pressed, LV_STATE_PRESSED);
     lv_obj_add_style(obj, &styles->radio_unchecked_disable, LV_STATE_DISABLED);
 
     lv_obj_add_style(obj, &styles->radio_checked, LV_STATE_CHECKED);
-    lv_obj_add_style(obj, &styles->radio_checked_pressed, LV_STATE_CHECKED | LV_STATE_PRESSED);
-    lv_obj_add_style(obj, &styles->radio_checked_disable, LV_STATE_CHECKED | LV_STATE_DISABLED);
+    lv_obj_add_style(obj, &styles->radio_checked_pressed,
+                     LV_STATE_CHECKED | LV_STATE_PRESSED);
+    lv_obj_add_style(obj, &styles->radio_checked_disable,
+                     LV_STATE_CHECKED | LV_STATE_DISABLED);
 }
 #endif
-
 
 #if LVX_USE_SWITCH
 static inline void lvx_switch_styles_init(void)
 {
     style_init_reset(&styles->switch_unchecked);
-    lv_style_set_bg_color(&styles->switch_unchecked, WIDGET_BG_COLOR_NORMOL(SWITCH_BG_COLOR_DEFAULT));
+    lv_style_set_bg_color(&styles->switch_unchecked,
+                          WIDGET_BG_COLOR_NORMOL(SWITCH_BG_COLOR_DEFAULT));
     lv_style_set_bg_opa(&styles->switch_unchecked, WIDGET_BG_OPA_NORMOL);
     lv_style_set_radius(&styles->switch_unchecked, LV_RADIUS_CIRCLE);
 
     style_init_reset(&styles->switch_checked);
-    lv_style_set_bg_color(&styles->switch_checked, WIDGET_BG_COLOR_NORMOL(SWITCH_BG_COLOR_CHECKED));
+    lv_style_set_bg_color(&styles->switch_checked,
+                          WIDGET_BG_COLOR_NORMOL(SWITCH_BG_COLOR_CHECKED));
     lv_style_set_bg_opa(&styles->switch_checked, WIDGET_BG_OPA_NORMOL);
     lv_style_set_radius(&styles->switch_checked, LV_RADIUS_CIRCLE);
 
     style_init_reset(&styles->switch_knob);
-    lv_style_set_bg_color(&styles->switch_knob, WIDGET_BG_COLOR_NORMOL(SWITCH_KNOB_COLOR));
+    lv_style_set_bg_color(&styles->switch_knob,
+                          WIDGET_BG_COLOR_NORMOL(SWITCH_KNOB_COLOR));
     lv_style_set_bg_opa(&styles->switch_knob, WIDGET_BG_OPA_NORMOL);
 
-    lv_style_set_pad_all(&styles->switch_knob, - lv_disp_dpx(theme.disp, SWITCH_KNOB_OFFSET));
+    lv_style_set_pad_all(&styles->switch_knob,
+                         -lv_disp_dpx(theme.disp, SWITCH_KNOB_OFFSET));
 }
 
 static inline void lvx_switch_styles_apply(lv_obj_t* obj)
@@ -215,9 +237,11 @@ static inline void lvx_picker_styles_init(void)
     style_init_reset(&styles->picker_selected);
     lv_style_set_text_font(&styles->picker_selected, PICKER_TEXT_FONT_SELECTED);
     // lv_style_set_text_font(&styles->picker_selected, &lv_font_montserrat_48);
-    lv_style_set_text_color(&styles->picker_selected, PICKER_TEXT_COLOR_SELECTED);
+    lv_style_set_text_color(&styles->picker_selected,
+                            PICKER_TEXT_COLOR_SELECTED);
     lv_style_set_text_opa(&styles->picker_selected, PICKER_TEXT_OPA_SELECTED);
-    lv_style_set_text_align(&styles->picker_selected, PICKER_TEXT_ALIGN_SELECTED);
+    lv_style_set_text_align(&styles->picker_selected,
+                            PICKER_TEXT_ALIGN_SELECTED);
 }
 
 static inline void lvx_picker_styles_apply(lv_obj_t* obj)
@@ -248,7 +272,37 @@ static inline void lvx_msgbox_styles_apply(lv_obj_t* obj)
     lv_obj_add_style(obj, &styles->radius_circle, LV_PART_MAIN);
     lv_obj_add_style(obj, &styles->msgbox_title, LV_PART_MAIN);
     lv_obj_add_style(obj, &styles->msgbox_body, LV_PART_ITEMS);
+}
+#endif
 
+#if LVX_USE_ARC_SCROLLBAR
+static inline void lvx_arc_scrollbar_styles_init(void)
+{
+    style_init_reset(&styles->arc_scrollbar_arc);
+    lv_style_set_arc_color(&styles->arc_scrollbar_arc,
+                           ARC_SCROLLBAR_COLOR(lv_color_white()));
+    lv_style_set_arc_opa(&styles->arc_scrollbar_arc, LV_OPA_100);
+    lv_style_set_arc_width(&styles->arc_scrollbar_arc, ARC_SCROLLBAR_WITH);
+    lv_style_set_arc_rounded(&styles->arc_scrollbar_arc, true);
+
+    style_init_reset(&styles->arc_scrollbar_indic);
+    lv_style_set_arc_color(&styles->arc_scrollbar_indic,
+                           ARC_SCROLLBAR_INDIC_COLOR(lv_color_white()));
+    lv_style_set_arc_opa(&styles->arc_scrollbar_indic, LV_OPA_100);
+    lv_style_set_arc_width(&styles->arc_scrollbar_indic, ARC_SCROLLBAR_WITH);
+    lv_style_set_arc_rounded(&styles->arc_scrollbar_indic, true);
+}
+
+static inline void lvx_arc_scrollbar_styles_apply(lv_obj_t* obj)
+{
+    /* local style */
+    lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, 0);
+    lv_obj_set_style_border_width(obj, 0, 0);
+    lv_obj_set_style_pad_gap(obj, 0, 0);
+    lv_obj_set_style_pad_all(obj, 0, 0);
+
+    lv_obj_add_style(obj, &styles->arc_scrollbar_arc, LV_PART_SCROLLBAR);
+    lv_obj_add_style(obj, &styles->arc_scrollbar_indic, LV_PART_INDICATOR);
 }
 #endif
 
@@ -291,6 +345,9 @@ static void style_init(void)
     lvx_msgbox_styles_init();
 #endif
 
+#if LVX_USE_ARC_SCROLLBAR
+    lvx_arc_scrollbar_styles_init();
+#endif
 }
 
 /**********************
@@ -365,6 +422,12 @@ static void theme_apply(lv_theme_t* th, lv_obj_t* obj)
 #if LVX_USE_MSGBOX
     else if (lv_obj_check_type(obj, &lvx_msgbox_class)) {
         lvx_msgbox_styles_apply(obj);
+        return;
+    }
+#endif
+#if LVX_USE_ARC_SCROLLBAR
+    else if (lv_obj_check_type(obj, &lvx_arc_scrollbar_class)) {
+        lvx_arc_scrollbar_styles_apply(obj);
         return;
     }
 #endif

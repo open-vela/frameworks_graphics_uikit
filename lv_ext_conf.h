@@ -59,6 +59,14 @@
 #endif
 #endif
 
+#ifndef LVX_USE_ARC_SCROLLBAR
+#ifdef CONFIG_LVX_USE_ARC_SCROLLBAR
+#define LVX_USE_ARC_SCROLLBAR CONFIG_LVX_USE_ARC_SCROLLBAR
+#else
+#define LVX_USE_ARC_SCROLLBAR 0
+#endif
+#endif
+
 /*==================
  *  WIDGET STYLE
  *================*/
@@ -139,6 +147,12 @@
 #define MSGBOX_TEXT_COLOR_ITEMS            SYSTEM_COLOR_WHITE
 #define MSGBOX_TEXT_OPA_ITEMS              LV_OPA_COVER
 #define MSGBOX_TEXT_ALIGN_ITEMS            LV_TEXT_ALIGN_LEFT
+#endif
+
+#if LVX_USE_ARC_SCROLLBAR
+#define ARC_SCROLLBAR_COLOR(color)          lv_color_mix(color, lv_color_black(), LV_OPA_20)
+#define ARC_SCROLLBAR_INDIC_COLOR(color)    lv_color_mix(color, lv_color_black(), LV_OPA_80)
+#define ARC_SCROLLBAR_WITH                  10
 #endif
 
 #endif // LV_EXT_CONF_H
