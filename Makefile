@@ -18,29 +18,25 @@
 #
 ############################################################################
 
-include $(APPDIR)/Make.defs
-
-ifeq ($(CONFIG_LVGL_EXTENSION), y)
+ifneq ($(CONFIG_LVGL_EXTENSION),)
 
 # widgets depend on extension
 ifeq ($(CONFIG_LVX_USE_WIDGETS), y)
 
 # theme extended depend on use widgets
 ifeq ($(CONFIG_LVX_USE_THEME_EXTENDED), y)
-CSRCS += lvx_themes/lvx_theme_extended.c
+CSRCS += ext/lvx_themes/lvx_theme_extended.c
 # end CONFIG_LVX_USE_THEME_EXTENDED
 endif
 
 # c resource
-CSRCS += $(wildcard res/*.c)
+CSRCS += $(wildcard ext/res/*.c)
 
 # All lvx_widgets depend on theme extension
-CSRCS += $(wildcard lvx_widgets/*.c)
+CSRCS += $(wildcard ext/lvx_widgets/*.c)
 
 # end LVX_USE_WIDGETS
 endif
 
-# end CONFIG_LVGL_EXTENSION
-endif
+endif #CONFIG_LVGL_EXTENSION
 
-include $(APPDIR)/Application.mk
