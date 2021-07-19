@@ -69,7 +69,6 @@ lv_area_t lvx_canvas_copy_area(lv_obj_t* dst, lv_obj_t* src,
 
     lv_canvas_t* canvas_dst = (lv_canvas_t*)dst;
     lv_canvas_t* canvas_src = (lv_canvas_t*)src;
-    bool ret;
 
     if (canvas_dst->dsc.header.cf != canvas_src->dsc.header.cf) {
         LV_LOG_ERROR("cannot copy different color format canvas.\n");
