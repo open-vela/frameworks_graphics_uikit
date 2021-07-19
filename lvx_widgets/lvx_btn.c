@@ -133,7 +133,6 @@ static void lvx_btn_event(const lv_obj_class_t * class_p, lv_event_t * e)
     if (res != LV_RES_OK)
         return;
 
-    lv_event_code_t code = lv_event_get_code(e);
     lv_obj_t * obj = lv_event_get_current_target(e);
     lv_obj_t* label = lv_obj_get_child(obj, 0);
     /** change state of label to state of btn */
