@@ -61,7 +61,7 @@ lv_area_t lvx_canvas_copy_area(lv_obj_t* dst, lv_obj_t* src,
                                const lv_point_t* pos_src, lv_coord_t w,
                                lv_coord_t h)
 {
-    extern lv_obj_class_t lv_canvas_class;
+    extern const lv_obj_class_t lv_canvas_class;
     LV_ASSERT_OBJ(dst, &lv_canvas_class);
     LV_ASSERT_OBJ(src, &lv_canvas_class);
 
