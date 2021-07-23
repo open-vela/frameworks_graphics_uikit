@@ -6,7 +6,7 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "lvx_widgets.h"
+#include "lvx_common.h"
 
 /*********************
  *      DEFINES
@@ -57,9 +57,9 @@ void lvx_obj_remove_all_event_cb(lv_obj_t* obj)
  * @param h: heigh of content to copy.
  */
 lv_area_t lvx_canvas_copy_area(lv_obj_t* dst, lv_obj_t* src,
-                               const lv_point_t* pos_dst,
-                               const lv_point_t* pos_src, lv_coord_t w,
-                               lv_coord_t h)
+                                const lv_point_t* pos_dst,
+                                const lv_point_t* pos_src, lv_coord_t w,
+                                lv_coord_t h)
 {
     extern const lv_obj_class_t lv_canvas_class;
     LV_ASSERT_OBJ(dst, &lv_canvas_class);
@@ -120,9 +120,9 @@ lv_area_t lvx_canvas_copy_area(lv_obj_t* dst, lv_obj_t* src,
  * Setter functions
  *====================*/
 void lvx_obj_set_text_styles(lv_obj_t* obj, text_styles_t* styles,
-                                    lv_style_selector_t selector)
+                              lv_style_selector_t selector)
 {
-    AMCK(!styles, , , return);
+    AMCK(!styles, , , return );
 
     lv_obj_set_style_text_font(obj, styles->font, selector);
     lv_obj_set_style_text_color(obj, styles->color, selector);
@@ -136,9 +136,9 @@ void lvx_obj_set_text_styles(lv_obj_t* obj, text_styles_t* styles,
  * Getter functions
  *====================*/
 void lvx_obj_get_text_styles(lv_obj_t* obj, text_styles_t* styles,
-                             uint32_t part)
+                              uint32_t part)
 {
-    AMCK(!styles, , , return);
+    AMCK(!styles, , , return );
 
     styles->font = lv_obj_get_style_text_font(obj, part);
     styles->color = lv_obj_get_style_text_color(obj, part);

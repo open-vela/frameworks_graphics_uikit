@@ -1,13 +1,11 @@
-#ifndef LVX_WIDGETS_H_
-#define LVX_WIDGETS_H_
+#ifndef LVX_COMMON_H_
+#define LVX_COMMON_H_
 
 /* lvx widgets internal header file. */
 #include <lvgl/src/lv_conf_internal.h>
 #include <lvgl/lvgl.h>
 
 #include "lv_ext_conf.h"
-
-#include <miwear_common.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,6 +21,14 @@ typedef struct text_styles {
     lv_text_align_t align;
 } text_styles_t;
 
+#ifndef AMCK
+#define AMCK(judge, print, ret, next)                                          \
+    if (judge) {                                                               \
+        print;                                                                 \
+        ret;                                                                   \
+        next;                                                                  \
+    }
+#endif
 /**********************
  *      MACROS
  **********************/
@@ -51,4 +57,4 @@ lv_area_t lvx_canvas_copy_area(lv_obj_t* dst, lv_obj_t* src,
 } /* extern "C" */
 #endif
 
-#endif // LVX_WIDGETS_H_
+#endif // LVX_COMMON_H_

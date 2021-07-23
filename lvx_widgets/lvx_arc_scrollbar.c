@@ -27,7 +27,6 @@ static void lvx_arc_scrollbar_destructor(const lv_obj_class_t* class_p,
                                          lv_obj_t* obj);
 static void lvx_arc_scrollbar_event(const lv_obj_class_t* class_p,
                                     lv_event_t* e);
-static void set_default_scrollbar_style(lv_obj_t* scrollbar);
 static void draw_scrollbar(lv_event_t* e);
 static void get_center(lv_obj_t* obj, lv_point_t* center, lv_coord_t* arc_r);
 static void parent_event_handle(lv_event_t* e);
@@ -181,7 +180,6 @@ static void lvx_arc_scrollbar_event(const lv_obj_class_t* class_p,
         return;
 
     lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t* obj = lv_event_get_target(e);
 
     if (code == LV_EVENT_DRAW_MAIN) {
         draw_scrollbar(e);

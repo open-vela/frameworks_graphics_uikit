@@ -8,7 +8,7 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
-#include "lvx_widgets.h"
+#include "lvx_common.h"
 
 #if (LVX_USE_ARC_SCROLLBAR != 0)
 

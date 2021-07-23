@@ -8,7 +8,7 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
-#include "lvx_widgets.h"
+#include "lvx_common.h"
 #include "lvx_btn.h"
 
 #if (LVX_USE_RADIO != 0)

@@ -2,6 +2,7 @@
 #define LV_EXT_H
 
 #include "lv_ext_conf.h"
+#include "lvx_widgets/lvx_common.h"
 #include "lvx_themes/lvx_theme_extended.h"
 #include "lvx_widgets/lvx_btn.h"
 #include "lvx_widgets/lvx_msgbox.h"
