@@ -67,6 +67,14 @@
 #endif
 #endif
 
+#ifndef LVX_USE_CHART
+#ifdef CONFIG_LVX_USE_CHART
+#define LVX_USE_CHART CONFIG_LVX_USE_CHART
+#else
+#define LVX_USE_CHART 0
+#endif
+#endif
+
 /*==================
  *  WIDGET STYLE
  *================*/
