@@ -10,5 +10,6 @@
 #include "lvx_widgets/lvx_picker.h"
 #include "lvx_widgets/lvx_switch.h"
 #include "lvx_widgets/lvx_arc_scrollbar.h"
+#include "lvx_widgets/lvx_chart.h"
 
 #endif /* LV_EXT_H */
