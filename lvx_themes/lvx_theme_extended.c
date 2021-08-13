@@ -25,6 +25,10 @@
  **********************/
 typedef struct {
     lv_style_t bg;
+    lv_style_t scrollbar;
+    lv_style_t scrollbar_scrolled;
+    lv_style_t dashed_line;
+
     lv_style_t no_border;
     lv_style_t pad_zero;
     lv_style_t no_radius;
@@ -64,6 +68,11 @@ typedef struct {
 #if LVX_USE_ARC_SCROLLBAR
     lv_style_t arc_scrollbar_arc;
     lv_style_t arc_scrollbar_indic;
+#endif
+
+#if LVX_USE_CHART
+    lv_style_t chart_series, chart_series_bg, chart_indic, chart_ticks,
+        chart_bg;
 #endif
 
 } my_theme_styles_t;
@@ -306,6 +315,57 @@ static inline void lvx_arc_scrollbar_styles_apply(lv_obj_t* obj)
 }
 #endif
 
+#if LVX_USE_CHART
+static inline void lvx_chart_styles_init(void)
+{
+    style_init_reset(&styles->chart_bg);
+    lv_style_set_pad_column(&styles->chart_bg, lv_disp_dpx(theme.disp, 10));
+    lv_style_set_pad_all(&styles->chart_bg, lv_disp_dpx(theme.disp, 5));
+    lv_style_set_line_color(&styles->chart_bg,
+                            lv_palette_main(LV_PALETTE_GREY));
+
+    style_init_reset(&styles->chart_series);
+    lv_style_set_bg_opa(&styles->chart_series, LV_OPA_100);
+    lv_style_set_line_width(&styles->chart_series, lv_disp_dpx(theme.disp, 8));
+    lv_style_set_radius(&styles->chart_series, lv_disp_dpx(theme.disp, 8));
+    lv_style_set_size(&styles->chart_series, lv_disp_dpx(theme.disp, 8));
+    lv_style_set_pad_column(&styles->chart_series, lv_disp_dpx(theme.disp, 2));
+
+    style_init_reset(&styles->chart_series_bg);
+    lv_style_set_bg_color(&styles->chart_series_bg, lv_color_white());
+    lv_style_set_bg_opa(&styles->chart_series_bg, LV_OPA_20);
+
+    style_init_reset(&styles->chart_indic);
+    lv_style_set_radius(&styles->chart_indic, LV_RADIUS_CIRCLE);
+    lv_style_set_size(&styles->chart_indic, lv_disp_dpx(theme.disp, 8));
+    lv_style_set_bg_color(&styles->chart_indic,
+                          lv_palette_main(LV_PALETTE_BLUE));
+    lv_style_set_bg_opa(&styles->chart_indic, LV_OPA_COVER);
+
+    style_init_reset(&styles->chart_ticks);
+    lv_style_set_line_width(&styles->chart_ticks, lv_disp_dpx(theme.disp, 1));
+    lv_style_set_line_color(&styles->chart_ticks, lv_color_white());
+    lv_style_set_pad_all(&styles->chart_ticks, lv_disp_dpx(theme.disp, 2));
+    lv_style_set_text_color(&styles->chart_ticks,
+                            lv_palette_main(LV_PALETTE_GREY));
+}
+
+static inline void lvx_chart_styles_apply(lv_obj_t* obj)
+{
+    lv_obj_add_style(obj, &styles->bg, 0);
+    lv_obj_add_style(obj, &styles->chart_bg, 0);
+    lv_obj_add_style(obj, &styles->dashed_line, 0);
+    lv_obj_add_style(obj, &styles->scrollbar, LV_PART_SCROLLBAR);
+    lv_obj_add_style(obj, &styles->scrollbar_scrolled,
+                     LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
+    lv_obj_add_style(obj, &styles->chart_series, LV_PART_ITEMS);
+    lv_obj_add_style(obj, &styles->chart_series_bg, LVX_PART_ITEMS_BG);
+    lv_obj_add_style(obj, &styles->chart_indic, LV_PART_INDICATOR);
+    lv_obj_add_style(obj, &styles->chart_ticks, LV_PART_TICKS);
+    lv_obj_add_style(obj, &styles->chart_series, LV_PART_CURSOR);
+}
+#endif
+
 static void style_init(void)
 {
     style_init_reset(&styles->bg);
@@ -324,6 +384,27 @@ static void style_init(void)
 
     style_init_reset(&styles->radius_circle);
     lv_style_set_radius(&styles->radius_circle, LV_RADIUS_CIRCLE);
+
+    style_init_reset(&styles->scrollbar);
+    lv_style_set_bg_color(&styles->scrollbar, lv_palette_main(LV_PALETTE_GREY));
+    lv_style_set_radius(&styles->scrollbar, LV_RADIUS_CIRCLE);
+    lv_style_set_pad_right(&styles->scrollbar, lv_disp_dpx(theme.disp, 7));
+    lv_style_set_pad_top(&styles->scrollbar, lv_disp_dpx(theme.disp, 7));
+    lv_style_set_size(&styles->scrollbar, lv_disp_dpx(theme.disp, 5));
+    lv_style_set_bg_opa(&styles->scrollbar, LV_OPA_40);
+    lv_style_set_transition(&styles->scrollbar, 0);
+
+    style_init_reset(&styles->scrollbar_scrolled);
+    lv_style_set_bg_opa(&styles->scrollbar_scrolled, LV_OPA_COVER);
+
+    style_init_reset(&styles->dashed_line);
+    lv_style_set_line_opa(&styles->dashed_line, LV_OPA_20);
+    lv_style_set_line_color(&styles->dashed_line, lv_color_white());
+    lv_style_set_line_width(&styles->dashed_line, lv_disp_dpx(theme.disp, 2));
+    lv_style_set_line_dash_width(&styles->dashed_line,
+                                 lv_disp_dpx(theme.disp, 7));
+    lv_style_set_line_dash_gap(&styles->dashed_line,
+                               lv_disp_dpx(theme.disp, 3));
 
 #if LVX_USE_BTN
     lvx_btn_styles_init();
@@ -347,6 +428,10 @@ static void style_init(void)
 
 #if LVX_USE_ARC_SCROLLBAR
     lvx_arc_scrollbar_styles_init();
+#endif
+
+#if LVX_USE_CHART
+    lvx_chart_styles_init();
 #endif
 }
 
@@ -428,6 +513,12 @@ static void theme_apply(lv_theme_t* th, lv_obj_t* obj)
 #if LVX_USE_ARC_SCROLLBAR
     else if (lv_obj_check_type(obj, &lvx_arc_scrollbar_class)) {
         lvx_arc_scrollbar_styles_apply(obj);
+        return;
+    }
+#endif
+#if LVX_USE_CHART
+    else if (lv_obj_check_type(obj, &lvx_chart_class)) {
+        lvx_chart_styles_apply(obj);
         return;
     }
 #endif
