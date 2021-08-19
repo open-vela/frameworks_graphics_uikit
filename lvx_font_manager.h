@@ -15,6 +15,7 @@ extern "C" {
 #ifdef __NuttX__
 #include <nuttx/config.h>
 #include "lv_porting/lv_freetype_interface.h"
+#include "lv_ext_conf.h"
 #else
 #include "lv_lib_freetype/lv_freetype.h"
 #endif
