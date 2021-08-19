@@ -75,6 +75,24 @@
 #endif
 #endif
 
+#ifndef LVX_USE_FONT_MANAGER
+#ifdef CONFIG_LVX_USE_FONT_MANAGER
+#define LVX_USE_FONT_MANAGER CONFIG_LVX_USE_FONT_MANAGER
+#else
+#define LVX_USE_FONT_MANAGER 0
+#endif
+#endif
+
+#if LVX_USE_FONT_MANAGER
+#ifndef FONT_LIB_PATH
+#ifdef CONFIG_FONT_LIB_PATH
+#define FONT_LIB_PATH CONFIG_FONT_LIB_PATH
+#else
+#define FONT_LIB_PATH "./"
+#endif
+#endif
+#endif
+
 /*==================
  *  WIDGET STYLE
  *================*/

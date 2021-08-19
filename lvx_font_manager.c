@@ -81,8 +81,8 @@ void lvx_font_init(uint16_t max_faces, uint16_t max_sizes, uint32_t max_bytes)
         LV_ASSERT_MALLOC(buff);
 
 #ifdef __NuttX__
-        int count = strlen(CONFIG_FONT_LIB_PATH);
-        strncpy(buff, CONFIG_FONT_LIB_PATH, buff_len);
+        int count = strlen(FONT_LIB_PATH);
+        strncpy(buff, FONT_LIB_PATH, buff_len);
 #else
         int count = readlink("/proc/self/exe", buff, buff_len);
 #endif

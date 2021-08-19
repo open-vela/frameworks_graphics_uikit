@@ -20,7 +20,9 @@
 
 ifneq ($(CONFIG_LVGL_EXTENSION),)
 
+ifeq ($(CONFIG_LVX_USE_FONT_MANAGER), y)
 CSRCS += ext/lvx_font_manager.c
+endif
 
 # widgets depend on extension
 ifeq ($(CONFIG_LVX_USE_WIDGETS), y)
