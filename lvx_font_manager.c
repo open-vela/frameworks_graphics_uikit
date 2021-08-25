@@ -124,7 +124,7 @@ void lvx_font_base_path_set(const char * path)
 
 bool lvx_font_create_core(lv_ft_info_t * newfont)
 {
-    lvx_font_init(4, 4, 0);
+    lvx_font_init(FONT_MAX_FACES, FONT_MAX_SIZES, FONT_MAX_BYTES);
 
     if(newfont == NULL || newfont->name == NULL || newfont->weight == 0) {
         return false;
