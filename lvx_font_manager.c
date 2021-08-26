@@ -11,6 +11,10 @@
 #include <stdio.h>
 #include <unistd.h>
 
+#ifndef __NuttX__
+#include <uv.h>
+#endif
+
 /*********************
  *      DEFINES
  *********************/
@@ -81,12 +85,12 @@ void lvx_font_init(uint16_t max_faces, uint16_t max_sizes, uint32_t max_bytes)
         LV_ASSERT_MALLOC(buff);
 
 #ifdef __NuttX__
-        int count = strlen(FONT_LIB_PATH);
         strncpy(buff, FONT_LIB_PATH, buff_len);
 #else
-        int count = readlink("/proc/self/exe", buff, buff_len);
+        size_t count = buff_len - 1;
+        uv_exepath(buff, &count);
 #endif
-        buff[count] = '\0';
+        buff[buff_len - 1] = '\0';
         char * pend = strrchr(buff, '/');
         snprintf(pend, buff_len - (pend - buff), "/%s", "font");
         lvx_font_base_path_set(buff);
