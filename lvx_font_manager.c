@@ -347,6 +347,7 @@ static bool font_name_combine(char * buff, uint16_t buff_len, const char * name)
 {
     snprintf(buff, buff_len, "%s/%s.%s", font_base_path, name, "ttf");
     if(access(buff, F_OK) != 0) {
+        LV_LOG_WARN("Font file not found.please check %s", buff);
         return false;
     }
     return true;
