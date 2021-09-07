@@ -7,6 +7,9 @@
  *      INCLUDES
  *********************/
 #include "lvx_font_manager.h"
+
+#if (LVX_USE_FONT_MANAGER != 0)
+
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -352,3 +355,5 @@ static bool font_name_combine(char * buff, uint16_t buff_len, const char * name)
     }
     return true;
 }
+
+#endif
