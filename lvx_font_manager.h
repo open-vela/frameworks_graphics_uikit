@@ -12,6 +12,10 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
+#include "lv_ext_conf.h"
+
+#if (LVX_USE_FONT_MANAGER != 0)
+
 #ifdef __NuttX__
 #include <nuttx/config.h>
 #include "lv_porting/lv_freetype_interface.h"
@@ -77,6 +81,8 @@ void lvx_font_base_path_set(const char * path);
 /**********************
  *      MACROS
  **********************/
+
+#endif
 
 #ifdef __cplusplus
 } /* extern "C" */
