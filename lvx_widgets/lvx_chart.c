@@ -1,8 +1,5 @@
 /**
  * @file lvx_chart.c
- * @todo part_draw_dsc.text part_draw_dsc.class_p part_draw_dsc.type. These
- * three data are only available in the latest version, and now temporarily
- * annotate
  */
 
 /*********************
@@ -894,8 +891,8 @@ static void draw_div_lines(lv_obj_t* obj, const lv_area_t* clip_area)
     lv_obj_draw_part_dsc_t part_draw_dsc;
     lv_obj_draw_dsc_init(&part_draw_dsc, clip_area);
     part_draw_dsc.part = LV_PART_MAIN;
-    // part_draw_dsc.class_p = MY_CLASS;
-    // part_draw_dsc.type = LVX_CHART_DRAW_PART_DIV_LINE_INIT;
+    part_draw_dsc.class_p = MY_CLASS;
+    part_draw_dsc.type = LVX_CHART_DRAW_PART_DIV_LINE_INIT;
     part_draw_dsc.line_dsc = &line_dsc;
     part_draw_dsc.id = 0xFFFFFFFF;
     part_draw_dsc.p1 = NULL;
@@ -930,8 +927,8 @@ static void draw_div_lines(lv_obj_t* obj, const lv_area_t* clip_area)
             p1.y += y_ofs;
             p2.y = p1.y;
 
-            // part_draw_dsc.class_p = MY_CLASS;
-            // part_draw_dsc.type = LVX_CHART_DRAW_PART_DIV_LINE_HOR;
+            part_draw_dsc.class_p = MY_CLASS;
+            part_draw_dsc.type = LVX_CHART_DRAW_PART_DIV_LINE_HOR;
             part_draw_dsc.p1 = &p1;
             part_draw_dsc.p2 = &p2;
             part_draw_dsc.id = i;
@@ -962,8 +959,8 @@ static void draw_div_lines(lv_obj_t* obj, const lv_area_t* clip_area)
             p1.x += x_ofs;
             p2.x = p1.x;
 
-            // part_draw_dsc.class_p = MY_CLASS;
-            // part_draw_dsc.type = LVX_CHART_DRAW_PART_DIV_LINE_VER;
+            part_draw_dsc.class_p = MY_CLASS;
+            part_draw_dsc.type = LVX_CHART_DRAW_PART_DIV_LINE_VER;
             part_draw_dsc.p1 = &p1;
             part_draw_dsc.p2 = &p2;
             part_draw_dsc.id = i;
@@ -1056,8 +1053,8 @@ static void draw_series_line(lv_obj_t* obj, const lv_area_t* clip_area)
 
         lv_obj_draw_part_dsc_t part_draw_dsc;
         lv_obj_draw_dsc_init(&part_draw_dsc, clip_area);
-        // part_draw_dsc.class_p = MY_CLASS;
-        // part_draw_dsc.type = LVX_CHART_DRAW_PART_LINE_AND_POINT;
+        part_draw_dsc.class_p = MY_CLASS;
+        part_draw_dsc.type = LVX_CHART_DRAW_PART_LINE_AND_POINT;
         part_draw_dsc.part = LV_PART_ITEMS;
         part_draw_dsc.line_dsc = &line_dsc_default;
         part_draw_dsc.rect_dsc = &point_dsc_default;
@@ -1255,8 +1252,8 @@ static void draw_series_scatter(lv_obj_t* obj, const lv_area_t* clip_area)
         lv_obj_draw_part_dsc_t part_draw_dsc;
         lv_obj_draw_dsc_init(&part_draw_dsc, clip_area);
         part_draw_dsc.part = LV_PART_ITEMS;
-        // part_draw_dsc.class_p = MY_CLASS;
-        // part_draw_dsc.type = LVX_CHART_DRAW_PART_LINE_AND_POINT;
+        part_draw_dsc.class_p = MY_CLASS;
+        part_draw_dsc.type = LVX_CHART_DRAW_PART_LINE_AND_POINT;
         part_draw_dsc.line_dsc = &line_dsc_default;
         part_draw_dsc.rect_dsc = &point_dsc_default;
         part_draw_dsc.sub_part_ptr = ser;
@@ -1408,8 +1405,8 @@ static void draw_series_point_bar(lv_obj_t* obj, const lv_area_t* clip_area)
         lv_obj_draw_part_dsc_t part_draw_dsc;
         lv_obj_draw_dsc_init(&part_draw_dsc, clip_area);
         part_draw_dsc.part = LV_PART_ITEMS;
-        // part_draw_dsc.class_p = MY_CLASS;
-        // part_draw_dsc.type = LVX_CHART_DRAW_PART_LINE_AND_POINT;
+        part_draw_dsc.class_p = MY_CLASS;
+        part_draw_dsc.type = LVX_CHART_DRAW_PART_LINE_AND_POINT;
         part_draw_dsc.line_dsc = &line_dsc_default;
         part_draw_dsc.rect_dsc = &point_dsc_default;
         part_draw_dsc.sub_part_ptr = ser;
@@ -1540,8 +1537,8 @@ static void draw_series_bar(lv_obj_t* obj, const lv_area_t* clip_area)
     lv_obj_draw_part_dsc_t part_draw_dsc;
     lv_obj_draw_dsc_init(&part_draw_dsc, &series_mask);
     part_draw_dsc.part = LV_PART_ITEMS;
-    // part_draw_dsc.class_p = MY_CLASS;
-    // part_draw_dsc.type = LVX_CHART_DRAW_PART_BAR;
+    part_draw_dsc.class_p = MY_CLASS;
+    part_draw_dsc.type = LVX_CHART_DRAW_PART_BAR;
 
     /*Go through all points*/
     for (i = 0; i < chart->point_cnt; i++) {
@@ -1641,8 +1638,8 @@ static void draw_cursors(lv_obj_t* obj, const lv_area_t* clip_area)
     part_draw_dsc.line_dsc = &line_dsc_tmp;
     part_draw_dsc.rect_dsc = &point_dsc_tmp;
     part_draw_dsc.part = LV_PART_CURSOR;
-    // part_draw_dsc.class_p = MY_CLASS;
-    // part_draw_dsc.type = LVX_CHART_DRAW_PART_CURSOR;
+    part_draw_dsc.class_p = MY_CLASS;
+    part_draw_dsc.type = LVX_CHART_DRAW_PART_CURSOR;
 
     lv_area_t clip_area2;
     _lv_area_intersect(&clip_area2, clip_area, &obj->coords);
@@ -1767,8 +1764,8 @@ static void draw_y_ticks(lv_obj_t* obj, const lv_area_t* clip_area,
 
     lv_obj_draw_part_dsc_t part_draw_dsc;
     lv_obj_draw_dsc_init(&part_draw_dsc, clip_area);
-    // part_draw_dsc.class_p = MY_CLASS;
-    // part_draw_dsc.type = LVX_CHART_DRAW_PART_TICK_LABEL;
+    part_draw_dsc.class_p = MY_CLASS;
+    part_draw_dsc.type = LVX_CHART_DRAW_PART_TICK_LABEL;
     part_draw_dsc.id = axis;
     part_draw_dsc.part = LV_PART_TICKS;
     part_draw_dsc.line_dsc = &line_dsc;
@@ -1812,8 +1809,7 @@ static void draw_y_ticks(lv_obj_t* obj, const lv_area_t* clip_area,
             char buf[16];
             lv_snprintf(buf, sizeof(buf), "%d", tick_value);
             part_draw_dsc.label_dsc = &label_dsc;
-            // part_draw_dsc.text = buf;
-            strcpy(part_draw_dsc.text, buf);
+            part_draw_dsc.text = buf;
             lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_draw_dsc);
 
             /*reserve appropriate area*/
@@ -1842,8 +1838,7 @@ static void draw_y_ticks(lv_obj_t* obj, const lv_area_t* clip_area,
             }
         } else {
             part_draw_dsc.label_dsc = NULL;
-            // part_draw_dsc.text = NULL;
-            strcpy(part_draw_dsc.text, "");
+            part_draw_dsc.text = NULL;
             lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_draw_dsc);
         }
 
@@ -1908,8 +1903,8 @@ static void draw_x_ticks(lv_obj_t* obj, const lv_area_t* clip_area,
 
     lv_obj_draw_part_dsc_t part_draw_dsc;
     lv_obj_draw_dsc_init(&part_draw_dsc, clip_area);
-    // part_draw_dsc.class_p = MY_CLASS;
-    // part_draw_dsc.type = LVX_CHART_DRAW_PART_TICK_LABEL;
+    part_draw_dsc.class_p = MY_CLASS;
+    part_draw_dsc.type = LVX_CHART_DRAW_PART_TICK_LABEL;
     part_draw_dsc.id = LVX_CHART_AXIS_PRIMARY_X;
     part_draw_dsc.part = LV_PART_TICKS;
     part_draw_dsc.label_dsc = &label_dsc;
@@ -1965,8 +1960,7 @@ static void draw_x_ticks(lv_obj_t* obj, const lv_area_t* clip_area,
             char buf[16];
             lv_snprintf(buf, sizeof(buf), "%d", tick_value);
             part_draw_dsc.label_dsc = &label_dsc;
-            // part_draw_dsc.text = buf;
-            strcpy(part_draw_dsc.text, buf);
+            part_draw_dsc.text = buf;
             lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_draw_dsc);
 
             /*reserve appropriate area*/
@@ -1994,8 +1988,7 @@ static void draw_x_ticks(lv_obj_t* obj, const lv_area_t* clip_area,
             }
         } else {
             part_draw_dsc.label_dsc = NULL;
-            // part_draw_dsc.text = NULL;
-            strcpy(part_draw_dsc.text, "");
+            part_draw_dsc.text = NULL;
             lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_draw_dsc);
         }
 
