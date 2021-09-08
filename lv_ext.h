@@ -11,5 +11,6 @@
 #include "lvx_widgets/lvx_switch.h"
 #include "lvx_widgets/lvx_arc_scrollbar.h"
 #include "lvx_widgets/lvx_chart.h"
+#include "lvx_font_manager.h"
 
 #endif /* LV_EXT_H */
