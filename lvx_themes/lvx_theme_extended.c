@@ -72,7 +72,7 @@ typedef struct {
 
 #if LVX_USE_CHART
     lv_style_t chart_series, chart_series_bg, chart_indic, chart_ticks,
-        chart_bg;
+        chart_bg, chart_avg_line;
 #endif
 
 } my_theme_styles_t;
@@ -348,6 +348,13 @@ static inline void lvx_chart_styles_init(void)
     lv_style_set_pad_all(&styles->chart_ticks, lv_disp_dpx(theme.disp, 2));
     lv_style_set_text_color(&styles->chart_ticks,
                             lv_palette_main(LV_PALETTE_GREY));
+
+    style_init_reset(&styles->chart_avg_line);
+    lv_style_set_line_width(&styles->chart_avg_line, 0);
+    lv_style_set_line_color(&styles->chart_avg_line,
+                            lv_palette_main(LV_PALETTE_GREEN));
+    lv_style_set_line_opa(&styles->chart_avg_line, LV_OPA_COVER);
+    lv_style_set_line_rounded(&styles->chart_avg_line, true);
 }
 
 static inline void lvx_chart_styles_apply(lv_obj_t* obj)

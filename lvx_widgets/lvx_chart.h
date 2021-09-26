@@ -51,6 +51,7 @@ typedef uint8_t lvx_chart_type_t;
 
 enum {
     LVX_PART_ITEMS_BG = LV_PART_CUSTOM_FIRST,
+    LVX_PART_AVG_LINE = LV_PART_CUSTOM_FIRST + 0x10000,
 };
 
 /**
