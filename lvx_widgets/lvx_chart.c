@@ -45,6 +45,7 @@ static lvx_chart_tick_dsc_t* get_tick_gsc(lv_obj_t* obj, lvx_chart_axis_t axis);
 static void draw_series_point_bar(lv_obj_t* obj, const lv_area_t* clip_area);
 static int point_cmp(const void* var1, const void* var2);
 static void draw_line_chart_event_cb(lv_event_t* e);
+static void draw_avg_line(lv_obj_t* obj, const lv_area_t* clip_area);
 #endif
 
 /**********************
@@ -274,6 +275,7 @@ void lvx_chart_set_axis_tick(lv_obj_t* obj, lvx_chart_axis_t axis,
     lv_obj_invalidate(obj);
 }
 
+#if LVX_CHART_EXTENTIONS == 1
 void lvx_chart_set_draw_mask_below_line(lv_obj_t* obj, bool en)
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
@@ -290,6 +292,7 @@ void lvx_chart_set_draw_mask_below_line(lv_obj_t* obj, bool en)
                             LV_EVENT_DRAW_PART_BEGIN, NULL);
     }
 }
+#endif
 
 lvx_chart_type_t lvx_chart_get_type(const lv_obj_t* obj)
 {
@@ -484,6 +487,7 @@ void lvx_chart_set_series_color(lv_obj_t* chart, lvx_chart_series_t* series,
     lvx_chart_refresh(chart);
 }
 
+#if LVX_CHART_EXTENTIONS == 1
 void lvx_chart_set_series_threshold(lv_obj_t* chart, lvx_chart_series_t* series,
                                     lv_coord_t threshold)
 {
@@ -493,6 +497,7 @@ void lvx_chart_set_series_threshold(lv_obj_t* chart, lvx_chart_series_t* series,
     series->threshold = threshold;
     lvx_chart_refresh(chart);
 }
+#endif
 
 void lvx_chart_set_x_start_point(lv_obj_t* obj, lvx_chart_series_t* ser,
                                  uint16_t id)
@@ -851,6 +856,10 @@ static void lvx_chart_event(const lv_obj_class_t* class_p, lv_event_t* e)
         const lv_area_t* clip_area = lv_event_get_param(e);
         draw_div_lines(obj, clip_area);
         draw_axes(obj, clip_area);
+
+#if LVX_CHART_EXTENTIONS == 1
+        draw_avg_line(obj, clip_area);
+#endif
 
         if (_lv_ll_is_empty(&chart->series_ll) == false) {
             if (chart->type == LVX_CHART_TYPE_LINE)
@@ -1371,6 +1380,7 @@ static void draw_series_point_bar(lv_obj_t* obj, const lv_area_t* clip_area)
         - lv_obj_get_scroll_left(obj);
     lv_coord_t y_ofs
         = obj->coords.y1 + pad_top + border_width - lv_obj_get_scroll_top(obj);
+
     lvx_chart_series_t* ser;
 
     lv_area_t series_mask;
@@ -1389,6 +1399,21 @@ static void draw_series_point_bar(lv_obj_t* obj, const lv_area_t* clip_area)
     lv_coord_t point_w = lv_obj_get_style_width(obj, LV_PART_INDICATOR) / 2;
     lv_coord_t point_h = lv_obj_get_style_height(obj, LV_PART_INDICATOR) / 2;
 
+    /* The edge of the point in the middle of the line */
+    lv_draw_line_dsc_t line_dsc;
+    lv_draw_line_dsc_init(&line_dsc);
+    lv_obj_init_draw_line_dsc(obj, LV_PART_MAIN, &line_dsc);
+    if (line_dsc.width > 0 && line_dsc.opa > LV_OPA_MIN) {
+        if (chart->vdiv_cnt) {
+            x_ofs += point_w;
+            w -= (line_dsc.width + point_w * 2);
+        }
+        if (chart->hdiv_cnt) {
+            y_ofs += point_h;
+            h -= (line_dsc.width + point_w * 2);
+        }
+    }
+
     /*Do not bother with line ending is the point will over it*/
     if (LV_MIN(point_w, point_h) > line_dsc_default.width / 2)
         line_dsc_default.raw_end = 1;
@@ -1401,24 +1426,28 @@ static void draw_series_point_bar(lv_obj_t* obj, const lv_area_t* clip_area)
         if (ser->hidden)
             continue;
 
-        /* sort data */
+        /* Cache data */
         lv_coord_t point_cnt = chart->point_cnt;
         lv_point_t* points = lv_mem_buf_get(sizeof(lv_point_t) * point_cnt);
         if (!points) {
             continue;
         }
+        lv_memset_00(points, sizeof(lv_point_t) * point_cnt);
+
         for (lv_coord_t i = 0; i < point_cnt; i++) {
             points[i].x = ser->x_points[i];
             points[i].y = ser->y_points[i];
         }
+
+        lv_obj_draw_part_dsc_t part_draw_dsc;
+        lv_obj_draw_dsc_init(&part_draw_dsc, clip_area);
+
+        /* Sort data */
         qsort(points, point_cnt, sizeof(lv_point_t), point_cmp);
-        /* end of sort data */
 
         line_dsc_default.color = ser->color;
         point_dsc_default.bg_color = ser->color;
 
-        lv_obj_draw_part_dsc_t part_draw_dsc;
-        lv_obj_draw_dsc_init(&part_draw_dsc, clip_area);
         part_draw_dsc.part = LV_PART_ITEMS;
         part_draw_dsc.class_p = MY_CLASS;
         part_draw_dsc.type = LVX_CHART_DRAW_PART_LINE_AND_POINT;
@@ -1427,8 +1456,8 @@ static void draw_series_point_bar(lv_obj_t* obj, const lv_area_t* clip_area)
         part_draw_dsc.sub_part_ptr = ser;
 
         for (lv_coord_t i = 0; i < point_cnt; i++) {
-            if (points[i].x == LVX_CHART_POINT_CNT_DEF
-                && points[i].y == LVX_CHART_POINT_CNT_DEF) {
+            if (points[i].x == LVX_CHART_POINT_NONE
+                || points[i].y == LVX_CHART_POINT_NONE) {
                 continue;
             }
 
@@ -1514,6 +1543,14 @@ static void draw_series_bar(lv_obj_t* obj, const lv_area_t* clip_area)
     int32_t ser_gap = ((int32_t)lv_obj_get_style_pad_column(obj, LV_PART_ITEMS)
                        * chart->zoom_x)
         >> 8; /*Gap between the column on the ~same X*/
+
+#if LVX_CHART_EXTENTIONS == 1
+    /* Single column does not need this interval */
+    if (ser_cnt <= 1) {
+        ser_gap = 0;
+    }
+#endif
+
     lv_coord_t x_ofs = pad_left - lv_obj_get_scroll_left(obj);
     lv_coord_t y_ofs = pad_top - lv_obj_get_scroll_top(obj);
 
@@ -1611,6 +1648,13 @@ static void draw_series_bar(lv_obj_t* obj, const lv_area_t* clip_area)
             part_draw_dsc.part = LV_PART_ITEMS;
 #endif
             if (ser->y_points[p_act] != LVX_CHART_POINT_NONE) {
+#if LVX_CHART_EXTENTIONS == 1
+                /* don't draw */
+                if ((int32_t)ser->y_points[p_act] - chart->ymin[ser->y_axis_sec]
+                    == 0) {
+                    continue;
+                }
+#endif
                 part_draw_dsc.draw_area = &col_a;
                 part_draw_dsc.rect_dsc = &col_dsc;
                 part_draw_dsc.sub_part_ptr = ser;
@@ -1966,7 +2010,8 @@ static void draw_x_ticks(lv_obj_t* obj, const lv_area_t* clip_area,
         int32_t tick_value;
         if (chart->type == LVX_CHART_TYPE_SCATTER
 #if LVX_CHART_EXTENTIONS == 1
-            || chart->type == LVX_CHART_TYPE_POINT_BAR
+            /* Use the best value to determine the value of tick */
+            || 1
 #endif
         ) {
             tick_value = lv_map(i, 0, total_tick_num, chart->xmin[sec_axis],
@@ -2002,6 +2047,17 @@ static void draw_x_ticks(lv_obj_t* obj, const lv_area_t* clip_area,
                 a.y2 = a.y1 + size.y;
             }
 
+#if LVX_CHART_EXTENTIONS == 1
+            if (a.x1 < obj->coords.x1) {
+                a.x2 += obj->coords.x1 - a.x1;
+                a.x1 = obj->coords.x1;
+            }
+
+            if (a.x2 > obj->coords.x2) {
+                a.x1 -= a.x2 - obj->coords.x2;
+                a.x2 = obj->coords.x2;
+            }
+#endif
             if (a.x2 >= obj->coords.x1 && a.x1 <= obj->coords.x2) {
                 lv_draw_label(&a, clip_area, &label_dsc, part_draw_dsc.text,
                               NULL);
@@ -2226,7 +2282,7 @@ static void draw_line_chart_event_cb(lv_event_t* e)
             return;
 
         /*Add  a line mask that keeps the area below the line*/
-        lv_coord_t top = lv_obj_get_style_pad_top(obj, 0);
+        // lv_coord_t top = lv_obj_get_style_pad_top(obj, 0);
         lv_coord_t bottom = lv_obj_get_style_pad_bottom(obj, 0);
 
         lv_draw_mask_line_param_t line_mask_param;
@@ -2236,11 +2292,11 @@ static void draw_line_chart_event_cb(lv_event_t* e)
         int16_t line_mask_id = lv_draw_mask_add(&line_mask_param, NULL);
 
         /*Add a fade effect: transparent bottom covering top*/
-        lv_coord_t h = lv_obj_get_height(obj) - top - bottom;
+        // lv_coord_t h = lv_obj_get_height(obj) - top - bottom;
         lv_draw_mask_fade_param_t fade_mask_param;
         lv_draw_mask_fade_init(&fade_mask_param, &obj->coords, LV_OPA_COVER,
-                               obj->coords.y1 + h / 8, LV_OPA_TRANSP,
-                               obj->coords.y2);
+                               //    obj->coords.y1 + h / 8, LV_OPA_TRANSP,
+                               obj->coords.y1, LV_OPA_TRANSP, obj->coords.y2);
         int16_t fade_mask_id = lv_draw_mask_add(&fade_mask_param, NULL);
 
         /*Draw a rectangle that will be affected by the mask*/
@@ -2261,6 +2317,163 @@ static void draw_line_chart_event_cb(lv_event_t* e)
         /*Remove the masks*/
         lv_draw_mask_remove_id(line_mask_id);
         lv_draw_mask_remove_id(fade_mask_id);
+    }
+}
+
+static void draw_avg_line(lv_obj_t* obj, const lv_area_t* clip_area)
+{
+    /* Draw the average label in the expansion area, so you need to judge the
+     * size of the expansion area */
+    lv_coord_t ext_draw_size = _lv_obj_get_ext_draw_size(obj);
+    lv_area_t com_area;
+    if (_lv_area_intersect(&com_area, &obj->coords, clip_area) == false
+        && ext_draw_size == 0)
+        return;
+
+    /* Average value line description */
+    lv_draw_line_dsc_t avg_line_dsc;
+    lv_draw_line_dsc_init(&avg_line_dsc);
+    lv_obj_init_draw_line_dsc(obj, LVX_PART_AVG_LINE, &avg_line_dsc);
+    if (avg_line_dsc.opa < LV_OPA_MIN || avg_line_dsc.width <= 0) {
+        return;
+    }
+
+    /* Average value label description */
+    lv_draw_label_dsc_t avg_label_dsc;
+    lv_draw_label_dsc_init(&avg_label_dsc);
+    lv_obj_init_draw_label_dsc(obj, LVX_PART_AVG_LINE, &avg_label_dsc);
+
+    lvx_chart_t* chart = (lvx_chart_t*)obj;
+    lv_point_t p1;
+    lv_point_t p2;
+    lv_coord_t border_width = lv_obj_get_style_border_width(obj, LV_PART_MAIN);
+    lv_coord_t pad_left = lv_obj_get_style_pad_left(obj, LV_PART_MAIN);
+    lv_coord_t pad_top = lv_obj_get_style_pad_top(obj, LV_PART_MAIN);
+    lv_coord_t w
+        = ((int32_t)lv_obj_get_content_width(obj) * chart->zoom_x) >> 8;
+    lv_coord_t h
+        = ((int32_t)lv_obj_get_content_height(obj) * chart->zoom_y) >> 8;
+    lv_coord_t x_ofs = obj->coords.x1 + pad_left + border_width
+        - lv_obj_get_scroll_left(obj);
+    lv_coord_t y_ofs
+        = obj->coords.y1 + pad_top + border_width - lv_obj_get_scroll_top(obj);
+
+    lv_coord_t point_w = lv_obj_get_style_width(obj, LV_PART_INDICATOR) / 2;
+    lv_coord_t point_h = lv_obj_get_style_height(obj, LV_PART_INDICATOR) / 2;
+
+    /* The edge of the point in the middle of the line */
+    lv_draw_line_dsc_t line_dsc;
+    lv_draw_line_dsc_init(&line_dsc);
+    lv_obj_init_draw_line_dsc(obj, LV_PART_MAIN, &line_dsc);
+    if (line_dsc.width > 0 && line_dsc.opa > LV_OPA_MIN) {
+        if (chart->vdiv_cnt) {
+            x_ofs += point_w;
+            w -= (line_dsc.width + point_w * 2);
+        }
+        if (chart->hdiv_cnt) {
+            y_ofs += point_h;
+            h -= (line_dsc.width + point_w * 2);
+        }
+    }
+
+    lv_obj_draw_part_dsc_t part_draw_dsc;
+    lv_obj_draw_dsc_init(&part_draw_dsc, clip_area);
+
+    lvx_chart_series_t* ser;
+    int32_t sum = 0;
+    int32_t avg = 0;
+    uint32_t valid_point_cnt = 0;
+
+    /*Go through all data lines*/
+    _LV_LL_READ_BACK(&chart->series_ll, ser)
+    {
+        if (ser->hidden)
+            continue;
+
+        for (lv_coord_t i = 0; i < chart->point_cnt; i++) {
+            if (ser->y_points[i] != LVX_CHART_POINT_NONE) {
+                sum += ser->y_points[i];
+                valid_point_cnt++;
+            }
+        }
+
+        if (valid_point_cnt == 0)
+            continue;
+        avg = sum / valid_point_cnt;
+
+        p1.x = x_ofs;
+        p2.x = p1.x + w;
+        p1.y = lv_map(avg, chart->ymin[ser->y_axis_sec],
+                      chart->ymax[ser->y_axis_sec], 0, h);
+
+        p1.y = h - p1.y;
+        p1.y += y_ofs;
+        p2.y = p1.y;
+
+        part_draw_dsc.part = LVX_PART_AVG_LINE;
+        part_draw_dsc.class_p = MY_CLASS;
+        part_draw_dsc.type = LVX_CHART_DRAW_PART_LINE_AND_POINT;
+        part_draw_dsc.line_dsc = &avg_line_dsc;
+        part_draw_dsc.rect_dsc = NULL;
+        part_draw_dsc.label_dsc = &avg_label_dsc;
+        part_draw_dsc.sub_part_ptr = ser;
+
+        part_draw_dsc.id = 0;
+        part_draw_dsc.draw_area = &com_area;
+        part_draw_dsc.value = avg;
+
+        /* avg label */
+        lv_area_t a = { 0 };
+
+        lvx_chart_axis_t axis = ser->y_axis_sec == 0
+            ? LVX_CHART_AXIS_PRIMARY_Y
+            : LVX_CHART_AXIS_SECONDARY_Y;
+        lvx_chart_tick_dsc_t* tick = get_tick_gsc(obj, axis);
+        lv_coord_t major_len = 0;
+        if (tick) {
+            major_len = tick->major_len;
+        }
+
+        char buf[16];
+        lv_snprintf(buf, sizeof(buf), "%d", avg);
+        lv_point_t size;
+        lv_txt_get_size(&size, buf, avg_label_dsc.font,
+                        avg_label_dsc.letter_space, avg_label_dsc.line_space,
+                        LV_COORD_MAX, LV_TEXT_FLAG_NONE);
+        if (ser->y_axis_sec == 0) {
+            a.x1 = obj->coords.x1;
+            a.x1 -= lv_obj_get_style_pad_right(obj, LV_PART_TICKS);
+            a.x1 -= 1;
+            a.x1 -= major_len;
+            a.x1 -= size.x;
+
+            /* Adjust the position of the mean line */
+
+            p1.x -= line_dsc.width + 1 + point_w * 2;
+            p2.x += point_w * 2;
+
+        } else {
+            a.x1 = obj->coords.x2;
+            a.x1 += lv_obj_get_style_pad_left(obj, LV_PART_TICKS);
+            a.x1 += 1;
+            a.x1 += major_len;
+
+            /* Adjust the position of the mean line */
+            p1.x -= point_w + (line_dsc.width >> 1);
+            p2.x += line_dsc.width + 1 + point_w * 2;
+        }
+
+        a.x2 = a.x1 + size.x;
+        a.y1 = p2.y - size.y / 2;
+        a.y2 = p2.y + size.y / 2;
+
+        part_draw_dsc.p1 = &p1;
+        part_draw_dsc.p2 = &p2;
+
+        lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_draw_dsc);
+        lv_draw_line(&p1, &p2, &com_area, &avg_line_dsc);
+        lv_draw_label(&a, clip_area, &avg_label_dsc, buf, NULL);
+        lv_event_send(obj, LV_EVENT_DRAW_PART_END, &part_draw_dsc);
     }
 }
 
