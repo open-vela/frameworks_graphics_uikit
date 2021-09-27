@@ -221,7 +221,7 @@ static lv_obj_t* lvx_msgbox_btn_create(lv_obj_t* parent, msgbox_btn_t* btn)
         break;
     }
     if (btn->cb) {
-        lv_obj_add_event_cb(obj, btn->cb, LV_EVENT_ALL, NULL);
+        lv_obj_add_event_cb(obj, btn->cb, LV_EVENT_CLICKED, NULL);
     }
     return obj;
 }
