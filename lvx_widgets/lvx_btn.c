@@ -19,7 +19,7 @@
  **********************/
 static void lvx_btn_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj);
 static void lvx_btn_event(const lv_obj_class_t * class_p, lv_event_t * e);
-static inline lv_obj_t* lvx_btn_get_label(lv_obj_t* obj);
+static lv_obj_t* lvx_btn_get_label(lv_obj_t* obj);
 
 /**********************
  *  STATIC VARIABLES
@@ -33,6 +33,9 @@ const lv_obj_class_t lvx_btn_class = {
     .instance_size = sizeof(lvx_btn_t),
 };
 
+const lv_obj_class_t lvx_btn_label_class = {
+    .base_class = &lv_label_class,
+};
 
 /**********************
  *      MACROS
@@ -114,6 +117,10 @@ void lvx_btn_set_text_fmt(lv_obj_t* obj, const char* fmt, ...)
     return ;
 }
 
+/*=====================
+ * Getter functions
+ *====================*/
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
@@ -121,7 +128,6 @@ void lvx_btn_set_text_fmt(lv_obj_t* obj, const char* fmt, ...)
 static void lvx_btn_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 {
     LV_UNUSED(class_p);
-
 }
 
 static void lvx_btn_event(const lv_obj_class_t * class_p, lv_event_t * e)
@@ -140,17 +146,16 @@ static void lvx_btn_event(const lv_obj_class_t * class_p, lv_event_t * e)
         lv_obj_add_state(label, lv_obj_get_state(obj));
 }
 
-static inline lv_obj_t* lvx_btn_get_label(lv_obj_t* obj)
+static lv_obj_t* lvx_btn_get_label(lv_obj_t* obj)
 {
     lv_obj_t* label = lv_obj_get_child(obj, 0);
     if (!label) {
-        label = lv_label_create(obj);
+        label = lv_obj_class_create_obj(&lvx_btn_label_class, obj);
+        lv_obj_class_init_obj(label);
         lv_obj_center(label);
-        lv_obj_set_style_text_opa(label, WIDGET_BG_OPA_PRESSED, LV_STATE_PRESSED);
-        lv_obj_set_style_text_opa(label, WIDGET_BG_OPA_DISABLE, LV_STATE_DISABLED);
     }
-
     return label;
 }
+
 
 #endif

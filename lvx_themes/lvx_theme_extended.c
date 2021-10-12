@@ -38,6 +38,9 @@ typedef struct {
     lv_style_t btn;
     lv_style_t btn_pressed;
     lv_style_t btn_disable;
+    lv_style_t btn_text;
+    lv_style_t btn_text_pressed;
+    lv_style_t btn_text_disable;
 #endif
 
 #if LVX_USE_RADIO
@@ -120,10 +123,17 @@ static inline void lvx_btn_styles_init(void)
     style_init_reset(&styles->btn_disable);
     lv_style_set_bg_color(&styles->btn_disable,
                           WIDGET_BG_COLOR_DISABLE(BTN_BG_COLOR_DEFAULT));
-    // lv_style_set_bg_img_recolor(&styles->btn_disable,
-    // lv_color_hex(0xFF0000));
-    // lv_style_set_bg_img_recolor_opa(&styles->btn_disable, LV_OPA_40);
     lv_style_set_bg_img_opa(&styles->btn_disable, LV_OPA_40);
+
+    style_init_reset(&styles->btn_text);
+    lv_style_set_text_color(&styles->btn_text, SYSTEM_COLOR_WHITE);
+    lv_style_set_text_opa(&styles->btn_text, WIDGET_BG_OPA_NORMOL);
+
+    style_init_reset(&styles->btn_text_pressed);
+    lv_style_set_text_opa(&styles->btn_text_pressed, WIDGET_BG_OPA_PRESSED);
+
+    style_init_reset(&styles->btn_text_disable);
+    lv_style_set_text_opa(&styles->btn_text_disable, WIDGET_BG_OPA_DISABLE);
 }
 
 static inline void lvx_btn_styles_apply(lv_obj_t* obj)
@@ -133,6 +143,13 @@ static inline void lvx_btn_styles_apply(lv_obj_t* obj)
                      LV_STATE_DEFAULT | LV_STATE_PRESSED);
     lv_obj_add_style(obj, &styles->btn_disable,
                      LV_STATE_DEFAULT | LV_STATE_DISABLED);
+}
+
+static inline void lvx_btn_label_styles_apply(lv_obj_t* obj)
+{
+    lv_obj_add_style(obj, &styles->btn_text, LV_STATE_DEFAULT);
+    lv_obj_add_style(obj, &styles->btn_text_pressed, LV_STATE_PRESSED);
+    lv_obj_add_style(obj, &styles->btn_text_disable, LV_STATE_DISABLED);
 }
 #endif
 
@@ -490,6 +507,9 @@ static void theme_apply(lv_theme_t* th, lv_obj_t* obj)
 #if LVX_USE_BTN
     else if (lv_obj_check_type(obj, &lvx_btn_class)) {
         lvx_btn_styles_apply(obj);
+        return;
+    } else if (lv_obj_check_type(obj, &lvx_btn_label_class)) {
+        lvx_btn_label_styles_apply(obj);
         return;
     }
 #endif
