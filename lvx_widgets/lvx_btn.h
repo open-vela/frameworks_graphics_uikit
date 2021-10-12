@@ -24,6 +24,7 @@ typedef struct {
 }lvx_btn_t;
 
 extern const lv_obj_class_t lvx_btn_class;
+extern const lv_obj_class_t lvx_btn_label_class;
 
 /**********************
  * GLOBAL PROTOTYPES
