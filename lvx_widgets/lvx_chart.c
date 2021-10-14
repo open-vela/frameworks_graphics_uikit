@@ -183,6 +183,90 @@ void lvx_chart_set_range(lv_obj_t* obj, lvx_chart_axis_t axis, lv_coord_t min,
     lvx_chart_refresh(obj);
 }
 
+lv_coord_t lvx_chart_get_x_max(lv_obj_t* obj, lvx_chart_axis_t axis)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+    lvx_chart_t* chart = (lvx_chart_t*)obj;
+    lv_coord_t value = 0;
+
+    switch (axis) {
+    case LVX_CHART_AXIS_PRIMARY_Y:
+        value = chart->xmax[0];
+        break;
+    case LVX_CHART_AXIS_SECONDARY_Y:
+        value = chart->xmax[1];
+        break;
+    default:
+        LV_LOG_WARN("Invalid axis: %d", axis);
+        return value;
+    }
+
+    return value;
+}
+
+lv_coord_t lvx_chart_get_x_min(lv_obj_t* obj, lvx_chart_axis_t axis)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+    lvx_chart_t* chart = (lvx_chart_t*)obj;
+    lv_coord_t value = 0;
+
+    switch (axis) {
+    case LVX_CHART_AXIS_PRIMARY_Y:
+        value = chart->xmin[0];
+        break;
+    case LVX_CHART_AXIS_SECONDARY_Y:
+        value = chart->xmin[1];
+        break;
+    default:
+        LV_LOG_WARN("Invalid axis: %d", axis);
+        return value;
+    }
+
+    return value;
+}
+
+lv_coord_t lvx_chart_get_y_max(lv_obj_t* obj, lvx_chart_axis_t axis)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+    lvx_chart_t* chart = (lvx_chart_t*)obj;
+    lv_coord_t value = 0;
+
+    switch (axis) {
+    case LVX_CHART_AXIS_PRIMARY_Y:
+        value = chart->ymax[0];
+        break;
+    case LVX_CHART_AXIS_SECONDARY_Y:
+        value = chart->ymax[1];
+        break;
+    default:
+        LV_LOG_WARN("Invalid axis: %d", axis);
+        return value;
+    }
+
+    return value;
+}
+
+lv_coord_t lvx_chart_get_y_min(lv_obj_t* obj, lvx_chart_axis_t axis)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+    lvx_chart_t* chart = (lvx_chart_t*)obj;
+    lv_coord_t value = 0;
+
+    switch (axis) {
+    case LVX_CHART_AXIS_PRIMARY_Y:
+        value = chart->ymin[0];
+        break;
+    case LVX_CHART_AXIS_SECONDARY_Y:
+        value = chart->ymin[1];
+        break;
+    default:
+        LV_LOG_WARN("Invalid axis: %d", axis);
+        return value;
+    }
+
+    return value;
+}
+
 void lvx_chart_set_update_mode(lv_obj_t* obj,
                                lvx_chart_update_mode_t update_mode)
 {
@@ -434,6 +518,7 @@ lvx_chart_series_t* lvx_chart_add_series(lv_obj_t* obj, lv_color_t color,
     }
 
     ser->start_point = 0;
+    ser->x_ext_buf_assigned = false;
     ser->y_ext_buf_assigned = false;
     ser->hidden = 0;
     ser->x_axis_sec = axis & LVX_CHART_AXIS_SECONDARY_X ? 1 : 0;
