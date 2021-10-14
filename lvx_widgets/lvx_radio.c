@@ -162,7 +162,9 @@ static void lvx_radio_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 static void lvx_radio_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 {
     lvx_radio_t* radio = (lvx_radio_t*)obj;
-    lvx_radio_group_remove_radio(radio->group, obj);
+    if (radio->group != NULL) {
+        lvx_radio_group_remove_radio(radio->group, obj);
+    }
     radio->group = NULL;
 }
 
