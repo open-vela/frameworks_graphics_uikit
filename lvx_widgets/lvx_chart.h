@@ -186,9 +186,38 @@ void lvx_chart_set_point_count(lv_obj_t* obj, uint16_t cnt);
  */
 void lvx_chart_set_range(lv_obj_t* obj, lvx_chart_axis_t axis, lv_coord_t min,
                          lv_coord_t max);
+/**
+ * Get the maximal y values on an axis
+ * @param obj       pointer to a chart object
+ * @param axis      `LVX_CHART_AXIS_PRIMARY_Y` or `LVX_CHART_AXIS_SECONDARY_Y`
+
+ */
+lv_coord_t lvx_chart_get_y_max(lv_obj_t* obj, lvx_chart_axis_t axis);
 
 /**
- * Set update mode of the chart object. Affects
+ * Get the minimal y values on an axis
+ * @param obj       pointer to a chart object
+ * @param axis      `LVX_CHART_AXIS_PRIMARY_Y` or `LVX_CHART_AXIS_SECONDARY_Y`
+ */
+lv_coord_t lvx_chart_get_y_min(lv_obj_t* obj, lvx_chart_axis_t axis);
+
+/**
+ * Get the maximal x values on an axis
+ * @param obj       pointer to a chart object
+ * @param axis      `LVX_CHART_AXIS_PRIMARY_Y` or `LVX_CHART_AXIS_SECONDARY_Y`
+
+ */
+lv_coord_t lvx_chart_get_x_max(lv_obj_t* obj, lvx_chart_axis_t axis);
+
+/**
+ * Get the minimal x values on an axis
+ * @param obj       pointer to a chart object
+ * @param axis      `LVX_CHART_AXIS_PRIMARY_Y` or `LVX_CHART_AXIS_SECONDARY_Y`
+ */
+lv_coord_t lvx_chart_get_x_min(lv_obj_t* obj, lvx_chart_axis_t axis);
+
+/**
+ * Get update mode of the chart object. Affects
  * @param obj       pointer to a chart object
  * @param mode      the update mode
  */
