@@ -497,6 +497,10 @@ lvx_chart_series_t* lvx_chart_add_series(lv_obj_t* obj, lv_color_t color,
     if (ser == NULL)
         return NULL;
 
+#if LVX_CHART_EXTENTIONS == 1
+    lv_memset_00(ser, sizeof(lvx_chart_series_t));
+#endif
+
     lv_coord_t def = LVX_CHART_POINT_NONE;
 
     ser->color = color;
@@ -510,6 +514,11 @@ lvx_chart_series_t* lvx_chart_add_series(lv_obj_t* obj, lv_color_t color,
     ) {
         ser->x_points = lv_mem_alloc(sizeof(lv_coord_t) * chart->point_cnt);
         LV_ASSERT_MALLOC(ser->x_points);
+#if LVX_CHART_EXTENTIONS == 1
+        for (uint16_t j = 0; j < chart->point_cnt; j++) {
+            ser->x_points[j] = def;
+        }
+#endif
     }
     if (ser->y_points == NULL) {
         _lv_ll_remove(&chart->series_ll, ser);
@@ -2286,13 +2295,11 @@ static void new_points_alloc(lv_obj_t* obj, lvx_chart_series_t* ser,
 
         if (cnt >= point_cnt_old) {
             for (i = 0; i < point_cnt_old; i++) {
-                new_points[i]
-                    = (*a)[(i + ser->start_point)
-                           % point_cnt_old]; /*Copy old contents to new array*/
+                new_points[cnt - point_cnt_old + i]
+                    = (*a)[(i + ser->start_point) % point_cnt_old];
             }
-            for (i = point_cnt_old; i < cnt; i++) {
-                new_points[i] = LVX_CHART_POINT_NONE; /*Fill up the rest with
-                                                          default value*/
+            for (i = 0; i < cnt - point_cnt_old; i++) {
+                new_points[i] = LVX_CHART_POINT_NONE;
             }
         } else {
             for (i = 0; i < cnt; i++) {
