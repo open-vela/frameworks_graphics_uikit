@@ -28,6 +28,7 @@ typedef struct {
     lv_style_t scrollbar;
     lv_style_t scrollbar_scrolled;
     lv_style_t dashed_line;
+    lv_style_t text;
 
     lv_style_t no_border;
     lv_style_t pad_zero;
@@ -103,6 +104,10 @@ static bool inited;
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+static void lvx_obj_styles_apply(lv_obj_t* obj)
+{
+    lv_obj_add_style(obj, &styles->text, LV_STATE_DEFAULT);
+}
 
 #if LVX_USE_BTN
 static inline void lvx_btn_styles_init(void)
@@ -409,6 +414,10 @@ static void style_init(void)
     style_init_reset(&styles->radius_circle);
     lv_style_set_radius(&styles->radius_circle, LV_RADIUS_CIRCLE);
 
+    style_init_reset(&styles->text);
+    lv_style_set_text_color(&styles->text, SYSTEM_COLOR_WHITE);
+    lv_style_set_text_opa(&styles->text, WIDGET_BG_OPA_NORMOL);
+
     style_init_reset(&styles->scrollbar);
     lv_style_set_bg_color(&styles->scrollbar, lv_palette_main(LV_PALETTE_GREY));
     lv_style_set_radius(&styles->scrollbar, LV_RADIUS_CIRCLE);
@@ -499,6 +508,8 @@ static void theme_apply(lv_theme_t* th, lv_obj_t* obj)
     if (lv_obj_get_parent(obj) == NULL) {
         return;
     }
+
+    lvx_obj_styles_apply(obj);
 
     if (lv_obj_check_type(obj, &lv_obj_class)) {
         return;
