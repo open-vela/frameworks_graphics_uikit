@@ -116,6 +116,14 @@
 #endif
 #endif
 
+#ifndef LVX_USE_RLE
+#ifdef CONFIG_LVX_USE_RLE
+#define LVX_USE_RLE CONFIG_LVX_USE_RLE
+#else
+#define LVX_USE_RLE 0
+#endif
+#endif
+
 #endif
 
 /*==================
