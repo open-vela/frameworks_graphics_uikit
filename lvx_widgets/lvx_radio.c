@@ -117,9 +117,9 @@ lv_obj_t* lvx_radio_create(lv_obj_t* parent)
 
 void lvx_radio_set_img_src(lv_obj_t* obj, const void* src)
 {
-    lv_obj_set_style_bg_img_src(obj, src, LV_STATE_CHECKED);
-    lv_obj_set_style_bg_img_src(obj, src, LV_STATE_CHECKED | LV_STATE_PRESSED);
-    lv_obj_set_style_bg_img_src(obj, src, LV_STATE_CHECKED | LV_STATE_DISABLED);
+    lv_obj_set_style_bg_img_src(obj, src, LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_img_src(obj, src, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_img_src(obj, src, LV_STATE_DISABLED);
 }
 
 void lvx_radio_set_style_bg_color(lv_obj_t* obj, lv_color_t color)
@@ -155,7 +155,7 @@ static void lvx_radio_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
     LV_UNUSED(class_p);
 
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
-    lv_obj_add_flag(obj, LV_OBJ_FLAG_CHECKABLE);
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_CHECKABLE);
     lv_obj_add_flag(obj, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
 }
 
