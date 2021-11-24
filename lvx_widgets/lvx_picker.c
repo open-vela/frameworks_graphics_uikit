@@ -106,7 +106,6 @@ void lvx_picker_set_options(lv_obj_t* obj, const char** options_array,
 
     picker->colume_array = tmp;
     picker->colume_cnt = col_cnt;
-
 }
 
 void lvx_picker_set_column_visible_row_count(lv_obj_t* obj, uint8_t index,
@@ -114,7 +113,8 @@ void lvx_picker_set_column_visible_row_count(lv_obj_t* obj, uint8_t index,
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
     lvx_picker_t* picker = (lvx_picker_t*)obj;
-    AMCK(index >= picker->colume_cnt, LV_LOG_ERROR("index over range\n"), , return );
+    AMCK(index >= picker->colume_cnt, LV_LOG_ERROR("index over range\n"), ,
+         return );
     lv_obj_t* column = picker->colume_array[index];
     lv_roller_set_visible_row_count(column, row_cnt);
 }
@@ -307,7 +307,10 @@ static void refr_layout(lv_obj_t* obj)
 static void set_rec_default_style(lv_obj_t* rec)
 {
     static lv_style_t style;
-    if (style.sentinel != LV_STYLE_SENTINEL_VALUE) {
+    static bool init_flag = false;
+
+    if (!init_flag) {
+        init_flag = true;
         lv_style_init(&style);
         lv_style_set_bg_color(&style, lv_color_white());
         lv_style_set_bg_opa(&style, LV_OPA_0);
@@ -324,7 +327,6 @@ static void set_roller_local_style(lv_obj_t* picker)
 
     lv_obj_set_style_border_width(picker, 0, 0);
     lv_obj_set_style_border_width(picker, 0, LV_PART_SELECTED);
-
 }
 
 static void refr_obj_text_styles(lv_obj_t* obj)
