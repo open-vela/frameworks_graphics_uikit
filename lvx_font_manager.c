@@ -71,13 +71,11 @@ static bool init_flag = false;
  *   GLOBAL FUNCTIONS
  **********************/
 
-void lvx_font_init(uint16_t max_faces, uint16_t max_sizes, uint32_t max_bytes)
+void lvx_font_init(void)
 {
     if(init_flag) {
         return;
     }
-
-    lv_freetype_init(max_faces, max_sizes, max_bytes);
 
     _lv_ll_init(&font_tables.ft_ll, sizeof(font_refer_t));
     _lv_ll_init(&font_tables.name_ll, sizeof(name_refer_t));
@@ -106,7 +104,6 @@ void lvx_font_init(uint16_t max_faces, uint16_t max_sizes, uint32_t max_bytes)
 void lvx_font_deinit(void)
 {
     fts_list_clear();
-    lv_freetype_destroy();
     if(font_base_path) {
         lv_mem_free(font_base_path);
     }
@@ -131,7 +128,7 @@ void lvx_font_base_path_set(const char * path)
 
 bool lvx_font_create_core(lv_ft_info_t * newfont)
 {
-    lvx_font_init(FONT_MAX_FACES, FONT_MAX_SIZES, FONT_MAX_BYTES);
+    lvx_font_init();
 
     if(newfont == NULL || newfont->name == NULL || newfont->weight == 0) {
         return false;
@@ -257,6 +254,8 @@ static lv_ft_info_t * save_ft_to_fts(const lv_ft_info_t * newfont)
     font_refer_t * refer = NULL;
     if(font_name_combine(buff, buff_len, newfont->name)) {
         lv_ft_info_t tmp_font;
+        memset(&tmp_font, 0, sizeof(tmp_font));
+
         tmp_font.name = buff;
         tmp_font.font = NULL;
         tmp_font.style = newfont->style;
