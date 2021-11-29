@@ -92,30 +92,6 @@
 #endif
 #endif
 
-#ifndef FONT_MAX_FACES
-#ifdef CONFIG_FONT_MAX_FACES
-#define FONT_MAX_FACES CONFIG_FONT_MAX_FACES
-#else
-#define FONT_MAX_FACES 16
-#endif
-#endif
-
-#ifndef FONT_MAX_SIZES
-#ifdef CONFIG_FONT_MAX_SIZES
-#define FONT_MAX_SIZES CONFIG_FONT_MAX_SIZES
-#else
-#define FONT_MAX_SIZES 32
-#endif
-#endif
-
-#ifndef FONT_MAX_BYTES
-#ifdef CONFIG_FONT_MAX_BYTES
-#define FONT_MAX_BYTES CONFIG_FONT_MAX_BYTES
-#else
-#define FONT_MAX_BYTES 1048576
-#endif
-#endif
-
 #ifndef LVX_USE_RLE
 #ifdef CONFIG_LVX_USE_RLE
 #define LVX_USE_RLE CONFIG_LVX_USE_RLE
