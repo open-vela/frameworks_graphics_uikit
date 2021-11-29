@@ -13,12 +13,9 @@ extern "C" {
  *      INCLUDES
  *********************/
 #ifdef __NuttX__
-#include <nuttx/config.h>
-#include "lv_porting/lv_freetype_interface.h"
 #include "lv_ext_conf.h"
-#else
-#include "lv_lib_freetype/lv_freetype.h"
 #endif
+#include <lvgl/lvgl.h>
 
 #if (LVX_USE_FONT_MANAGER != 0)
 
@@ -36,12 +33,8 @@ extern "C" {
 
 /**
  * Initialize font library.
- * @param max_faces Maximum number of opened FT_Face objects managed by this cache instance. Use 0 for defaults.
- * @param max_sizes Maximum number of opened FT_Size objects managed by this cache instance. Use 0 for defaults.
- * @param max_bytes Maximum number of bytes to use for cached data nodes. Use 0 for defaults.
- *                  Note that this value does not account for managed FT_Face and FT_Size objects.
  */
-void lvx_font_init(uint16_t max_faces, uint16_t max_sizes, uint32_t max_bytes);
+void lvx_font_init(void);
 
 /**
  * destory font library and free resource.
