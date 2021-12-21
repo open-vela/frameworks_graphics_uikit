@@ -24,7 +24,9 @@
  *      DEFINES
  *********************/
 
-#define RLE_HEADER_MAGIC    0x5aa521e0
+#define RLE_HEADER_MAGIC        0x5aa521e0
+#define RLE_DECODER_OPTIMIZE_FS 1 /* load file to RAM to decode. */
+#define RLE_DECODER_PERF        0 /* output file load decoder performance */
 
 /**********************
  *      TYPEDEFS
@@ -274,7 +276,7 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
         lv_fs_close(&f);
         return LV_RES_INV;
     }
-    px_size  = (px_size + 7) >> 3;
+    px_size = (px_size + 7) >> 3;
     if (px_size != rleheader->blksize) {
         LV_LOG_WARN("Invalid rle file, blksize mismatch, expect: %d, got %d",
                     px_size, rleheader->blksize);
@@ -294,7 +296,70 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
         lv_fs_close(&f);
         return LV_RES_INV;
     }
+#if RLE_DECODER_OPTIMIZE_FS
+    uint32_t size = 0;
+    if (lv_fs_seek(&f, 0, LV_FS_SEEK_END) != 0) {
+        lv_fs_close(&f);
+        lv_mem_free(img_buf);
+        return LV_RES_INV;
+    }
 
+    lv_fs_tell(&f, &size);
+    size -= sizeof(lv_rle_file_header_t);
+
+    if (lv_fs_seek(&f, sizeof(lv_rle_file_header_t), LV_FS_SEEK_SET) != 0) {
+        lv_fs_close(&f);
+        lv_mem_free(img_buf);
+        return LV_RES_INV;
+    }
+
+    void* file_buffer = lv_mem_alloc(size);
+    if (file_buffer == NULL) {
+        lv_fs_close(&f);
+        lv_mem_free(img_buf);
+        return LV_RES_INV;
+    }
+
+#if RLE_DECODER_PERF
+    int start, read_cost, decompress_cost;
+
+    start = lv_tick_get();
+#endif
+
+    res = lv_fs_read(&f, file_buffer, size, &rd_cnt);
+    if (res != LV_RES_INV || rd_cnt != size) {
+        lv_fs_close(&f);
+        lv_mem_free(img_buf);
+        lv_mem_free(file_buffer);
+        return LV_RES_INV;
+    }
+
+    lv_fs_close(&f);
+
+#if RLE_DECODER_PERF
+    read_cost = lv_tick_elaps(start);
+    start = lv_tick_get();
+#endif
+
+    decoded_len = rle_decompress_from_mem(file_buffer, size, img_buf, buf_len,
+                                          rleheader->blksize);
+
+#if RLE_DECODER_PERF
+    decompress_cost = lv_tick_elaps(start);
+    printf("file size: %d, img size: %d, readtime: %d, decode: "
+           "%d\n",
+           size, buf_len, read_cost, decompress_cost);
+#endif
+
+    lv_mem_free(file_buffer);
+
+    if (decoded_len != buf_len) {
+        LV_LOG_WARN("rle decode failed, decoded len: %d, expected %d.",
+                    decoded_len, buf_len);
+        lv_mem_free(img_buf);
+        return LV_RES_INV;
+    }
+#else
     /**
      * Read and decompress data.
      */
@@ -308,6 +373,7 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
         lv_mem_free(img_buf);
         return LV_RES_INV;
     }
+#endif
 
     *img_data = img_buf;
     return LV_RES_OK;
