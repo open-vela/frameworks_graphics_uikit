@@ -121,13 +121,9 @@ static inline void lvx_btn_styles_init(void)
     lv_style_set_bg_img_tiled(&styles->btn, false);
 
     style_init_reset(&styles->btn_pressed);
-    lv_style_set_bg_color(&styles->btn_pressed,
-                          WIDGET_BG_COLOR_PRESSED(BTN_BG_COLOR_DEFAULT));
     lv_style_set_bg_img_opa(&styles->btn_pressed, LV_OPA_70);
 
     style_init_reset(&styles->btn_disable);
-    lv_style_set_bg_color(&styles->btn_disable,
-                          WIDGET_BG_COLOR_DISABLE(BTN_BG_COLOR_DEFAULT));
     lv_style_set_bg_img_opa(&styles->btn_disable, LV_OPA_40);
 
     style_init_reset(&styles->btn_text);
