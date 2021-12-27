@@ -186,14 +186,24 @@ static void lvx_radio_event_cb(const lv_obj_class_t* class_p, lv_event_t* e)
 
     lv_state_t state = lv_obj_get_state(obj);
     if (state != LV_STATE_DEFAULT) {
-        _LV_LL_READ(&radio->group->obj_list, new)
-        {
-            if (*new == obj) {
-                lv_obj_clear_state(*new, LV_STATE_DEFAULT);
-                lv_obj_add_state(*new, LV_STATE_CHECKED);
+        if (radio->group == NULL) {
+            if (lv_obj_has_flag(obj, LV_STATE_CHECKED)) {
+                lv_obj_clear_state(obj, LV_STATE_CHECKED);
+                lv_obj_add_state(obj, LV_STATE_DEFAULT);
             } else {
-                lv_obj_clear_state(*new, LV_STATE_CHECKED);
-                lv_obj_add_state(*new, LV_STATE_DEFAULT);
+                lv_obj_clear_state(obj, LV_STATE_DEFAULT);
+                lv_obj_add_state(obj, LV_STATE_CHECKED);
+            }
+        } else {
+            _LV_LL_READ(&radio->group->obj_list, new)
+            {
+                if (*new == obj) {
+                    lv_obj_clear_state(*new, LV_STATE_DEFAULT);
+                    lv_obj_add_state(*new, LV_STATE_CHECKED);
+                } else {
+                    lv_obj_clear_state(*new, LV_STATE_CHECKED);
+                    lv_obj_add_state(*new, LV_STATE_DEFAULT);
+                }
             }
         }
     }
