@@ -1,15 +1,6 @@
 /**
- * @file lv_rle_decoder.c
- * Decode RLE compressed original lvgl binary file. File name suffix is always
- * set to '.rle' and the file header is added with another 64bit including
- * 32bit magic number and 32bit rle information.
- *
- * Decoder support both variable and file as image source.
- *
- * The original binary data is directly decompressed to ram, and decoded by
- * lvgl built-in decoder. For true-color and true-color-with-alpha image format,
- * the decoded data is directly used by lvgl via built-in decoder without
- * additional ram cost.
+ * @file lvx_bin_decoder.c
+ * Decode bin file directly to RAM.
  */
 
 /*********************
@@ -33,7 +24,7 @@
 typedef struct {
     lv_img_decoder_dsc_t decoder_dsc;
     lv_img_dsc_t img_dsc;
-    void* file_cache;
+    const void* file_cache;
 } lvx_bin_decoder_data_t;
 
 
@@ -122,7 +113,7 @@ static lv_res_t decoder_info(struct _lv_img_decoder_t * decoder,
 static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
                                         lv_img_decoder_dsc_t * dsc,
                                         lv_img_header_t * header,
-                                        void ** img_data)
+                                        const void ** img_data)
 {
     lv_fs_res_t res;
     lv_fs_file_t f;
@@ -130,7 +121,6 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
     uint32_t px_size;
     void * img_buf;
     uint32_t buf_len;
-    uint32_t decoded_len;
     const char * fn = dsc->src;
 
 #if BIN_DECODER_PERF
@@ -139,14 +129,14 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
 
     res = lv_fs_open(&f, fn, LV_FS_MODE_RD);
     if (res != LV_FS_RES_OK) {
-        LV_LOG_WARN("RLE image decoder can't open the file");
+        LV_LOG_WARN("BIN image decoder can't open the file");
         return LV_RES_INV;
     }
 
     res = lv_fs_read(&f, header, sizeof(lv_img_header_t), &rd_cnt);
 
     if ((res != LV_FS_RES_OK) || (rd_cnt != sizeof(lv_img_header_t))) {
-        LV_LOG_WARN("RLE image decoder read header failed.");
+        LV_LOG_WARN("BIN image decoder read header failed.");
         lv_fs_close(&f);
         return LV_RES_INV;
     }
@@ -159,7 +149,7 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
     px_size  = (px_size + 7) >> 3;
     buf_len = px_size * header->w * header->h;
     if (buf_len == 0) {
-        LV_LOG_WARN("Invalid rle file, len_orig %d", rleheader->len_orig);
+        LV_LOG_WARN("Invalid bin file");
         lv_fs_close(&f);
         return LV_RES_INV;
     }
@@ -198,7 +188,7 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
 static inline lv_res_t decode_from_variable(lv_img_decoder_t * decoder,
                                         lv_img_decoder_dsc_t * dsc,
                                         lv_img_header_t * header,
-                                        void ** img_data)
+                                        void const * * img_data)
 {
     const lv_img_dsc_t * img_dsc = dsc->src;
 
@@ -212,7 +202,7 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder,
     lv_fs_res_t res;
     lv_img_header_t imgheader;
     lvx_bin_decoder_data_t * data;
-    void* img_data;
+    const void* img_data;
     bool from_file = false;
     if (dsc->src_type == LV_IMG_SRC_FILE) {
         res = decode_from_file(decoder, dsc, &imgheader, &img_data);
@@ -253,13 +243,13 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder,
 
     res = lv_img_decoder_built_in_open(decoder, &data->decoder_dsc);
     if (res != LV_RES_OK) {
-        lv_mem_free(img_data);
+        lv_mem_free((void*)img_data);
         lv_mem_free(data);
         return LV_RES_INV;
     }
 
     dsc->img_data = data->decoder_dsc.img_data;
-    decoder->user_data = data;
+    dsc->user_data = data;
     return LV_RES_OK;
 }
 
