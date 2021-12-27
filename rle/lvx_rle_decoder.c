@@ -86,6 +86,7 @@ void lvx_rle_decoder_init(void)
  *   STATIC FUNCTIONS
  **********************/
 
+#if RLE_DECODER_OPTIMIZE_FS == 0
 static int rle_decompress_from_file(lv_fs_file_t * f, uint8_t * output,
                                     uint32_t len, uint32_t blk_size)
 {
@@ -136,6 +137,7 @@ static int rle_decompress_from_file(lv_fs_file_t * f, uint8_t * output,
 
     return wr_len;
 }
+#endif
 
 static int rle_decompress_from_mem(const uint8_t* input,
                                    uint32_t input_buff_len, uint8_t* output,
@@ -485,7 +487,7 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder,
     }
 
     dsc->img_data = data->decoder_dsc.img_data;
-    decoder->user_data = data;
+    dsc->user_data = data;
     return LV_RES_OK;
 }
 
@@ -493,7 +495,7 @@ static lv_res_t decoder_read_line(lv_img_decoder_t * decoder,
                                   lv_img_decoder_dsc_t * dsc, lv_coord_t x,
                                   lv_coord_t y, lv_coord_t len, uint8_t * buf)
 {
-    lv_rle_decoder_data_t* data = decoder->user_data;
+    lv_rle_decoder_data_t* data = dsc->user_data;
     if (data == NULL)
         return LV_RES_INV;
 
