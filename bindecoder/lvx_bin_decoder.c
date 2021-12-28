@@ -257,7 +257,7 @@ static lv_res_t decoder_read_line(lv_img_decoder_t * decoder,
                                   lv_img_decoder_dsc_t * dsc, lv_coord_t x,
                                   lv_coord_t y, lv_coord_t len, uint8_t * buf)
 {
-    lvx_bin_decoder_data_t* data = decoder->user_data;
+    lvx_bin_decoder_data_t* data = dsc->user_data;
     if (data == NULL)
         return LV_RES_INV;
 
