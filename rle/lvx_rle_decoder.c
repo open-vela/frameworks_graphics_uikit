@@ -269,57 +269,47 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
 
     if ((res != LV_FS_RES_OK) || (rd_cnt != sizeof(lv_rle_file_header_t))) {
         LV_LOG_WARN("RLE image decoder read header failed.");
-        lv_fs_close(&f);
-        return LV_RES_INV;
+        goto error_file;
     }
 
     px_size = lv_img_cf_get_px_size(header->cf);
     if (px_size == 0) {
-        lv_fs_close(&f);
-        return LV_RES_INV;
+        goto error_file;
     }
     px_size = (px_size + 7) >> 3;
     if (px_size != rleheader->blksize) {
         LV_LOG_WARN("Invalid rle file, blksize mismatch, expect: %d, got %d",
                     px_size, rleheader->blksize);
-        lv_fs_close(&f);
-        return LV_RES_INV;
+        goto error_file;
     }
 
     buf_len = rleheader->len_orig;
     if (buf_len == 0) {
         LV_LOG_WARN("Invalid rle file, len_orig %d", rleheader->len_orig);
-        lv_fs_close(&f);
-        return LV_RES_INV;
+        goto error_file;
     }
 
     img_buf = lv_mem_alloc(buf_len);
     if (img_buf == NULL) {
-        lv_fs_close(&f);
-        return LV_RES_INV;
+        goto error_file;
     }
+
 #if RLE_DECODER_OPTIMIZE_FS
     uint32_t size = 0;
     if (lv_fs_seek(&f, 0, LV_FS_SEEK_END) != 0) {
-        lv_fs_close(&f);
-        lv_mem_free(img_buf);
-        return LV_RES_INV;
+        goto error_with_img_buf;
     }
 
     lv_fs_tell(&f, &size);
     size -= sizeof(lv_rle_file_header_t);
 
     if (lv_fs_seek(&f, sizeof(lv_rle_file_header_t), LV_FS_SEEK_SET) != 0) {
-        lv_fs_close(&f);
-        lv_mem_free(img_buf);
-        return LV_RES_INV;
+        goto error_with_img_buf;
     }
 
     void* file_buffer = lv_mem_alloc(size);
     if (file_buffer == NULL) {
-        lv_fs_close(&f);
-        lv_mem_free(img_buf);
-        return LV_RES_INV;
+        goto error_with_img_buf;
     }
 
 #if RLE_DECODER_PERF
@@ -330,10 +320,8 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
 
     res = lv_fs_read(&f, file_buffer, size, &rd_cnt);
     if (res != LV_RES_INV || rd_cnt != size) {
-        lv_fs_close(&f);
-        lv_mem_free(img_buf);
         lv_mem_free(file_buffer);
-        return LV_RES_INV;
+        goto error_with_img_buf;
     }
 
     lv_fs_close(&f);
@@ -379,6 +367,15 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
 
     *img_data = img_buf;
     return LV_RES_OK;
+
+#if RLE_DECODER_OPTIMIZE_FS
+error_with_img_buf:
+    lv_mem_free(img_buf);
+#endif
+
+error_file:
+    lv_fs_close(&f);
+    return LV_RES_INV;
 }
 
 static inline lv_res_t decode_from_variable(lv_img_decoder_t * decoder,
@@ -508,6 +505,8 @@ static void decoder_close(lv_img_decoder_t *decoder, lv_img_decoder_dsc_t *dsc)
     if (dsc->user_data) {
         lv_rle_decoder_data_t* decoder_data = dsc->user_data;
         lv_img_decoder_built_in_close(decoder, &decoder_data->decoder_dsc);
+        if (decoder_data->img_dsc.data)
+            lv_mem_free((void*)decoder_data->img_dsc.data);
         lv_mem_free(dsc->user_data);
         dsc->user_data = NULL;
     }
