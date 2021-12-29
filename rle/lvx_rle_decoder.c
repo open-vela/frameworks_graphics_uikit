@@ -512,7 +512,6 @@ static void decoder_close(lv_img_decoder_t *decoder, lv_img_decoder_dsc_t *dsc)
     }
 
     if (dsc->img_data) {
-        lv_mem_free((uint8_t *)dsc->img_data);
         dsc->img_data = NULL;
     }
 }
