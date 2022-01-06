@@ -166,8 +166,9 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
 
     uint32_t rd;
     res = lv_fs_read(&f, img_buf, buf_len, &rd);
+    lv_fs_close(&f);
+
     if (res != LV_FS_RES_OK || rd != buf_len) {
-        lv_fs_close(&f);
         lv_mem_free(img_buf);
         return LV_RES_INV;
     }
