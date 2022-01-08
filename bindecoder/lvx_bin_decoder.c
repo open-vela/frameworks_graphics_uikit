@@ -118,7 +118,6 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
     lv_fs_res_t res;
     lv_fs_file_t f;
     uint32_t rd_cnt;
-    uint32_t px_size;
     void * img_buf;
     uint32_t buf_len;
     const char * fn = dsc->src;
@@ -141,13 +140,19 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
         return LV_RES_INV;
     }
 
-    px_size = lv_img_cf_get_px_size(header->cf);
-    if (px_size == 0) {
+    if (lv_fs_seek(&f, 0, LV_FS_SEEK_END) != 0) {
         lv_fs_close(&f);
         return LV_RES_INV;
     }
-    px_size  = (px_size + 7) >> 3;
-    buf_len = px_size * header->w * header->h;
+
+    lv_fs_tell(&f, &buf_len);
+    buf_len -= sizeof(lv_img_header_t);
+
+    if (lv_fs_seek(&f, sizeof(lv_img_header_t), LV_FS_SEEK_SET) != 0) {
+        lv_fs_close(&f);
+        return LV_RES_INV;
+    }
+
     if (buf_len == 0) {
         LV_LOG_WARN("Invalid bin file");
         lv_fs_close(&f);
@@ -241,6 +246,7 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder,
     data->decoder_dsc.img_data = NULL;
     data->decoder_dsc.src_type = LV_IMG_SRC_VARIABLE;
     data->decoder_dsc.src = &data->img_dsc;
+    data->decoder_dsc.user_data = NULL;
 
     res = lv_img_decoder_built_in_open(decoder, &data->decoder_dsc);
     if (res != LV_RES_OK) {
