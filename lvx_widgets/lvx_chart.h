@@ -131,6 +131,8 @@ typedef struct {
     uint16_t zoom_y;
     lvx_chart_type_t type : 3; /**< Line or column chart*/
     lvx_chart_update_mode_t update_mode : 1;
+    bool has_const_value;
+    lv_coord_t const_value;
 } lvx_chart_t;
 
 extern const lv_obj_class_t lvx_chart_class;
@@ -545,6 +547,13 @@ lv_coord_t* lvx_chart_get_x_array(const lv_obj_t* obj, lvx_chart_series_t* ser);
  * LVX_CHART_POINT_ID_NONE if no point is being pressed
  */
 uint32_t lvx_chart_get_pressed_point(const lv_obj_t* obj);
+
+/**
+ * Set the const value int chart.
+ * @param obj       pointer to a chart object
+ * @param value     const value
+ */
+void lvx_chart_set_const_value(lv_obj_t* obj, lv_coord_t value);
 
 /**********************
  *      MACROS
