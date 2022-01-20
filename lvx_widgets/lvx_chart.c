@@ -45,7 +45,7 @@ static lvx_chart_tick_dsc_t* get_tick_gsc(lv_obj_t* obj, lvx_chart_axis_t axis);
 static void draw_series_point_bar(lv_obj_t* obj, const lv_area_t* clip_area);
 static int point_cmp(const void* var1, const void* var2);
 static void draw_line_chart_event_cb(lv_event_t* e);
-static void draw_avg_line(lv_obj_t* obj, const lv_area_t* clip_area);
+static void draw_avg_line(lv_obj_t* obj, const lv_area_t* clip_area, bool const_flag);
 #endif
 
 /**********************
@@ -848,6 +848,13 @@ uint32_t lvx_chart_get_pressed_point(const lv_obj_t* obj)
     return chart->pressed_point_id;
 }
 
+void lvx_chart_set_const_value(lv_obj_t* obj, lv_coord_t value)
+{
+    lvx_chart_t* chart = (lvx_chart_t*)obj;
+    chart->has_const_value = true;
+    chart->const_value = value;
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
@@ -879,6 +886,8 @@ static void lvx_chart_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
     chart->update_mode = LVX_CHART_UPDATE_MODE_SHIFT;
     chart->zoom_x = LV_IMG_ZOOM_NONE;
     chart->zoom_y = LV_IMG_ZOOM_NONE;
+    chart->has_const_value = false;
+    chart->const_value = 0;
 
     LV_TRACE_OBJ_CREATE("finished");
 }
@@ -952,7 +961,7 @@ static void lvx_chart_event(const lv_obj_class_t* class_p, lv_event_t* e)
         draw_axes(obj, clip_area);
 
 #if LVX_CHART_EXTENTIONS == 1
-        draw_avg_line(obj, clip_area);
+        draw_avg_line(obj, clip_area, chart->has_const_value);
 #endif
 
         if (_lv_ll_is_empty(&chart->series_ll) == false) {
@@ -2412,7 +2421,7 @@ static void draw_line_chart_event_cb(lv_event_t* e)
     }
 }
 
-static void draw_avg_line(lv_obj_t* obj, const lv_area_t* clip_area)
+static void draw_avg_line(lv_obj_t* obj, const lv_area_t* clip_area, bool const_flag)
 {
     /* Draw the average label in the expansion area, so you need to judge the
      * size of the expansion area */
@@ -2491,7 +2500,11 @@ static void draw_avg_line(lv_obj_t* obj, const lv_area_t* clip_area)
 
         if (valid_point_cnt == 0)
             continue;
-        avg = sum / valid_point_cnt;
+        if (const_flag == false) {
+            avg = sum / valid_point_cnt;
+        } else {
+            avg = chart->const_value;
+        }
 
         p1.x = x_ofs;
         p2.x = p1.x + w;
