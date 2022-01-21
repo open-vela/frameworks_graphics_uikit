@@ -2322,15 +2322,24 @@ static void new_points_alloc(lv_obj_t* obj, lvx_chart_series_t* ser,
         lv_mem_free((*a));
         (*a) = new_points;
     } else {
-        (*a) = lv_mem_realloc((*a), sizeof(lv_coord_t) * cnt);
-        LV_ASSERT_MALLOC((*a));
-        if ((*a) == NULL)
-            return;
-        /*Initialize the new points*/
-        if (cnt > point_cnt_old) {
-            for (i = point_cnt_old - 1; i < cnt; i++) {
-                (*a)[i] = LVX_CHART_POINT_NONE;
+        if (cnt <= point_cnt_old) {
+            (*a) = lv_mem_realloc((*a), sizeof(lv_coord_t) * cnt);
+            LV_ASSERT_MALLOC((*a));
+            if ((*a) == NULL)
+                return;
+        } else {
+            lv_coord_t* new_points = lv_mem_alloc(sizeof(lv_coord_t) * cnt);
+            LV_ASSERT_MALLOC(new_points);
+
+            for (i = 0; i < point_cnt_old; i++) {
+                new_points[cnt - point_cnt_old + i]
+                    = (*a)[(i + ser->start_point) % point_cnt_old];
             }
+            for (i = 0; i < cnt - point_cnt_old; i++) {
+                new_points[i] = LVX_CHART_POINT_NONE;
+            }
+            lv_mem_free((*a));
+            (*a) = new_points;
         }
     }
 }
