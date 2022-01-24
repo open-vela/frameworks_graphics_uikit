@@ -478,9 +478,15 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder,
 
 #ifdef CONFIG_LV_USE_GPU_INTERFACE
     res = lv_gpu_decoder_open(decoder, &data->decoder_dsc);
-    dsc->src_type = LV_IMG_SRC_VARIABLE;
-#else
+    if (res == LV_RES_OK) {
+        lv_mem_free(img_data);
+        dsc->src_type = LV_IMG_SRC_VARIABLE;
+        data->img_dsc.data = NULL;
+    } else {
+#endif
     res = lv_img_decoder_built_in_open(decoder, &data->decoder_dsc);
+#ifdef CONFIG_LV_USE_GPU_INTERFACE
+    }
 #endif
     if (res != LV_RES_OK) {
         lv_mem_free(img_data);
@@ -510,9 +516,13 @@ static void decoder_close(lv_img_decoder_t *decoder, lv_img_decoder_dsc_t *dsc)
     if (dsc->user_data) {
         lv_rle_decoder_data_t* decoder_data = dsc->user_data;
 #ifdef CONFIG_LV_USE_GPU_INTERFACE
-        lv_gpu_decoder_close(decoder, &decoder_data->decoder_dsc);
-#else
+        if (decoder_data->img_dsc.data == NULL) {
+            lv_gpu_decoder_close(decoder, &decoder_data->decoder_dsc);
+        } else {
+#endif
         lv_img_decoder_built_in_close(decoder, &decoder_data->decoder_dsc);
+#ifdef CONFIG_LV_USE_GPU_INTERFACE
+        }
 #endif
         if (decoder_data->img_dsc.data)
             lv_mem_free((void*)decoder_data->img_dsc.data);
