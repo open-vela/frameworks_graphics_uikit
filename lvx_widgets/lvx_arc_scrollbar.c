@@ -189,6 +189,7 @@ static void lvx_arc_scrollbar_event(const lv_obj_class_t* class_p,
 static void draw_scrollbar(lv_event_t* e)
 {
     lv_obj_t* obj = lv_event_get_target(e);
+    lv_draw_ctx_t* draw_ctx = lv_event_get_draw_ctx(e);
     lvx_arc_scrollbar_t* sb = (lvx_arc_scrollbar_t*)obj;
 
     /* Don't draw */
@@ -203,7 +204,7 @@ static void draw_scrollbar(lv_event_t* e)
     get_center(obj, &center, &arc_r);
 
     lv_obj_draw_part_dsc_t obj_draw_dsc;
-    lv_obj_draw_dsc_init(&obj_draw_dsc, clip_area);
+    lv_obj_draw_dsc_init(&obj_draw_dsc, draw_ctx);
 
     /*Draw the background arc*/
     lv_draw_arc_dsc_t arc_dsc;
@@ -217,8 +218,9 @@ static void draw_scrollbar(lv_event_t* e)
         obj_draw_dsc.arc_dsc = &arc_dsc;
         lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &obj_draw_dsc);
 
-        lv_draw_arc(center.x, center.y, arc_r, sb->start_angle + sb->rotation,
-                    sb->end_angle + sb->rotation, clip_area, &arc_dsc);
+        lv_draw_arc(draw_ctx, &arc_dsc, &center, arc_r,
+                    sb->start_angle + sb->rotation,
+                    sb->end_angle + sb->rotation);
 
         lv_event_send(obj, LV_EVENT_DRAW_PART_END, &obj_draw_dsc);
     }
@@ -266,9 +268,9 @@ static void draw_scrollbar(lv_event_t* e)
             }
         }
 
-        lv_draw_arc(center.x, center.y, indic_r,
+        lv_draw_arc(draw_ctx, &arc_dsc, &center, indic_r,
                     indic_start_angle + sb->rotation,
-                    indic_end_angle + sb->rotation + 1, clip_area, &arc_dsc);
+                    indic_end_angle + sb->rotation + 1);
 
         lv_event_send(obj, LV_EVENT_DRAW_PART_END, &obj_draw_dsc);
     }
