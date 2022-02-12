@@ -18,8 +18,7 @@
  *  STATIC PROTOTYPES
  **********************/
 static void lvx_btn_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj);
-static void lvx_btn_event(const lv_obj_class_t * class_p, lv_event_t * e);
-static lv_obj_t* lvx_btn_get_label(lv_obj_t* obj);
+static void lvx_btn_event(const lv_obj_class_t* class_p, lv_event_t* e);
 
 /**********************
  *  STATIC VARIABLES
@@ -54,6 +53,17 @@ lv_obj_t* lvx_btn_create(lv_obj_t* parent)
     LVX_WIDGET_CREATE(MY_CLASS, parent);
 }
 
+lv_obj_t* lvx_btn_get_label(lv_obj_t* obj)
+{
+    lv_obj_t* label = lv_obj_get_child(obj, 0);
+    if (!label) {
+        label = lv_obj_class_create_obj(&lvx_btn_label_class, obj);
+        lv_obj_class_init_obj(label);
+        lv_obj_center(label);
+    }
+    return label;
+}
+
 /*======================
  * Add/remove functions
  *=====================*/
@@ -76,8 +86,10 @@ void lvx_btn_set_img_src(lv_obj_t* obj, const void* src)
 void lvx_btn_set_style_bg_color(lv_obj_t* obj, lv_color_t color)
 {
     lv_obj_set_style_bg_color(obj, color, LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_color(obj, WIDGET_BG_COLOR_PRESSED(color), LV_STATE_PRESSED);
-    lv_obj_set_style_bg_color(obj, WIDGET_BG_COLOR_DISABLE(color), LV_STATE_DISABLED);
+    lv_obj_set_style_bg_color(obj, WIDGET_BG_COLOR_PRESSED(color),
+                              LV_STATE_PRESSED);
+    lv_obj_set_style_bg_color(obj, WIDGET_BG_COLOR_DISABLE(color),
+                              LV_STATE_DISABLED);
 }
 
 void lvx_btn_set_style_text_color(lv_obj_t* obj, lv_color_t color)
@@ -101,8 +113,8 @@ void lvx_btn_set_text_fmt(lv_obj_t* obj, const char* fmt, ...)
     lv_obj_t* label = lvx_btn_get_label(obj);
 
     /*If text is NULL then refresh*/
-    if(fmt == NULL) {
-        return ;
+    if (fmt == NULL) {
+        return;
     }
 
     va_list args;
@@ -114,7 +126,7 @@ void lvx_btn_set_text_fmt(lv_obj_t* obj, const char* fmt, ...)
 
     lv_mem_free(text);
 
-    return ;
+    return;
 }
 
 /*=====================
@@ -130,7 +142,7 @@ static void lvx_btn_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
     LV_UNUSED(class_p);
 }
 
-static void lvx_btn_event(const lv_obj_class_t * class_p, lv_event_t * e)
+static void lvx_btn_event(const lv_obj_class_t* class_p, lv_event_t* e)
 {
     lv_res_t res;
 
@@ -139,23 +151,11 @@ static void lvx_btn_event(const lv_obj_class_t * class_p, lv_event_t * e)
     if (res != LV_RES_OK)
         return;
 
-    lv_obj_t * obj = lv_event_get_current_target(e);
+    lv_obj_t* obj = lv_event_get_current_target(e);
     lv_obj_t* label = lv_obj_get_child(obj, 0);
     /** change state of label to state of btn */
     if (label)
         lv_obj_add_state(label, lv_obj_get_state(obj));
 }
-
-static lv_obj_t* lvx_btn_get_label(lv_obj_t* obj)
-{
-    lv_obj_t* label = lv_obj_get_child(obj, 0);
-    if (!label) {
-        label = lv_obj_class_create_obj(&lvx_btn_label_class, obj);
-        lv_obj_class_init_obj(label);
-        lv_obj_center(label);
-    }
-    return label;
-}
-
 
 #endif

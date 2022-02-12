@@ -37,6 +37,7 @@ void lvx_btn_set_text_fmt(lv_obj_t* obj, const char* fmt, ...);
 void lvx_btn_set_style_bg_color(lv_obj_t* obj, lv_color_t color);
 void lvx_btn_set_style_text_color(lv_obj_t* obj, lv_color_t color);
 void lvx_btn_set_style_text_font(lv_obj_t* obj, const lv_font_t* font);
+lv_obj_t* lvx_btn_get_label(lv_obj_t* obj);
 
 /**********************
  *      MACROS
