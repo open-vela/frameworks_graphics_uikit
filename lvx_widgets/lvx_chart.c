@@ -2397,8 +2397,7 @@ static void draw_line_chart_event_cb(lv_event_t* e)
     if (dsc && dsc->part == LV_PART_ITEMS) {
         if (!dsc->p1 || !dsc->p2)
             return;
-        lv_draw_ctx_t* draw_ctx = lv_event_get_draw_ctx(e);
-
+        lv_draw_ctx_t* draw_ctx = dsc->draw_ctx;
         /*Add  a line mask that keeps the area below the line*/
         // lv_coord_t top = lv_obj_get_style_pad_top(obj, 0);
         lv_coord_t bottom = lv_obj_get_style_pad_bottom(obj, 0);
