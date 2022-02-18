@@ -177,9 +177,15 @@ static int rle_decompress_from_mem(const uint8_t* input,
             if (wr_len > output_buff_len)
                 return 0;
 
-            for (int i = 0; i < ctrl_byte; i++) {
-                memcpy(output, input, blk_size);
-                output += blk_size;
+            if (blk_size == 1) {
+                /* optimize the most common case. */
+                memset(output, input[0], ctrl_byte);
+                output += ctrl_byte;
+            } else {
+                for (int i = 0; i < ctrl_byte; i++) {
+                    memcpy(output, input, blk_size);
+                    output += blk_size;
+                }
             }
             input += blk_size;
         }
@@ -477,6 +483,8 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder,
     data->decoder_dsc.src = &data->img_dsc;
 
 #ifdef CONFIG_LV_USE_GPU_INTERFACE
+    lv_res_t lv_gpu_decoder_open(lv_img_decoder_t* decoder, lv_img_decoder_dsc_t* dsc);
+
     res = lv_gpu_decoder_open(decoder, &data->decoder_dsc);
     if (res == LV_RES_OK) {
         lv_mem_free(img_data);
@@ -516,6 +524,9 @@ static void decoder_close(lv_img_decoder_t *decoder, lv_img_decoder_dsc_t *dsc)
     if (dsc->user_data) {
         lv_rle_decoder_data_t* decoder_data = dsc->user_data;
 #ifdef CONFIG_LV_USE_GPU_INTERFACE
+        void lv_gpu_decoder_close(lv_img_decoder_t* decoder,
+                                  lv_img_decoder_dsc_t* dsc);
+
         if (decoder_data->img_dsc.data == NULL) {
             lv_gpu_decoder_close(decoder, &decoder_data->decoder_dsc);
         } else {
