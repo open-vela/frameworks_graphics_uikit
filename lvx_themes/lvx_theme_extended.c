@@ -515,18 +515,18 @@ static void theme_apply(lv_theme_t* th, lv_obj_t* obj)
         return;
     }
 
-#if LVX_USE_BTN
-    else if (lv_obj_check_type(obj, &lvx_btn_class)) {
-        lvx_btn_styles_apply(obj);
-        return;
-    } else if (lv_obj_check_type(obj, &lvx_btn_label_class)) {
-        lvx_btn_label_styles_apply(obj);
-        return;
-    }
-#endif
 #if LVX_USE_RADIO
     else if (lv_obj_check_type(obj, &lvx_radio_class)) {
         lvx_radio_styles_apply(obj);
+        return;
+    }
+#endif
+#if LVX_USE_BTN
+    else if (lv_obj_has_class(obj, &lvx_btn_class)) {
+        lvx_btn_styles_apply(obj);
+        return;
+    } else if (lv_obj_has_class(obj, &lvx_btn_label_class)) {
+        lvx_btn_label_styles_apply(obj);
         return;
     }
 #endif
