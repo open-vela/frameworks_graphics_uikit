@@ -40,6 +40,7 @@ enum {
     LVX_CHART_TYPE_BAR, /**< Draw columns*/
     LVX_CHART_TYPE_SCATTER, /**< Draw points and lines in 2D (x,y
                                 coordinates)*/
+    LVX_CHART_TYPE_STEP_LINE,   /** step line chart */
 #if LVX_CHART_EXTENTIONS == 1
     LVX_CHART_TYPE_POINT_BAR, /**< Draw points. If the x coordinates of the two
                                   points are equal, and the absolute value of
