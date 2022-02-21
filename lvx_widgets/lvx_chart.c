@@ -86,6 +86,7 @@ void lvx_chart_set_type(lv_obj_t* obj, lvx_chart_type_t type)
         return;
 
     if (chart->type == LVX_CHART_TYPE_SCATTER
+        || chart->type == LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
         || chart->type == LVX_CHART_TYPE_POINT_BAR
 #endif
@@ -134,6 +135,7 @@ void lvx_chart_set_point_count(lv_obj_t* obj, uint16_t cnt)
     _LV_LL_READ_BACK(&chart->series_ll, ser)
     {
         if (chart->type == LVX_CHART_TYPE_SCATTER
+            || chart->type == LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
             || chart->type == LVX_CHART_TYPE_POINT_BAR
 #endif
@@ -366,7 +368,8 @@ void lvx_chart_set_draw_mask_below_line(lv_obj_t* obj, bool en)
     LV_ASSERT_OBJ(obj, MY_CLASS);
 
     lvx_chart_t* chart = (lvx_chart_t*)obj;
-    if (chart->type != LVX_CHART_TYPE_LINE) {
+    if (chart->type != LVX_CHART_TYPE_LINE
+        && chart->type != LVX_CHART_TYPE_STEP_LINE) {
         LV_LOG_WARN("Type must be LVX_CHART_TYPE_LINE");
         return;
     }
@@ -426,6 +429,7 @@ void lvx_chart_get_point_pos_by_id(lv_obj_t* obj, lvx_chart_series_t* ser,
     if (chart->type == LVX_CHART_TYPE_LINE) {
         p_out->x = (w * id) / (chart->point_cnt - 1);
     } else if (chart->type == LVX_CHART_TYPE_SCATTER
+               || chart->type == LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
                || chart->type == LVX_CHART_TYPE_POINT_BAR
 #endif
@@ -509,6 +513,7 @@ lvx_chart_series_t* lvx_chart_add_series(lv_obj_t* obj, lv_color_t color,
     LV_ASSERT_MALLOC(ser->y_points);
 
     if (chart->type == LVX_CHART_TYPE_SCATTER
+        || chart->type == LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
         || chart->type == LVX_CHART_TYPE_POINT_BAR
 #endif
@@ -747,6 +752,7 @@ void lvx_chart_set_next_value2(lv_obj_t* obj, lvx_chart_series_t* ser,
     lvx_chart_t* chart = (lvx_chart_t*)obj;
 
     if (chart->type != LVX_CHART_TYPE_SCATTER
+        && chart->type != LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
         && chart->type != LVX_CHART_TYPE_POINT_BAR
 #endif
@@ -786,6 +792,7 @@ void lvx_chart_set_value_by_id2(lv_obj_t* obj, lvx_chart_series_t* ser,
     lvx_chart_t* chart = (lvx_chart_t*)obj;
 
     if (chart->type != LVX_CHART_TYPE_SCATTER
+        && chart->type != LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
         && chart->type != LVX_CHART_TYPE_POINT_BAR
 #endif
@@ -967,16 +974,25 @@ static void lvx_chart_event(const lv_obj_class_t* class_p, lv_event_t* e)
 #endif
 
         if (_lv_ll_is_empty(&chart->series_ll) == false) {
-            if (chart->type == LVX_CHART_TYPE_LINE)
+            switch (chart->type) {
+            case LVX_CHART_TYPE_LINE:
+            case LVX_CHART_TYPE_STEP_LINE:
                 draw_series_line(obj, draw_ctx);
-            else if (chart->type == LVX_CHART_TYPE_BAR)
+                break;
+            case LVX_CHART_TYPE_BAR:
                 draw_series_bar(obj, draw_ctx);
-            else if (chart->type == LVX_CHART_TYPE_SCATTER)
+                break;
+            case LVX_CHART_TYPE_SCATTER:
                 draw_series_scatter(obj, draw_ctx);
+                break;
 #if LVX_CHART_EXTENTIONS == 1
-            else if (chart->type == LVX_CHART_TYPE_POINT_BAR)
+            case LVX_CHART_TYPE_POINT_BAR:
                 draw_series_point_bar(obj, draw_ctx);
+                break;
 #endif
+            default:
+                break;
+            }
         }
 
         draw_cursors(obj, draw_ctx);
@@ -1171,17 +1187,22 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
             ? ser->start_point
             : 0;
 
-        p1.x = x_ofs;
-        p2.x = x_ofs;
+        p1.x = 0;
+        p2.x = 0;
 
         lv_coord_t p_act = start_point;
         lv_coord_t p_prev = start_point;
-        int32_t y_tmp = (int32_t)((int32_t)ser->y_points[p_prev]
-                                  - chart->ymin[ser->y_axis_sec])
-            * h;
-        y_tmp = y_tmp
-            / (chart->ymax[ser->y_axis_sec] - chart->ymin[ser->y_axis_sec]);
-        p2.y = h - y_tmp + y_ofs;
+
+        if (chart->type == LVX_CHART_TYPE_STEP_LINE) {
+            p2.x = lv_map(ser->x_points[p_act], chart->xmin[ser->x_axis_sec],
+                          chart->xmax[ser->x_axis_sec], 0, w);
+        }
+        p2.x += x_ofs;
+
+        /** the y coordinate direction is from top to bottom */
+        p2.y = lv_map(ser->y_points[p_act], chart->ymin[ser->y_axis_sec],
+                      chart->ymax[ser->y_axis_sec], h, 0);
+        p2.y += y_ofs;
 
         lv_obj_draw_part_dsc_t part_draw_dsc;
         lv_obj_draw_dsc_init(&part_draw_dsc, draw_ctx);
@@ -1201,16 +1222,21 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
 
             if (p1.x > clip_area_ori->x2 + point_w + 1)
                 break;
-            p2.x = ((w * i) / (chart->point_cnt - 1)) + x_ofs;
 
             p_act = (start_point + i) % chart->point_cnt;
 
-            y_tmp = (int32_t)((int32_t)ser->y_points[p_act]
-                              - chart->ymin[ser->y_axis_sec])
-                * h;
-            y_tmp = y_tmp
-                / (chart->ymax[ser->y_axis_sec] - chart->ymin[ser->y_axis_sec]);
-            p2.y = h - y_tmp + y_ofs;
+            if (chart->type == LVX_CHART_TYPE_STEP_LINE) {
+                p2.x
+                    = lv_map(ser->x_points[p_act], chart->xmin[ser->x_axis_sec],
+                             chart->xmax[ser->x_axis_sec], 0, w);
+            } else {
+                p2.x = lv_map(i, 0, chart->point_cnt - 1, 0, w);
+            }
+            p2.x += x_ofs;
+
+            p2.y = lv_map(ser->y_points[p_act], chart->ymin[ser->y_axis_sec],
+                          chart->ymax[ser->y_axis_sec], h, 0);
+            p2.y += y_ofs;
 
             if (p2.x < clip_area_ori->x1 - point_w - 1) {
                 p_prev = p_act;
@@ -1370,8 +1396,7 @@ static void draw_series_scatter(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
             p2.x += x_ofs;
 
             p2.y = lv_map(ser->y_points[p_act], chart->ymin[ser->y_axis_sec],
-                          chart->ymax[ser->y_axis_sec], 0, h);
-            p2.y = h - p2.y;
+                          chart->ymax[ser->y_axis_sec], h, 0);
             p2.y += y_ofs;
         } else {
             p2.x = LV_COORD_MIN;
@@ -1395,8 +1420,7 @@ static void draw_series_scatter(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
             if (ser->y_points[p_act] != LVX_CHART_POINT_NONE) {
                 p2.y
                     = lv_map(ser->y_points[p_act], chart->ymin[ser->y_axis_sec],
-                             chart->ymax[ser->y_axis_sec], 0, h);
-                p2.y = h - p2.y;
+                             chart->ymax[ser->y_axis_sec], h, 0);
                 p2.y += y_ofs;
 
                 p2.x
@@ -1607,8 +1631,7 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                           chart->xmax[ser->x_axis_sec], 0, w);
             p2.x += x_ofs;
             p2.y = lv_map(points[i + 1].y, chart->ymin[ser->y_axis_sec],
-                          chart->ymax[ser->y_axis_sec], 0, h);
-            p2.y = h - p2.y;
+                          chart->ymax[ser->y_axis_sec], h, 0);
             p2.y += y_ofs;
 
             if ((points[i].x == points[i + 1].x)
@@ -2119,6 +2142,7 @@ static void draw_x_ticks(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx,
         /*add text only to major tick*/
         int32_t tick_value;
         if (chart->type == LVX_CHART_TYPE_SCATTER
+            || chart->type == LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
             /* Use the best value to determine the value of tick */
             || 1
@@ -2283,6 +2307,7 @@ static void invalidate_point(lv_obj_t* obj, uint16_t i)
 
         lv_obj_invalidate_area(obj, &col_a);
     } else if (chart->type == LVX_CHART_TYPE_SCATTER
+               || chart->type == LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
                || chart->type == LVX_CHART_TYPE_POINT_BAR
 #endif
