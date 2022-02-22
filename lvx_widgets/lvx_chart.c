@@ -7,8 +7,10 @@
  *********************/
 #include "lvx_chart.h"
 #include <stdlib.h>
+#ifdef CONFIG_LV_GPU_DRAW_POLYGON
+#include "lv_porting/lv_gpu_interface.h"
+#endif
 #if LVX_USE_CHART != 0
-
 /*********************
  *      DEFINES
  *********************/
@@ -1171,7 +1173,7 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
     if (line_dsc_default.width == 1)
         line_dsc_default.raw_end = 1;
 
-    /*If there are mire points than pixels draw only vertical lines*/
+    /*If there are more points than pixels draw only vertical lines*/
     bool crowded_mode = chart->point_cnt >= w ? true : false;
 
     /*Go through all data lines*/
@@ -2423,7 +2425,75 @@ static void draw_line_chart_event_cb(lv_event_t* e)
         if (!dsc->p1 || !dsc->p2)
             return;
         lv_draw_ctx_t* draw_ctx = dsc->draw_ctx;
-        /*Add  a line mask that keeps the area below the line*/
+#ifdef CONFIG_LV_GPU_DRAW_POLYGON
+        if (lv_gpu_getmode() != LV_GPU_MODE_POWERSAVE) {
+            lvx_chart_series_t* ser = (lvx_chart_series_t*)dsc->sub_part_ptr;
+            if (ser != NULL) {
+                lvx_chart_t* chart = (lvx_chart_t*)obj;
+                lv_coord_t step = dsc->p2->x - dsc->p1->x;
+                lv_coord_t border_width = lv_obj_get_style_border_width(obj, LV_PART_MAIN);
+                lv_coord_t pad_left = lv_obj_get_style_pad_left(obj, LV_PART_MAIN) + border_width;
+                lv_coord_t x_ofs = obj->coords.x1 + pad_left - lv_obj_get_scroll_left(obj);
+                lv_coord_t clip_left_x = LV_MAX(0, draw_ctx->clip_area->x1 - x_ofs);
+                lv_coord_t left_bound = dsc->id * step;
+                lv_coord_t right_bound = left_bound + step;
+                lv_coord_t w = ((int32_t)lv_obj_get_content_width(obj) * chart->zoom_x) >> 8;
+                lv_coord_t h = ((int32_t)lv_obj_get_content_height(obj) * chart->zoom_y) >> 8;
+                if (clip_left_x >= left_bound && clip_left_x < right_bound) {
+                    /* This is the first point to draw the gradient. Do it! */
+                    lv_coord_t last_x = draw_ctx->clip_area->x2 - x_ofs;
+                    lv_coord_t last_id = LV_MIN(last_x / step + 1, chart->point_cnt - 1);
+                    lv_coord_t point_cnt = last_id - dsc->id + 1;
+                    lv_point_t *poly_points = lv_mem_alloc((point_cnt + 2) * sizeof(lv_point_t));
+                    if (poly_points) {
+                        lv_coord_t pad_top = lv_obj_get_style_pad_top(obj, LV_PART_MAIN) + border_width;
+                        lv_coord_t y_ofs = obj->coords.y1 + pad_top - lv_obj_get_scroll_top(obj);
+                        lv_coord_t y_range = chart->ymax[ser->y_axis_sec] - chart->ymin[ser->y_axis_sec];
+                        lv_coord_t p_act = dsc->id;
+                        lv_coord_t y_max = ser->y_points[p_act];
+
+                        for (lv_coord_t i = 0; i < point_cnt; i++, p_act++) {
+                            if (p_act == chart->point_cnt) {
+                                p_act = 0;
+                            }
+                            if (ser->y_points[p_act] != LV_CHART_POINT_NONE) {
+                                poly_points[i].x = (dsc->id + i) * w / (chart->point_cnt - 1) + x_ofs;
+                                poly_points[i].y = h - (ser->y_points[p_act] - chart->ymin[ser->y_axis_sec]) * h / y_range + y_ofs;
+                                y_max = LV_MAX(y_max, ser->y_points[p_act]);
+                            }
+                        }
+                        poly_points[point_cnt].x = poly_points[point_cnt - 1].x;
+                        poly_points[point_cnt].y = h + y_ofs;
+                        poly_points[point_cnt + 1].x = poly_points[0].x;
+                        poly_points[point_cnt + 1].y = h + y_ofs;
+
+                        lv_draw_rect_dsc_t draw_dsc;
+                        lv_draw_rect_dsc_init(&draw_dsc);
+                        draw_dsc.bg_grad.dir = LV_GRAD_DIR_VER;
+                        uint8_t color_frac = (y_max - chart->ymin[ser->y_axis_sec]) * 255 / h;
+                        draw_dsc.bg_grad.stops[0].color = lv_color_mix(dsc->line_dsc->color, lv_color_black(), color_frac);
+                        LV_COLOR_SET_A(draw_dsc.bg_grad.stops[0].color, color_frac);
+                        draw_dsc.bg_grad.stops[1].color.full = 0x00;
+
+                        lv_area_t obj_clip_area;
+                        _lv_area_intersect(&obj_clip_area, draw_ctx->clip_area, &obj->coords);
+                        const lv_area_t * clip_area_ori = draw_ctx->clip_area;
+                        draw_ctx->clip_area = &obj_clip_area;
+                        lv_draw_polygon(draw_ctx, &draw_dsc, poly_points, point_cnt + 2);
+                        lv_mem_free(poly_points);
+                        draw_ctx->clip_area = clip_area_ori;
+                        return;
+                    }
+                    else {
+                        LV_LOG_WARN("out of memory");
+                    }
+                } else {
+                    return;
+                }
+            }
+        }
+#endif
+        /*Add a line mask that keeps the area below the line*/
         // lv_coord_t top = lv_obj_get_style_pad_top(obj, 0);
         lv_coord_t bottom = lv_obj_get_style_pad_bottom(obj, 0);
 
@@ -2627,6 +2697,6 @@ static void draw_avg_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx,
     }
 }
 
-#endif
+#endif /* LVX_CHART_EXTENTIONS == 1 */
 
-#endif
+#endif /* LVX_USE_CHART != 0 */
