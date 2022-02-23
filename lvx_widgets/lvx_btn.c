@@ -151,9 +151,6 @@ void lvx_btn_set_text_fmt(lv_obj_t* obj, const char* fmt, ...)
         btn->label = lvx_btn_set_label(obj);
     }
 
-    const lv_font_t* font = lv_obj_get_style_text_font(obj, 0);
-    lv_obj_set_style_text_font(btn->label, font, 0);
-
     /*If text is NULL then refresh*/
     if (fmt == NULL) {
         return;
