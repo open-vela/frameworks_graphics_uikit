@@ -173,24 +173,24 @@
 #define PICKER_PAD_ALL                     10
 #define PICKER_PAD_GAP                     10
 
-#define PICKER_TEXT_FONT_DEFAULT           &lv_font_montserrat_28
+#define PICKER_TEXT_FONT_DEFAULT           LV_FONT_DEFAULT
 #define PICKER_TEXT_COLOR_DEFAULT          SYSTEM_COLOR_WHITE
 #define PICKER_TEXT_OPA_DEFAULT            LV_OPA_40
 #define PICKER_TEXT_ALIGN_DEFAULT          LV_TEXT_ALIGN_CENTER
 
-#define PICKER_TEXT_FONT_SELECTED          &lv_font_montserrat_48
+#define PICKER_TEXT_FONT_SELECTED          LV_FONT_DEFAULT
 #define PICKER_TEXT_COLOR_SELECTED         SYSTEM_COLOR_WHITE
 #define PICKER_TEXT_OPA_SELECTED           LV_OPA_COVER
 #define PICKER_TEXT_ALIGN_SELECTED         LV_TEXT_ALIGN_CENTER
 #endif
 
 #if LVX_USE_MSGBOX
-#define MSGBOX_TEXT_FONT_DEFAULT           &lv_font_montserrat_48
+#define MSGBOX_TEXT_FONT_DEFAULT           LV_FONT_DEFAULT
 #define MSGBOX_TEXT_COLOR_DEFAULT          SYSTEM_COLOR_WHITE
 #define MSGBOX_TEXT_OPA_DEFAULT            LV_OPA_COVER
 #define MSGBOX_TEXT_ALIGN_DEFAULT          LV_TEXT_ALIGN_CENTER
 
-#define MSGBOX_TEXT_FONT_ITEMS             &lv_font_montserrat_36
+#define MSGBOX_TEXT_FONT_ITEMS             LV_FONT_DEFAULT
 #define MSGBOX_TEXT_COLOR_ITEMS            SYSTEM_COLOR_WHITE
 #define MSGBOX_TEXT_OPA_ITEMS              LV_OPA_COVER
 #define MSGBOX_TEXT_ALIGN_ITEMS            LV_TEXT_ALIGN_LEFT
