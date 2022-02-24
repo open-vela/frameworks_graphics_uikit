@@ -125,7 +125,7 @@ lv_obj_t* lvx_msgbox_create(lv_obj_t* parent, lvx_msgbox_type_t type,
         btn = lvx_msgbox_btn_create(obj, btns);
         lvx_btn_set_style_bg_color(btn, SYSTEM_COLOR_BTN_GREY);
         lvx_btn_set_style_text_color(btn, SYSTEM_COLOR_WHITE);
-        lvx_btn_set_style_text_font(btn, &lv_font_montserrat_48);
+        lvx_btn_set_style_text_font(btn, LV_FONT_DEFAULT);
         lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, BTN_OFFSET_Y_1);
         lv_obj_set_size(btn, BOTTOM_BTN1_SIZE_W, BOTTOM_BTN1_SIZE_H);
     } else if (btn_cnt == 2) {
