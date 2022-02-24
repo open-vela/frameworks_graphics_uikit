@@ -183,6 +183,7 @@ static void lvx_btn_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
     style_init();
     lv_obj_add_style(obj, &styles->local_style, LV_STATE_PRESSED);
     lv_obj_add_style(obj, &styles->local_style, 0);
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_PRESS_LOCK);
 }
 
 static void lvx_btn_event(const lv_obj_class_t* class_p, lv_event_t* e)
@@ -229,7 +230,6 @@ static void style_init(void)
     styles->has_init = true;
 
     lv_style_init(&styles->local_style);
-    lv_style_init(&trans_delayed);
 
     lv_style_transition_dsc_init(&trans_delayed, trans_props,
                                  lv_anim_path_linear, ANIME_TIME, 0, NULL);
