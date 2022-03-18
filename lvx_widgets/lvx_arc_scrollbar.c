@@ -197,8 +197,6 @@ static void draw_scrollbar(lv_event_t* e)
         return;
     }
 
-    const lv_area_t* clip_area = lv_event_get_param(e);
-
     lv_point_t center;
     lv_coord_t arc_r;
     get_center(obj, &center, &arc_r);
