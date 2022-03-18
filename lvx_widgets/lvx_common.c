@@ -64,6 +64,7 @@ lv_area_t lvx_canvas_copy_area(lv_obj_t* dst, lv_obj_t* src,
     extern const lv_obj_class_t lv_canvas_class;
     LV_ASSERT_OBJ(dst, &lv_canvas_class);
     LV_ASSERT_OBJ(src, &lv_canvas_class);
+    (void)lv_canvas_class;
 
     lv_area_t result = { 0 };
 

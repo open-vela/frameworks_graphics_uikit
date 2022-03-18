@@ -2004,7 +2004,7 @@ static void draw_y_ticks(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx,
         /*add text only to major tick*/
         if (major && t->label_en) {
             char buf[16];
-            lv_snprintf(buf, sizeof(buf), "%d", tick_value);
+            lv_snprintf(buf, sizeof(buf), "%" PRId32, tick_value);
             part_draw_dsc.label_dsc = &label_dsc;
             part_draw_dsc.text = buf;
             lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_draw_dsc);
@@ -2159,7 +2159,7 @@ static void draw_x_ticks(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx,
 
         if (major && t->label_en) {
             char buf[16];
-            lv_snprintf(buf, sizeof(buf), "%d", tick_value);
+            lv_snprintf(buf, sizeof(buf), "%" PRId32, tick_value);
             part_draw_dsc.label_dsc = &label_dsc;
             part_draw_dsc.text = buf;
             lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_draw_dsc);
@@ -2652,7 +2652,7 @@ static void draw_avg_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx,
         }
 
         char buf[16];
-        lv_snprintf(buf, sizeof(buf), "%d", avg);
+        lv_snprintf(buf, sizeof(buf), "%" PRId32, avg);
         lv_point_t size;
         lv_txt_get_size(&size, buf, avg_label_dsc.font,
                         avg_label_dsc.letter_space, avg_label_dsc.line_space,
