@@ -287,7 +287,8 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
     }
     px_size = (px_size + 7) >> 3;
     if (px_size != rleheader->blksize) {
-        LV_LOG_WARN("Invalid rle file, blksize mismatch, expect: %d, got %d",
+        LV_LOG_WARN("Invalid rle file, blksize mismatch, expect: %" PRIu32
+                    ", got %d",
                     px_size, rleheader->blksize);
         goto error_file;
     }
@@ -353,7 +354,8 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
     lv_mem_free(file_buffer);
 
     if (decoded_len != buf_len) {
-        LV_LOG_WARN("rle decode failed, decoded len: %d, expected %d.",
+        LV_LOG_WARN("rle decode failed, decoded len: %" PRIu32
+                    ", expected %" PRIu32 ".",
                     decoded_len, buf_len);
         lv_mem_free(img_buf);
         return LV_RES_INV;
@@ -409,9 +411,10 @@ static inline lv_res_t decode_from_variable(lv_img_decoder_t * decoder,
         return LV_RES_INV;
     }
 
-    px_size  = (px_size + 7) >> 3;
+    px_size = (px_size + 7) >> 3;
     if (px_size != rleheader->blksize) {
-        LV_LOG_WARN("Invalid rle file, blksize mismatch, expect: %d, got %d",
+        LV_LOG_WARN("Invalid rle file, blksize mismatch, expect: %" PRIu32
+                    ", got %d",
                     px_size, rleheader->blksize);
         return LV_RES_INV;
     }
@@ -434,7 +437,8 @@ static inline lv_res_t decode_from_variable(lv_img_decoder_t * decoder,
                                           img_buf, buf_len, rleheader->blksize);
 
     if (decoded_len != buf_len) {
-        LV_LOG_WARN("rle decode failed, decoded len: %d, expected %d.",
+        LV_LOG_WARN("rle decode failed, decoded len: %" PRIu32
+                    ", expected %" PRIu32 ".",
                     decoded_len, buf_len);
         lv_mem_free(img_buf);
         return LV_RES_INV;
