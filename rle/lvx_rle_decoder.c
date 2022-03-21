@@ -17,6 +17,9 @@
  *********************/
 #include <stdlib.h>
 #include "lvx_rle_decoder.h"
+#ifdef CONFIG_LV_USE_GPU_INTERFACE
+#include "lv_porting/gpu/lv_gpu_decoder.h"
+#endif
 
 #if LVX_USE_RLE
 
@@ -483,12 +486,9 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder,
     data->decoder_dsc.src = &data->img_dsc;
 
 #ifdef CONFIG_LV_USE_GPU_INTERFACE
-    lv_res_t lv_gpu_decoder_open(lv_img_decoder_t* decoder, lv_img_decoder_dsc_t* dsc);
-
     res = lv_gpu_decoder_open(decoder, &data->decoder_dsc);
     if (res == LV_RES_OK) {
         lv_mem_free(img_data);
-        dsc->src_type = LV_IMG_SRC_VARIABLE;
         data->img_dsc.data = NULL;
     } else {
 #endif
@@ -524,9 +524,6 @@ static void decoder_close(lv_img_decoder_t *decoder, lv_img_decoder_dsc_t *dsc)
     if (dsc->user_data) {
         lv_rle_decoder_data_t* decoder_data = dsc->user_data;
 #ifdef CONFIG_LV_USE_GPU_INTERFACE
-        void lv_gpu_decoder_close(lv_img_decoder_t* decoder,
-                                  lv_img_decoder_dsc_t* dsc);
-
         if (decoder_data->img_dsc.data == NULL) {
             lv_gpu_decoder_close(decoder, &decoder_data->decoder_dsc);
         } else {
