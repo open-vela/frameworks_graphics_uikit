@@ -7,8 +7,9 @@
  *********************/
 #include "lvx_chart.h"
 #include <stdlib.h>
-#ifdef CONFIG_LV_GPU_DRAW_POLYGON
+#ifdef CONFIG_LV_USE_GPU_INTERFACE
 #include "lv_porting/lv_gpu_interface.h"
+#include "lv_porting/gpu/lv_gpu_draw_utils.h"
 #endif
 #if LVX_USE_CHART != 0
 /*********************
@@ -1138,8 +1139,7 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
         return;
 
     uint16_t i;
-    lv_point_t p1;
-    lv_point_t p2;
+    lv_point_t p[2];
     lv_coord_t border_width = lv_obj_get_style_border_width(obj, LV_PART_MAIN);
     lv_coord_t pad_left, pad_top, w, h;
     pad_left = lv_obj_get_style_pad_left(obj, LV_PART_MAIN) + border_width;
@@ -1188,23 +1188,186 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
             = chart->update_mode == LVX_CHART_UPDATE_MODE_SHIFT
             ? ser->start_point
             : 0;
+#ifdef CONFIG_LV_USE_GPU_INTERFACE
+        if (lv_gpu_getmode() != LV_GPU_MODE_POWERSAVE) {
+            lv_coord_t first_id = lv_map(draw_ctx->clip_area->x1 - x_ofs, 0, w,
+                0, chart->point_cnt - 1);
+            lv_coord_t last_id = lv_map(draw_ctx->clip_area->x2 - x_ofs, 0, w,
+                0, chart->point_cnt - 1);
+            lv_coord_t real_cnt = last_id - first_id + 1;
+            if (!crowded_mode && real_cnt < 2) continue;
+            lv_coord_t p_ofs = first_id;
+            first_id = (first_id + start_point) % chart->point_cnt;
+            last_id = (last_id + start_point) % chart->point_cnt;
+            uint32_t path_length;
+            uint32_t seg_len = GPU_POINT_PATH_SIZE;
+            if (crowded_mode) {
+                path_length = real_cnt * GPU_POINT_PATH_SIZE;
+            } else {
+                real_cnt--;
+                seg_len += GPU_LINE_PATH_SIZE + GPU_LINE_PATH_ROUND_DELTA *
+                    (line_dsc_default.round_start + line_dsc_default.round_end);
+                path_length = real_cnt * seg_len;
+            }
+            uint32_t blk_len = LV_MIN(path_length, MAX_PATH_LENGTH);
 
-        p1.x = 0;
-        p2.x = 0;
+            lv_coord_t point_cnt = blk_len / seg_len;
+            blk_len = point_cnt * seg_len;
+            if (!crowded_mode && blk_len <= MAX_PATH_LENGTH - GPU_POINT_PATH_SIZE) {
+                blk_len += GPU_POINT_PATH_SIZE;
+            }
+            uint16_t blk_cnt = (real_cnt + point_cnt - 1) / point_cnt;
+            float* path = lv_mem_buf_get(blk_len);
+            float* path_p;
+            lv_coord_t p_act = first_id;
+            lv_coord_t p_acted = 0;
+            gpu_point_dsc_t point_dsc = { .w = point_w, .h = point_h };
+            lv_gpu_curve_fill_t fill = {
+                .color = ser->color,
+                .opa = point_dsc_default.bg_opa,
+                .type = CURVE_FILL_COLOR
+            };
+            lv_gpu_buffer_t gpu_buf = {
+                .buf = draw_ctx->buf,
+                .clip_area = (lv_area_t*)draw_ctx->clip_area,
+                .cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
+                .w = lv_area_get_width(draw_ctx->buf_area),
+                .h = lv_area_get_height(draw_ctx->buf_area)
+            };
+            lv_obj_draw_part_dsc_t part_draw_dsc;
+            lv_obj_draw_dsc_init(&part_draw_dsc, draw_ctx);
+            part_draw_dsc.class_p = MY_CLASS;
+            part_draw_dsc.type = LVX_CHART_DRAW_PART_LINE_AND_POINT;
+            part_draw_dsc.part = LV_PART_ITEMS;
+            part_draw_dsc.line_dsc = &line_dsc_default;
+            part_draw_dsc.rect_dsc = &point_dsc_default;
+            part_draw_dsc.sub_part_ptr = ser;
+            part_draw_dsc.id = first_id;
+            part_draw_dsc.p1 = &p[0];
+            part_draw_dsc.p2 = &p[1];
+            lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_draw_dsc);
+            bool first_point_drawn = false;
+            while(blk_cnt--) {
+                if (real_cnt - p_acted < point_cnt) {
+                    point_cnt = real_cnt - p_acted;
+                    if (!point_cnt) {
+                        break;
+                    }
+                }
+                path_p = path;
+                if (!crowded_mode) {
+                        p[1].x = chart->type == LVX_CHART_TYPE_STEP_LINE
+                            ? lv_map(ser->x_points[p_act], chart->xmin[ser->x_axis_sec],
+                                chart->xmax[ser->x_axis_sec], 0, w)
+                            : lv_map(p_acted + p_ofs, 0, chart->point_cnt - 1, 0, w);
+                    p[1].x += x_ofs;
+                    p[1].y = lv_map(ser->y_points[p_act], chart->ymin[ser->y_axis_sec],
+                                chart->ymax[ser->y_axis_sec], h, 0) + y_ofs;
+                    p_act++;
+                    if (p_act == chart->point_cnt) {
+                        p_act = 0;
+                    }
+                }
+                for (i = 0; i < point_cnt; i++) {
+                    if (crowded_mode) {
+                        p[0].y = ser->y_points[p_act];
+                        p[1].y = p[0].y;
+                        p[0].x = chart->type == LVX_CHART_TYPE_STEP_LINE
+                            ? lv_map(ser->x_points[p_act], chart->xmin[ser->x_axis_sec],
+                                chart->xmax[ser->x_axis_sec], 0, w)
+                            : lv_map(p_acted + p_ofs, 0, chart->point_cnt - 1, 0, w);
+                        while(p_act != last_id) {
+                            p_act++;
+                            p_acted++;
+                            if (p_act == chart->point_cnt) {
+                                p_act = 0;
+                            }
+                            p[1].x = chart->type == LVX_CHART_TYPE_STEP_LINE
+                                ? lv_map(ser->x_points[p_act], chart->xmin[ser->x_axis_sec],
+                                    chart->xmax[ser->x_axis_sec], 0, w)
+                                : lv_map(p_acted + p_ofs, 0, chart->point_cnt - 1, 0, w);
+                            if (p[1].x != p[0].x) break;
+                            p[1].y = LV_MAX(p[1].y, ser->y_points[p_act]);
+                            p[0].y = LV_MIN(p[0].y, ser->y_points[p_act]);
+                        }
+                        p[0].x += x_ofs;
+                        p[1].x = p[0].x;
+                        p[0].y = lv_map(p[0].y, chart->ymin[ser->y_axis_sec],
+                            chart->ymax[ser->y_axis_sec], h, 0) + y_ofs;
+                        p[1].y = lv_map(p[1].y, chart->ymin[ser->y_axis_sec],
+                            chart->ymax[ser->y_axis_sec], h, 0) + y_ofs;
+                        path_p += gpu_fill_path(path_p, GPU_POINT_PATH, p, &point_dsc);
+                    } else {
+                        p[0] = p[1];
+                        p[1].x = chart->type == LVX_CHART_TYPE_STEP_LINE
+                            ? lv_map(ser->x_points[p_act], chart->xmin[ser->x_axis_sec],
+                                chart->xmax[ser->x_axis_sec], 0, w)
+                            : lv_map(p_acted + p_ofs + 1, 0, chart->point_cnt - 1, 0, w);
+                        p[1].x += x_ofs;
+                        p[1].y = lv_map(ser->y_points[p_act], chart->ymin[ser->y_axis_sec],
+                            chart->ymax[ser->y_axis_sec], h, 0) + y_ofs;
+                        path_p += gpu_fill_path(path_p, GPU_LINE_PATH, p, &line_dsc_default);
+                        p[0] = p[1];
+                        path_p += gpu_fill_path(path_p, GPU_POINT_PATH, p, &point_dsc);
+                    }
+                    if (p_act == last_id) {
+                        break;
+                    }
+                    p_act++;
+                    p_acted++;
+                    if (p_act == chart->point_cnt) {
+                        p_act = 0;
+                    }
+                }
+                if (!first_point_drawn && !crowded_mode &&
+                    (path_p - path) * sizeof(float) <= MAX_PATH_LENGTH - GPU_POINT_PATH) {
+                    first_point_drawn = true;
+                    p[1].x = chart->type == LVX_CHART_TYPE_STEP_LINE
+                        ? lv_map(ser->x_points[p_ofs], chart->xmin[ser->x_axis_sec],
+                            chart->xmax[ser->x_axis_sec], 0, w)
+                        : lv_map(p_ofs, 0, chart->point_cnt - 1, 0, w);
+                    p[1].x += x_ofs;
+                    p[1].y = lv_map(ser->y_points[p_ofs], chart->ymin[ser->y_axis_sec],
+                            chart->ymax[ser->y_axis_sec], h, 0) + y_ofs;
+                    p[0] = p[1];
+                    path_p += gpu_fill_path(path_p, GPU_POINT_PATH, p, &point_dsc);
+                }
+                *(path_p - 1) = 0;
+                blk_len = (path_p - path) * sizeof(float);
+                gpu_draw_path(path, blk_len, &fill, &gpu_buf);
+                if (!first_point_drawn) {
+                    p[1].x = chart->type == LVX_CHART_TYPE_STEP_LINE
+                        ? lv_map(ser->x_points[p_ofs], chart->xmin[ser->x_axis_sec],
+                            chart->xmax[ser->x_axis_sec], 0, w)
+                        : lv_map(p_ofs, 0, chart->point_cnt - 1, 0, w);
+                    p[1].x += x_ofs;
+                    p[1].y = lv_map(ser->y_points[p_ofs], chart->ymin[ser->y_axis_sec],
+                            chart->ymax[ser->y_axis_sec], h, 0) + y_ofs;
+                    p[0] = p[1];
+                    blk_len = gpu_fill_path(path, GPU_POINT_PATH, p, &point_dsc);
+                    gpu_draw_path(path, blk_len, &fill, &gpu_buf);
+                }
+            }
+            lv_event_send(obj, LV_EVENT_DRAW_PART_END, &part_draw_dsc);
+            lv_mem_buf_release(path);
+        }
+#else
+        p[0].x = 0;
+        p[1].x = 0;
 
         lv_coord_t p_act = start_point;
         lv_coord_t p_prev = start_point;
 
         if (chart->type == LVX_CHART_TYPE_STEP_LINE) {
-            p2.x = lv_map(ser->x_points[p_act], chart->xmin[ser->x_axis_sec],
+            p[1].x = lv_map(ser->x_points[p_act], chart->xmin[ser->x_axis_sec],
                           chart->xmax[ser->x_axis_sec], 0, w);
         }
-        p2.x += x_ofs;
+        p[1].x += x_ofs;
 
         /** the y coordinate direction is from top to bottom */
-        p2.y = lv_map(ser->y_points[p_act], chart->ymin[ser->y_axis_sec],
+        p[1].y = lv_map(ser->y_points[p_act], chart->ymin[ser->y_axis_sec],
                       chart->ymax[ser->y_axis_sec], h, 0);
-        p2.y += y_ofs;
+        p[1].y += y_ofs;
 
         lv_obj_draw_part_dsc_t part_draw_dsc;
         lv_obj_draw_dsc_init(&part_draw_dsc, draw_ctx);
@@ -1215,32 +1378,32 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
         part_draw_dsc.rect_dsc = &point_dsc_default;
         part_draw_dsc.sub_part_ptr = ser;
 
-        lv_coord_t y_min = p2.y;
-        lv_coord_t y_max = p2.y;
+        lv_coord_t y_min = p[1].y;
+        lv_coord_t y_max = p[1].y;
 
         for (i = 0; i < chart->point_cnt; i++) {
-            p1.x = p2.x;
-            p1.y = p2.y;
+            p[0].x = p[1].x;
+            p[0].y = p[1].y;
 
-            if (p1.x > clip_area_ori->x2 + point_w + 1)
+            if (p[0].x > clip_area_ori->x2 + point_w + 1)
                 break;
 
             p_act = (start_point + i) % chart->point_cnt;
 
             if (chart->type == LVX_CHART_TYPE_STEP_LINE) {
-                p2.x
+                p[1].x
                     = lv_map(ser->x_points[p_act], chart->xmin[ser->x_axis_sec],
                              chart->xmax[ser->x_axis_sec], 0, w);
             } else {
-                p2.x = lv_map(i, 0, chart->point_cnt - 1, 0, w);
+                p[1].x = lv_map(i, 0, chart->point_cnt - 1, 0, w);
             }
-            p2.x += x_ofs;
+            p[1].x += x_ofs;
 
-            p2.y = lv_map(ser->y_points[p_act], chart->ymin[ser->y_axis_sec],
+            p[1].y = lv_map(ser->y_points[p_act], chart->ymin[ser->y_axis_sec],
                           chart->ymax[ser->y_axis_sec], h, 0);
-            p2.y += y_ofs;
+            p[1].y += y_ofs;
 
-            if (p2.x < clip_area_ori->x1 - point_w - 1) {
+            if (p[1].x < clip_area_ori->x1 - point_w - 1) {
                 p_prev = p_act;
                 continue;
             }
@@ -1253,19 +1416,19 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                         && ser->y_points[p_act] != LVX_CHART_POINT_NONE) {
                         /*Draw only one vertical line between the min an max y
                          * values on the same x value*/
-                        y_max = LV_MAX(y_max, p2.y);
-                        y_min = LV_MIN(y_min, p2.y);
-                        if (p1.x != p2.x) {
-                            lv_coord_t y_cur = p2.y;
-                            p2.x--; /*It's already on the next x value*/
-                            p1.x = p2.x;
-                            p1.y = y_min;
-                            p2.y = y_max;
-                            if (p1.y == p2.y)
-                                p2.y++; /*If they are the same no line will be
+                        y_max = LV_MAX(y_max, p[1].y);
+                        y_min = LV_MIN(y_min, p[1].y);
+                        if (p[0].x != p[1].x) {
+                            lv_coord_t y_cur = p[1].y;
+                            p[1].x--; /*It's already on the next x value*/
+                            p[0].x = p[1].x;
+                            p[0].y = y_min;
+                            p[1].y = y_max;
+                            if (p[0].y == p[1].y)
+                                p[1].y++; /*If they are the same no line will be
                                            drawn*/
-                            lv_draw_line(draw_ctx, &line_dsc_default, &p1, &p2);
-                            p2.x++; /*Compensate the previous x--*/
+                            lv_draw_line(draw_ctx, &line_dsc_default, &p[0], &p[1]);
+                            p[1].x++; /*Compensate the previous x--*/
                             y_min = y_cur; /*Start the line of the next x from
                                               the current last y*/
                             y_max = y_cur;
@@ -1273,17 +1436,17 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                     }
                 } else {
                     lv_area_t point_area;
-                    point_area.x1 = p1.x - point_w;
-                    point_area.x2 = p1.x + point_w;
-                    point_area.y1 = p1.y - point_h;
-                    point_area.y2 = p1.y + point_h;
+                    point_area.x1 = p[0].x - point_w;
+                    point_area.x2 = p[0].x + point_w;
+                    point_area.y1 = p[0].y - point_h;
+                    point_area.y2 = p[0].y + point_h;
 
                     part_draw_dsc.id = i - 1;
                     part_draw_dsc.p1
-                        = ser->y_points[p_prev] != LVX_CHART_POINT_NONE ? &p1
+                        = ser->y_points[p_prev] != LVX_CHART_POINT_NONE ? &p[0]
                                                                         : NULL;
                     part_draw_dsc.p2
-                        = ser->y_points[p_act] != LVX_CHART_POINT_NONE ? &p2
+                        = ser->y_points[p_act] != LVX_CHART_POINT_NONE ? &p[1]
                                                                        : NULL;
                     part_draw_dsc.draw_area = &point_area;
                     part_draw_dsc.value = ser->y_points[p_prev];
@@ -1293,7 +1456,7 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
 
                     if (ser->y_points[p_prev] != LVX_CHART_POINT_NONE
                         && ser->y_points[p_act] != LVX_CHART_POINT_NONE) {
-                        lv_draw_line(draw_ctx, &line_dsc_default, &p1, &p2);
+                        lv_draw_line(draw_ctx, &line_dsc_default, &p[0], &p[1]);
                     }
 
                     if (point_w && point_h
@@ -1312,10 +1475,10 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
 
             if (ser->y_points[p_act] != LVX_CHART_POINT_NONE) {
                 lv_area_t point_area;
-                point_area.x1 = p2.x - point_w;
-                point_area.x2 = p2.x + point_w;
-                point_area.y1 = p2.y - point_h;
-                point_area.y2 = p2.y + point_h;
+                point_area.x1 = p[1].x - point_w;
+                point_area.x2 = p[1].x + point_w;
+                point_area.y1 = p[1].y - point_h;
+                point_area.y2 = p[1].y + point_h;
 
                 part_draw_dsc.id = i - 1;
                 part_draw_dsc.p1 = NULL;
@@ -1327,6 +1490,7 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                 lv_event_send(obj, LV_EVENT_DRAW_PART_END, &part_draw_dsc);
             }
         }
+#endif
     }
     draw_ctx->clip_area = clip_area_ori;
 }
@@ -1501,8 +1665,7 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
 
     lvx_chart_t* chart = (lvx_chart_t*)obj;
 
-    lv_point_t p1;
-    lv_point_t p2;
+    lv_point_t p[2];
     lv_coord_t border_width = lv_obj_get_style_border_width(obj, LV_PART_MAIN);
     lv_coord_t pad_left = lv_obj_get_style_pad_left(obj, LV_PART_MAIN);
     lv_coord_t pad_top = lv_obj_get_style_pad_top(obj, LV_PART_MAIN);
@@ -1567,6 +1730,83 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
         if (!points) {
             continue;
         }
+#ifdef CONFIG_LV_USE_GPU_INTERFACE
+        if (lv_gpu_getmode() != LV_GPU_MODE_POWERSAVE) {
+            uint16_t real_cnt = 0;
+            for (lv_coord_t i = 0; i < point_cnt; i++) {
+                if (ser->x_points[i] == LVX_CHART_POINT_NONE
+                    || ser->y_points[i] == LVX_CHART_POINT_NONE) {
+                        continue;
+                    }
+                points[real_cnt].x = lv_map(ser->x_points[i],
+                    chart->xmin[ser->x_axis_sec],
+                    chart->xmax[ser->x_axis_sec], 0, w) + x_ofs;
+                points[real_cnt].y = h - lv_map(ser->y_points[i],
+                    chart->ymin[ser->y_axis_sec],
+                    chart->ymax[ser->y_axis_sec], 0, h) + y_ofs;
+                if (_lv_area_is_point_on(draw_ctx->clip_area, &points[real_cnt], 0)) {
+                    real_cnt++;
+                }
+            }
+            if (!real_cnt) {
+                continue;
+            }
+            point_cnt = real_cnt;
+            qsort(points, point_cnt, sizeof(lv_point_t), point_cmp);
+            uint32_t path_length = GPU_POINT_PATH_SIZE * point_cnt;
+            uint32_t blk_len = LV_MIN(path_length, MAX_PATH_LENGTH);
+            point_cnt = blk_len / GPU_POINT_PATH_SIZE;
+            blk_len = point_cnt * GPU_POINT_PATH_SIZE;
+            uint16_t blk_cnt = (real_cnt + point_cnt - 1) / point_cnt;
+
+            float* path = lv_mem_buf_get(blk_len);
+            if (!path) {
+                continue;
+            }
+            float* path_p;
+            lv_coord_t point_p = 0;
+            gpu_point_dsc_t point_dsc = { .w = point_w, .h = point_h };
+            lv_gpu_curve_fill_t fill = {
+                .color = ser->color,
+                .opa = point_dsc_default.bg_opa,
+                .type = CURVE_FILL_COLOR
+            };
+            lv_gpu_buffer_t gpu_buf = {
+                .buf = draw_ctx->buf,
+                .clip_area = (lv_area_t*)draw_ctx->clip_area,
+                .cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
+                .w = lv_area_get_width(draw_ctx->buf_area),
+                .h = lv_area_get_height(draw_ctx->buf_area)
+            };
+            while(blk_cnt--) {
+                if (real_cnt - point_p < point_cnt) {
+                    point_cnt = real_cnt - point_p;
+                    if (!point_cnt) {
+                        break;
+                    }
+                }
+                path_p = path;
+                for (lv_coord_t i = 0; i < point_cnt; i++) {
+                    p[0] = points[point_p++];
+                    while(point_p < real_cnt && points[point_p].x == p[0].x &&
+                        points[point_p].y - points[point_p - 1].y < ser->threshold) {
+                            point_p++;
+                        }
+                    p[1] = points[point_p - 1];
+                    path_p += gpu_fill_path(path_p, GPU_POINT_PATH, p, &point_dsc);
+                    if (point_p == real_cnt) {
+                        break;
+                    }
+                }
+                *(path_p - 1) = 0;
+                blk_len = (path_p - path) * sizeof(float);
+                gpu_draw_path(path, blk_len, &fill, &gpu_buf);
+            }
+            lv_mem_buf_release(points);
+            lv_mem_buf_release(path);
+            continue;
+        }
+#endif
         lv_memset_00(points, sizeof(lv_point_t) * point_cnt);
 
         for (lv_coord_t i = 0; i < point_cnt; i++) {
@@ -1576,7 +1816,6 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
 
         lv_obj_draw_part_dsc_t part_draw_dsc;
         lv_obj_draw_dsc_init(&part_draw_dsc, draw_ctx);
-
         /* Sort data */
         qsort(points, point_cnt, sizeof(lv_point_t), point_cmp);
 
@@ -1596,21 +1835,21 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                 continue;
             }
 
-            p1.x = lv_map(points[i].x, chart->xmin[ser->x_axis_sec],
+            p[0].x = lv_map(points[i].x, chart->xmin[ser->x_axis_sec],
                           chart->xmax[ser->x_axis_sec], 0, w);
-            p1.x += x_ofs;
-            p1.y = lv_map(points[i].y, chart->ymin[ser->y_axis_sec],
+            p[0].x += x_ofs;
+            p[0].y = lv_map(points[i].y, chart->ymin[ser->y_axis_sec],
                           chart->ymax[ser->y_axis_sec], 0, h);
-            p1.y = h - p1.y;
-            p1.y += y_ofs;
+            p[0].y = h - p[0].y;
+            p[0].y += y_ofs;
 
             lv_area_t point_area;
-            point_area.x1 = p1.x - point_w;
-            point_area.x2 = p1.x + point_w;
-            point_area.y1 = p1.y - point_h;
-            point_area.y2 = p1.y + point_h;
+            point_area.x1 = p[0].x - point_w;
+            point_area.x2 = p[0].x + point_w;
+            point_area.y1 = p[0].y - point_h;
+            point_area.y2 = p[0].y + point_h;
             part_draw_dsc.id = i;
-            part_draw_dsc.p1 = &p1;
+            part_draw_dsc.p1 = &p[0];
             part_draw_dsc.p2 = NULL;
             part_draw_dsc.draw_area = &point_area;
             part_draw_dsc.value = points[i].y;
@@ -1629,18 +1868,18 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                 continue;
             }
 
-            p2.x = lv_map(points[i + 1].x, chart->xmin[ser->x_axis_sec],
+            p[1].x = lv_map(points[i + 1].x, chart->xmin[ser->x_axis_sec],
                           chart->xmax[ser->x_axis_sec], 0, w);
-            p2.x += x_ofs;
-            p2.y = lv_map(points[i + 1].y, chart->ymin[ser->y_axis_sec],
+            p[1].x += x_ofs;
+            p[1].y = lv_map(points[i + 1].y, chart->ymin[ser->y_axis_sec],
                           chart->ymax[ser->y_axis_sec], h, 0);
-            p2.y += y_ofs;
+            p[1].y += y_ofs;
 
             if ((points[i].x == points[i + 1].x)
                 && LV_ABS(points[i].y - points[i + 1].y) <= ser->threshold) {
-                part_draw_dsc.p2 = &p2;
+                part_draw_dsc.p2 = &p[1];
                 lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_draw_dsc);
-                lv_draw_line(draw_ctx, &line_dsc_default, &p1, &p2);
+                lv_draw_line(draw_ctx, &line_dsc_default, &p[0], &p[1]);
                 lv_event_send(obj, LV_EVENT_DRAW_PART_END, &part_draw_dsc);
             }
         }
@@ -2428,28 +2667,48 @@ static void draw_line_chart_event_cb(lv_event_t* e)
 #ifdef CONFIG_LV_GPU_DRAW_POLYGON
         if (lv_gpu_getmode() != LV_GPU_MODE_POWERSAVE) {
             lvx_chart_series_t* ser = (lvx_chart_series_t*)dsc->sub_part_ptr;
-            if (ser != NULL) {
-                lvx_chart_t* chart = (lvx_chart_t*)obj;
-                lv_coord_t step = dsc->p2->x - dsc->p1->x;
+            lvx_chart_t* chart = (lvx_chart_t*)obj;
+            if (ser != NULL && chart->point_cnt > 1) {
+                lv_coord_t w = ((int32_t)lv_obj_get_content_width(obj) * chart->zoom_x) >> 8;
+                lv_coord_t h = ((int32_t)lv_obj_get_content_height(obj) * chart->zoom_y) >> 8;
                 lv_coord_t border_width = lv_obj_get_style_border_width(obj, LV_PART_MAIN);
                 lv_coord_t pad_left = lv_obj_get_style_pad_left(obj, LV_PART_MAIN) + border_width;
                 lv_coord_t x_ofs = obj->coords.x1 + pad_left - lv_obj_get_scroll_left(obj);
                 lv_coord_t clip_left_x = LV_MAX(0, draw_ctx->clip_area->x1 - x_ofs);
-                lv_coord_t left_bound = dsc->id * step;
-                lv_coord_t right_bound = left_bound + step;
-                lv_coord_t w = ((int32_t)lv_obj_get_content_width(obj) * chart->zoom_x) >> 8;
-                lv_coord_t h = ((int32_t)lv_obj_get_content_height(obj) * chart->zoom_y) >> 8;
+                lv_coord_t left_bound, right_bound;
+                lv_coord_t right_id = (dsc->id + 1) % chart->point_cnt;
+                lv_coord_t start_point
+                    = chart->update_mode == LVX_CHART_UPDATE_MODE_SHIFT
+                    ? ser->start_point
+                    : 0;
+                if (chart->type == LVX_CHART_TYPE_STEP_LINE) {
+                    left_bound = lv_map(ser->x_points[dsc->id], chart->xmin[ser->x_axis_sec],
+                        chart->xmax[ser->x_axis_sec], 0, w);
+                    right_bound = lv_map(ser->x_points[right_id], chart->xmin[ser->x_axis_sec],
+                        chart->xmax[ser->x_axis_sec], 0, w);
+                } else {
+                    left_bound = lv_map(dsc->id, 0, chart->point_cnt - 1, 0, w);
+                    right_bound = lv_map(right_id, 0, chart->point_cnt - 1, 0, w);
+                }
                 if (clip_left_x >= left_bound && clip_left_x < right_bound) {
                     /* This is the first point to draw the gradient. Do it! */
                     lv_coord_t last_x = draw_ctx->clip_area->x2 - x_ofs;
-                    lv_coord_t last_id = LV_MIN(last_x / step + 1, chart->point_cnt - 1);
-                    lv_coord_t point_cnt = last_id - dsc->id + 1;
-                    lv_point_t *poly_points = lv_mem_alloc((point_cnt + 2) * sizeof(lv_point_t));
+                    lv_coord_t last_id = chart->point_cnt - 1;
+                    if (chart->type == LVX_CHART_TYPE_STEP_LINE) {
+                        while(lv_map(ser->x_points[(start_point + last_id--) % chart->point_cnt],
+                            chart->xmin[ser->x_axis_sec], chart->xmax[ser->x_axis_sec], 0, w) >= last_x);
+                    } else {
+                        last_id = start_point + lv_map(last_x, 0, w, 0, chart->point_cnt - 1);
+                    }
+                    if (last_id < start_point) {
+                        last_id += chart->point_cnt - 1;
+                    }
+                    lv_coord_t point_cnt = last_id - dsc->id + 2;
+                    lv_point_t *poly_points = lv_mem_buf_get((point_cnt + 2) * sizeof(lv_point_t));
                     if (poly_points) {
                         lv_coord_t pad_top = lv_obj_get_style_pad_top(obj, LV_PART_MAIN) + border_width;
                         lv_coord_t y_ofs = obj->coords.y1 + pad_top - lv_obj_get_scroll_top(obj);
-                        lv_coord_t y_range = chart->ymax[ser->y_axis_sec] - chart->ymin[ser->y_axis_sec];
-                        lv_coord_t p_act = dsc->id;
+                        lv_coord_t p_act = (dsc->id + start_point) % chart->point_cnt;
                         lv_coord_t y_max = ser->y_points[p_act];
 
                         for (lv_coord_t i = 0; i < point_cnt; i++, p_act++) {
@@ -2457,8 +2716,14 @@ static void draw_line_chart_event_cb(lv_event_t* e)
                                 p_act = 0;
                             }
                             if (ser->y_points[p_act] != LV_CHART_POINT_NONE) {
-                                poly_points[i].x = (dsc->id + i) * w / (chart->point_cnt - 1) + x_ofs;
-                                poly_points[i].y = h - (ser->y_points[p_act] - chart->ymin[ser->y_axis_sec]) * h / y_range + y_ofs;
+                                if (chart->type == LVX_CHART_TYPE_STEP_LINE) {
+                                    poly_points[i].x = lv_map(ser->x_points[dsc->id + i],
+                                        chart->xmin[ser->x_axis_sec], chart->xmax[ser->x_axis_sec], 0, w) + x_ofs;
+                                } else {
+                                    poly_points[i].x = lv_map(dsc->id + i, 0, chart->point_cnt - 1, 0, w) + x_ofs;
+                                }
+                                poly_points[i].y = lv_map(ser->y_points[p_act], chart->ymin[ser->y_axis_sec],
+                                    chart->ymax[ser->y_axis_sec], h, 0) + y_ofs;
                                 y_max = LV_MAX(y_max, ser->y_points[p_act]);
                             }
                         }
@@ -2470,7 +2735,7 @@ static void draw_line_chart_event_cb(lv_event_t* e)
                         lv_draw_rect_dsc_t draw_dsc;
                         lv_draw_rect_dsc_init(&draw_dsc);
                         draw_dsc.bg_grad.dir = LV_GRAD_DIR_VER;
-                        uint8_t color_frac = (y_max - chart->ymin[ser->y_axis_sec]) * 255 / h;
+                        uint8_t color_frac = lv_map(y_max - chart->ymin[ser->y_axis_sec], 0, h, 0, 255);
                         draw_dsc.bg_grad.stops[0].color = lv_color_mix(dsc->line_dsc->color, lv_color_black(), color_frac);
                         LV_COLOR_SET_A(draw_dsc.bg_grad.stops[0].color, color_frac);
                         draw_dsc.bg_grad.stops[1].color.full = 0x00;
@@ -2480,7 +2745,7 @@ static void draw_line_chart_event_cb(lv_event_t* e)
                         const lv_area_t * clip_area_ori = draw_ctx->clip_area;
                         draw_ctx->clip_area = &obj_clip_area;
                         lv_draw_polygon(draw_ctx, &draw_dsc, poly_points, point_cnt + 2);
-                        lv_mem_free(poly_points);
+                        lv_mem_buf_release(poly_points);
                         draw_ctx->clip_area = clip_area_ori;
                         return;
                     }
