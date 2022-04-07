@@ -125,10 +125,11 @@
 
 #define SYSTEM_COLOR_BLUE                 lv_color_hex(0x0D84FF)
 #define SYSTEM_COLOR_TEXT_BLUE            lv_color_hex(0x1A8AFF)
-#define SYSTEM_COLOR_RED                  lv_color_hex(0xFF2626)
+#define SYSTEM_COLOR_RED                  lv_color_hex(0xF22424)
 #define SYSTEM_COLOR_DEFAULT              lv_color_hex(0x000000)
 #define SYSTEM_COLOR_BTN_GREY             lv_color_hex(0x333333)
 #define SYSTEM_COLOR_WHITE                lv_color_hex(0xFFFFFF)
+#define SYSTEM_COLOR_ORANGE               lv_color_hex(0xFFA900)
 
 #if LVX_USE_BTN
 #define BTN_DEFAULT_WIDTH                 110
