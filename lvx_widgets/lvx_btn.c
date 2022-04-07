@@ -38,8 +38,8 @@ static lvx_obj_style_t* styles = &stripe_style;
 const lv_obj_class_t lvx_btn_class = {
     .constructor_cb = lvx_btn_constructor,
     .event_cb = lvx_btn_event,
-    .width_def = LV_SIZE_CONTENT,
-    .height_def = LV_SIZE_CONTENT,
+    .width_def = 240,
+    .height_def = 90,
     .base_class = &lv_btn_class,
     .instance_size = sizeof(lvx_btn_t),
 };
