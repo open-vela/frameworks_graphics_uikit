@@ -1665,15 +1665,8 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                     || ser->y_points[i] == LVX_CHART_POINT_NONE) {
                         continue;
                     }
-                points[real_cnt].x = lv_map(ser->x_points[i],
-                    chart->xmin[ser->x_axis_sec],
-                    chart->xmax[ser->x_axis_sec], 0, w) + x_ofs;
-                points[real_cnt].y = h - lv_map(ser->y_points[i],
-                    chart->ymin[ser->y_axis_sec],
-                    chart->ymax[ser->y_axis_sec], 0, h) + y_ofs;
-                if (_lv_area_is_point_on(draw_ctx->clip_area, &points[real_cnt], 0)) {
-                    real_cnt++;
-                }
+                points[real_cnt].x = ser->x_points[i];
+                points[real_cnt++].y = ser->y_points[i];
             }
             if (!real_cnt) {
                 continue;
@@ -1692,7 +1685,10 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
             }
             float* path_p;
             lv_coord_t point_p = 0;
-            gpu_point_dsc_t point_dsc = { .w = point_w, .h = point_h };
+            gpu_point_dsc_t point_dsc = {
+                .w = point_w,
+                .h = point_h
+            };
             lv_gpu_curve_fill_t fill = {
                 .color = ser->color,
                 .opa = point_dsc_default.bg_opa,
@@ -1714,13 +1710,40 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                     }
                 }
                 path_p = path;
+                lv_coord_t pp0, pp1;
                 for (lv_coord_t i = 0; i < point_cnt; i++) {
-                    p[0] = points[point_p++];
-                    while (point_p < real_cnt && points[point_p].x == p[0].x &&
-                        points[point_p].y - points[point_p - 1].y < ser->threshold) {
+                    pp1 = point_p;
+                    p[1].x = lv_map(points[point_p].x,
+                        chart->xmin[ser->x_axis_sec],
+                        chart->xmax[ser->x_axis_sec], 0, w) + x_ofs;
+                    if (p[1].x + point_w < draw_ctx->clip_area->x1) {
+                        point_p++;
+                        continue;
+                    }
+                    if (p[1].x - point_w > draw_ctx->clip_area->x2) {
+                        point_p = real_cnt;
+                        break;
+                    }
+                    p[1].y = h - lv_map(points[point_p++].y,
+                        chart->ymin[ser->y_axis_sec],
+                        chart->ymax[ser->y_axis_sec], 0, h) + y_ofs;
+                    while (point_p < real_cnt && points[point_p].x == points[pp1].x &&
+                        points[point_p].y - points[point_p - 1].y <= ser->threshold) {
                             point_p++;
                         }
-                    p[1] = points[point_p - 1];
+                    pp0 = point_p - 1;
+                    p[0].x = p[1].x;
+                    if (pp0 == pp1) {
+                        p[0].y = p[1].y;
+                    } else {
+                        p[0].y = h - lv_map(points[pp0].y,
+                            chart->ymin[ser->y_axis_sec],
+                            chart->ymax[ser->y_axis_sec], 0, h) + y_ofs;
+                    }
+                    if (p[1].y + point_h < draw_ctx->clip_area->y1 ||
+                        p[0].y - point_h > draw_ctx->clip_area->y2) {
+                        continue;
+                    }
                     path_p += gpu_fill_path(path_p, GPU_POINT_PATH, p, &point_dsc);
                     if (point_p == real_cnt) {
                         break;
