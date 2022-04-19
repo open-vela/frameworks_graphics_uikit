@@ -46,7 +46,6 @@ enum {
                                   points are equal, and the absolute value of
                                   the difference of y is less than the
                                   threshold, then use a line to connect */
-    LVX_CHART_TYPE_POINT_LINE,
 #endif
 };
 typedef uint8_t lvx_chart_type_t;

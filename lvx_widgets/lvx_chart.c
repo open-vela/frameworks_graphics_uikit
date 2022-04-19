@@ -92,7 +92,6 @@ void lvx_chart_set_type(lv_obj_t* obj, lvx_chart_type_t type)
         || chart->type == LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
         || chart->type == LVX_CHART_TYPE_POINT_BAR
-        || chart->type == LVX_CHART_TYPE_POINT_LINE
 #endif
     ) {
         lvx_chart_series_t* ser;
@@ -105,7 +104,7 @@ void lvx_chart_set_type(lv_obj_t* obj, lvx_chart_type_t type)
 
     if (type == LVX_CHART_TYPE_SCATTER
 #if LVX_CHART_EXTENTIONS == 1
-        || type == LVX_CHART_TYPE_POINT_BAR || type == LVX_CHART_TYPE_POINT_LINE
+        || type == LVX_CHART_TYPE_POINT_BAR
 #endif
     ) {
         lvx_chart_series_t* ser;
@@ -142,7 +141,6 @@ void lvx_chart_set_point_count(lv_obj_t* obj, uint16_t cnt)
             || chart->type == LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
             || chart->type == LVX_CHART_TYPE_POINT_BAR
-            || chart->type == LVX_CHART_TYPE_POINT_LINE
 #endif
         ) {
             if (!ser->x_ext_buf_assigned)
@@ -374,8 +372,7 @@ void lvx_chart_set_draw_mask_below_line(lv_obj_t* obj, bool en)
 
     lvx_chart_t* chart = (lvx_chart_t*)obj;
     if (chart->type != LVX_CHART_TYPE_LINE
-        && chart->type != LVX_CHART_TYPE_STEP_LINE
-        && chart->type != LVX_CHART_TYPE_POINT_LINE) {
+        && chart->type != LVX_CHART_TYPE_STEP_LINE) {
         LV_LOG_WARN("Type must be LVX_CHART_TYPE_LINE");
         return;
     }
@@ -438,7 +435,6 @@ void lvx_chart_get_point_pos_by_id(lv_obj_t* obj, lvx_chart_series_t* ser,
                || chart->type == LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
                || chart->type == LVX_CHART_TYPE_POINT_BAR
-               || chart->type == LVX_CHART_TYPE_POINT_LINE
 #endif
     ) {
         p_out->x = lv_map(ser->x_points[id], chart->xmin[ser->x_axis_sec],
@@ -523,7 +519,6 @@ lvx_chart_series_t* lvx_chart_add_series(lv_obj_t* obj, lv_color_t color,
         || chart->type == LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
         || chart->type == LVX_CHART_TYPE_POINT_BAR
-        || chart->type == LVX_CHART_TYPE_POINT_LINE
 #endif
     ) {
         ser->x_points = lv_mem_alloc(sizeof(lv_coord_t) * chart->point_cnt);
@@ -763,7 +758,6 @@ void lvx_chart_set_next_value2(lv_obj_t* obj, lvx_chart_series_t* ser,
         && chart->type != LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
         && chart->type != LVX_CHART_TYPE_POINT_BAR
-        && chart->type != LVX_CHART_TYPE_POINT_LINE
 #endif
     ) {
         LV_LOG_WARN("Type must be LVX_CHART_TYPE_SCATTER or "
@@ -804,7 +798,6 @@ void lvx_chart_set_value_by_id2(lv_obj_t* obj, lvx_chart_series_t* ser,
         && chart->type != LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
         && chart->type != LVX_CHART_TYPE_POINT_BAR
-        && chart->type != LVX_CHART_TYPE_POINT_LINE
 #endif
     ) {
         LV_LOG_WARN("Type must be LVX_CHART_TYPE_SCATTER or "
@@ -997,7 +990,6 @@ static void lvx_chart_event(const lv_obj_class_t* class_p, lv_event_t* e)
                 break;
 #if LVX_CHART_EXTENTIONS == 1
             case LVX_CHART_TYPE_POINT_BAR:
-            case LVX_CHART_TYPE_POINT_LINE:
                 draw_series_point_bar(obj, draw_ctx);
                 break;
 #endif
@@ -1766,11 +1758,8 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
 
         lv_obj_draw_part_dsc_t part_draw_dsc;
         lv_obj_draw_dsc_init(&part_draw_dsc, draw_ctx);
-
-        if (chart->type == LVX_CHART_TYPE_POINT_BAR) {
-            /* Sort data */
-            qsort(points, point_cnt, sizeof(lv_point_t), point_cmp);
-        }
+        /* Sort data */
+        qsort(points, point_cnt, sizeof(lv_point_t), point_cmp);
 
         line_dsc_default.color = ser->color;
         point_dsc_default.bg_color = ser->color;
@@ -1828,17 +1817,8 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                           chart->ymax[ser->y_axis_sec], h, 0);
             p[1].y += y_ofs;
 
-            if (chart->type == LVX_CHART_TYPE_POINT_BAR) {
-                if ((points[i].x == points[i + 1].x)
-                    && LV_ABS(points[i].y - points[i + 1].y)
-                        <= ser->threshold) {
-                    part_draw_dsc.p2 = &p[1];
-                    lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN,
-                                  &part_draw_dsc);
-                    lv_draw_line(draw_ctx, &line_dsc_default, &p[0], &p[1]);
-                    lv_event_send(obj, LV_EVENT_DRAW_PART_END, &part_draw_dsc);
-                }
-            } else {
+            if ((points[i].x == points[i + 1].x)
+                && LV_ABS(points[i].y - points[i + 1].y) <= ser->threshold) {
                 part_draw_dsc.p2 = &p[1];
                 lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_draw_dsc);
                 lv_draw_line(draw_ctx, &line_dsc_default, &p[0], &p[1]);
@@ -2513,7 +2493,6 @@ static void invalidate_point(lv_obj_t* obj, uint16_t i)
                || chart->type == LVX_CHART_TYPE_STEP_LINE
 #if LVX_CHART_EXTENTIONS == 1
                || chart->type == LVX_CHART_TYPE_POINT_BAR
-               || chart->type == LVX_CHART_TYPE_POINT_LINE
 #endif
     ) {
         lv_obj_invalidate(obj);
