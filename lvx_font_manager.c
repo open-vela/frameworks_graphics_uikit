@@ -248,7 +248,7 @@ static lv_ft_info_t * save_ft_to_fts(const lv_ft_info_t * newfont)
     const uint16_t buff_len = 256;
     char * buff = lv_mem_alloc(buff_len);
     if(!buff) {
-        return false;
+        return NULL;
     }
 
     font_refer_t * refer = NULL;
