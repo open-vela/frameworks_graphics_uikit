@@ -1723,6 +1723,9 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                         points[point_p].y - points[point_p - 1].y <= ser->threshold) {
                             point_p++;
                         }
+                    if (point_p > real_cnt) {
+                        break;
+                    }
                     pp0 = point_p - 1;
                     p[0].x = p[1].x;
                     if (pp0 == pp1) {
@@ -1742,7 +1745,9 @@ static void draw_series_point_bar(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                     }
                 }
                 blk_len = (path_p - path) * sizeof(float);
-                gpu_draw_path(path, blk_len, &fill, &gpu_buf);
+                if (blk_len > 0) {
+                    gpu_draw_path(path, blk_len, &fill, &gpu_buf);
+                }
             }
             lv_mem_buf_release(points);
             lv_mem_buf_release(path);
