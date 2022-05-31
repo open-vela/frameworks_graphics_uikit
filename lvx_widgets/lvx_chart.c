@@ -913,6 +913,16 @@ static void lvx_chart_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
     while (chart->series_ll.head) {
         ser = _lv_ll_get_head(&chart->series_ll);
 
+        if (chart->type == LVX_CHART_TYPE_SCATTER
+            || chart->type == LVX_CHART_TYPE_STEP_LINE
+#if LVX_CHART_EXTENTIONS == 1
+            || chart->type == LVX_CHART_TYPE_POINT_BAR
+#endif
+        ) {
+            if (!ser->x_ext_buf_assigned)
+                lv_mem_free(ser->x_points);
+        }
+
         if (!ser->y_ext_buf_assigned)
             lv_mem_free(ser->y_points);
 
