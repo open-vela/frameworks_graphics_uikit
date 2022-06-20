@@ -2720,11 +2720,11 @@ static void draw_line_chart_event_cb(lv_event_t* e)
                             poly_dsc.num = count;
                             path_p += gpu_fill_path(path_p,
                                 GPU_POLYGON_PATH, points, &poly_dsc);
+                            if (points[count - 2].x >= draw_ctx->clip_area->x2) {
+                                break;
+                            }
                         }
                         count = 0;
-                        if (points[count - 2].x >= draw_ctx->clip_area->x2) {
-                            break;
-                        }
                     }
                 }
                 if (count > 1) {
