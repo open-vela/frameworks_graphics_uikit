@@ -1,0 +1,133 @@
+#
+# For a description of the syntax of this configuration file,
+# see the file kconfig-language.txt in the NuttX tools repository.
+#
+
+menuconfig LVGL_EXTENSION
+	bool "Enable LVGL extension"
+	default n
+	---help---
+		Enable LVGL extension
+
+if LVGL_EXTENSION
+
+menuconfig LVX_USE_FONT_MANAGER
+	bool "LVX_USE_FONT_MANAGER"
+	default y
+	depends on LV_USE_FREETYPE
+	---help---
+		Enable font-manager for freetype fonts.
+
+if LVX_USE_FONT_MANAGER
+
+config FONT_LIB_PATH
+	string "Font library path"
+	default "/data/"
+	help
+		The path of the font library. eg:
+		/data/	, /data/font/xxxxx
+		Note: '/' is required at the end of the string.
+
+menuconfig FONT_USE_EMOJI
+	bool "Enable Emoji support"
+	default y
+
+if FONT_USE_EMOJI
+
+config FONT_EMOJI_PATH
+	string "Emoji resource path"
+	default "/resource/system/emoji"
+
+config FONT_EMOJI_EXT_NAME
+	string "Emoji file extension name"
+	default "bin"
+
+config FONT_EMOJI_SIZE_DEFAULT
+	int "Emoji default size"
+	default 50
+
+config FONT_EMOJI_UNICODE_START
+	int "Emoji unicode start"
+	default 40960
+
+config FONT_EMOJI_UNICODE_TOTAL
+	int "Emoji unicode total"
+	default 100
+
+endif # FONT_USE_EMOJI
+
+endif # LVX_USE_FONT_MANAGER
+
+config LVX_USE_WIDGETS
+	bool "Enable widgets extension"
+	default y
+	---help---
+		Enable widgets extension
+
+if LVX_USE_WIDGETS
+
+config	LVX_USE_THEME_EXTENDED
+	bool "LVX_USE_THEME_EXTENDED"
+	default y
+	---help---
+		Enable use theme extended
+
+config LVX_USE_BTN
+	bool "LVX_USE_BTN"
+	default y
+	---help---
+		Enable use lvx_btn widgets
+
+config LVX_USE_RADIO
+	bool "LVX_USE_RADIO"
+	default y
+	---help---
+		Enable use lvx_radio widgets
+
+config LVX_USE_SWITCH
+	bool "LVX_USE_SWITCH"
+	default y
+	---help---
+		Enable use lvx_switch widgets
+
+config LVX_USE_PICKER
+	bool "LVX_USE_PICKER"
+	default y
+	---help---
+		Enable use lvx_picker widgets
+
+config LVX_USE_MSGBOX
+	bool "LVX_USE_MSGBOX"
+	default y
+	---help---
+		Enable use lvx_msgbox widgets
+
+config LVX_USE_ARC_SCROLLBAR
+	bool "LVX_USE_ARC_SCROLLBAR"
+	default y
+	---help---
+		Enable use lvx_arc_scrollbar widgets
+
+config LVX_USE_CHART
+	bool "LVX_USE_CHART"
+	default y
+	---help---
+		Enable use lvx_chart widgets
+
+config LVX_USE_RLE
+	bool "RLE binary file compression support"
+	default y
+	---help---
+		Enalbe decoder to file .rle. When enabled, rle file decoder is
+		registered to lvgl.
+
+config LVX_USE_BIN_DECODER
+	bool "Custom binary file decoder that load full bin to RAM"
+	default n
+	---help---
+		Enalbe decoder to file .bin. Unlike the lvgl default bin decoder, this
+		one read all file data to buffer.
+
+endif # LVX_USE_WIDGETS
+
+endif # LVGL_EXTENSION
