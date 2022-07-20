@@ -12,6 +12,7 @@
 #include "lvx_widgets/lvx_arc_scrollbar.h"
 #include "lvx_widgets/lvx_chart.h"
 #include "lvx_font_manager.h"
+#include "lvx_async.h"
 #include "rle/lvx_rle_decoder.h"
 #include "bindecoder/lvx_bin_decoder.h"
 
