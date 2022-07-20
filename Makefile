@@ -32,6 +32,8 @@ ifeq ($(CONFIG_LVX_USE_FONT_MANAGER), y)
 CSRCS += ext/lvx_font_manager.c
 endif
 
+CSRCS += ext/lvx_async.c
+
 # widgets depend on extension
 ifeq ($(CONFIG_LVX_USE_WIDGETS), y)
 
