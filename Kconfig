@@ -23,10 +23,26 @@ if LVX_USE_FONT_MANAGER
 config FONT_LIB_PATH
 	string "Font library path"
 	default "/data/"
-	help
+	---help---
 		The path of the font library. eg:
 		/data/	, /data/font/xxxxx
 		Note: '/' is required at the end of the string.
+
+config FONT_USE_FONT_FAMILY
+	bool "Enable Font-family"
+	default n
+
+config FONT_FAMILY_LIST
+	string "Font-family fallback list"
+	default ""
+	depends on FONT_USE_FONT_FAMILY
+	---help---
+		Use ';' to separate family.
+		Use ',' to separate fallback font.
+		For example:
+		Font1,Font1Fallback1,Font1Fallback2...;
+		Font2,Font2Fallback1,Font2Fallback2...;
+		...
 
 menuconfig FONT_USE_EMOJI
 	bool "Enable Emoji support"
