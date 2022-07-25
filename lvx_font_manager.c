@@ -22,6 +22,8 @@
  *      DEFINES
  *********************/
 
+#define FONT_NAME_MAX_LEN 64
+
 /**********************
  *      TYPEDEFS
  **********************/
@@ -57,6 +59,11 @@ static bool font_name_combine(char * buff, uint16_t buff_len, const char * name)
 #if defined(CONFIG_FONT_USE_EMOJI)
 static bool emoji_get_imgfont_cb(const lv_font_t* font, void* img_src, uint16_t len,
                                  uint32_t unicode, uint32_t unicode_next);
+#endif
+
+#if defined(CONFIG_FONT_USE_FONT_FAMILY)
+static lv_font_t * fm_fallback_add(const lv_ft_info_t * newfont, const char * list);
+static void fm_fallback_remove(lv_font_t * font);
 #endif
 
 /**********************
@@ -174,9 +181,18 @@ bool lvx_font_create_core(lv_ft_info_t * newfont)
     }
 
     newfont->font = ft_info->font;
+    lv_font_t * cur_font = newfont->font;
+    LV_UNUSED(cur_font);
+
+#if defined(CONFIG_FONT_USE_FONT_FAMILY)
+    lv_font_t * fm_font = fm_fallback_add(newfont, CONFIG_FONT_FAMILY_LIST);
+    if(fm_font) {
+        cur_font = fm_font;
+    }
+#endif
 
 #if defined(CONFIG_FONT_USE_EMOJI)
-    newfont->font->fallback = g_emoji_font;
+    cur_font->fallback = g_emoji_font;
 #endif
 
     return true;
@@ -204,6 +220,10 @@ void lvx_font_destroy(lv_font_t * delfont)
         LV_LOG_WARN("delfont is NULL");
         return;
     }
+
+#if defined(CONFIG_FONT_USE_FONT_FAMILY)
+    fm_fallback_remove(delfont);
+#endif
 
     ft_in_fts_del(delfont);
 }
@@ -426,5 +446,130 @@ static bool emoji_get_imgfont_cb(const lv_font_t* font, void* img_src, uint16_t 
 }
 
 #endif /* CONFIG_FONT_USE_EMOJI */
+
+#if defined(CONFIG_FONT_USE_FONT_FAMILY)
+
+static int fm_parser_get_next(const char * ori_str, int start_pos, char separator,
+                              char * buf, size_t buf_size)
+{
+    buf[0] = '\0';
+    size_t total_len = strlen(ori_str);
+
+    if(!total_len) {
+        LV_LOG_ERROR("ori_str length == 0");
+        return -1;
+    }
+
+    const char * start_p = ori_str + start_pos;
+    const char * end_p = strchr(start_p, separator);
+    int retval;
+
+    if(end_p) {
+        retval = end_p - ori_str + 1;
+    } else {
+        end_p = ori_str + total_len;
+        retval = -1;
+    }
+
+    size_t cpy_len = end_p - start_p;
+
+    if(cpy_len > buf_size - 1) {
+        LV_LOG_ERROR("Not enough buf space");
+        return -1;
+    }
+
+    memcpy(buf, start_p, cpy_len);
+
+    buf[cpy_len] = '\0';
+
+    return retval;
+}
+
+static lv_font_t * fm_fallback_add(const lv_ft_info_t * newfont, const char * list)
+{
+    LV_ASSERT_NULL(newfont);
+    LV_ASSERT_NULL(list);
+
+    const char * name = newfont->name;
+    size_t name_len = strlen(name);
+
+    if(!name_len) {
+        LV_LOG_WARN("name_len = 0");
+        return NULL;
+    }
+
+    size_t list_len = strlen(list);
+
+    if(!list_len) {
+        LV_LOG_WARN("list_len = 0");
+        return NULL;
+    }
+
+    lv_ft_info_t ft_info = *newfont;
+    const lv_ft_info_t * cur_font = newfont;
+
+    int family_pos = 0;
+    do {
+        char family_str[FONT_NAME_MAX_LEN];
+        family_pos = fm_parser_get_next(list, family_pos, ';',
+                                        family_str, sizeof(family_str));
+
+        if(family_str[0] && strstr(family_str, name) == family_str) {
+
+            LV_LOG_INFO("family: %s", family_str);
+            int font_pos = name_len;
+            do {
+                char font_str[FONT_NAME_MAX_LEN];
+                font_pos = fm_parser_get_next(family_str, font_pos, ',',
+                                              font_str, sizeof(font_str));
+
+                if(font_str[0]) {
+                    LV_LOG_INFO("%s(%d) add fallback font -> %s(%d)",
+                                name, newfont->weight,
+                                font_str, ft_info.weight);
+                    ft_info.name = font_str;
+
+                    lv_ft_info_t * cur = save_ft_to_fts(&ft_info);
+
+                    if(!cur) {
+                        LV_LOG_ERROR("%s(%d) -> %s(%d) save_ft_to_fts() failed",
+                                     name, newfont->weight,
+                                     font_str, ft_info.weight);
+                        continue;
+                    }
+
+                    cur_font->font->fallback = cur->font;
+
+                    cur_font = cur;
+                }
+            } while(font_pos > 0);
+
+            break;
+        }
+
+    } while(family_pos > 0);
+
+    return cur_font->font;
+}
+
+static void fm_fallback_remove(lv_font_t * font)
+{
+    const lv_font_t * f = font->fallback;
+    while(f) {
+        const lv_font_t * fallback = f->fallback;
+#if defined(CONFIG_FONT_USE_EMOJI)
+        if(f != g_emoji_font) {
+            ft_in_fts_del(f);
+        }
+#else
+        ft_in_fts_del(f);
+#endif
+        f = fallback;
+    }
+
+    font->fallback = NULL;
+}
+
+#endif /* CONFIG_FONT_USE_FONT_FAMILY */
 
 #endif /* LVX_USE_FONT_MANAGER */
