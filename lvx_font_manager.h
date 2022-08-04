@@ -12,6 +12,7 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
+
 #ifdef __NuttX__
 #include "lv_ext_conf.h"
 #endif
@@ -48,26 +49,19 @@ void lvx_font_deinit(void);
  * @param style font style. see LV_FT_FONT_STYLE for details.
  * @return lvgl font pointer.
  */
-lv_font_t * lvx_font_create(const char * name, uint16_t size, LV_FT_FONT_STYLE style);
-
-/**
- * create font.similar font_create().
- * @param newfont font info.see lv_ft_info_t for details.
- * @return true on success, otherwise false.
- */
-bool lvx_font_create_core(lv_ft_info_t * newfont);
+lv_font_t* lvx_font_create(const char* name, uint16_t size, LV_FT_FONT_STYLE style);
 
 /**
  * destroy font.
  * @param delfont lvgl font pointer.
  */
-void lvx_font_destroy(lv_font_t * delfont);
+void lvx_font_destroy(lv_font_t* delfont);
 
 /**
  * set font find path.
  * @param path font find path.eg:"./xxx/".note:must have '/' in end.
  */
-void lvx_font_base_path_set(const char * path);
+void lvx_font_set_base_path(const char* path);
 
 /**********************
  *      MACROS
