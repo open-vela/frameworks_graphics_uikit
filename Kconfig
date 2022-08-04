@@ -25,52 +25,54 @@ config FONT_LIB_PATH
 	default "/data/"
 	---help---
 		The path of the font library. eg:
-		/data/	, /data/font/xxxxx
+		/data/	, /data/font/xxxxxL
 		Note: '/' is required at the end of the string.
 
-config FONT_USE_FONT_FAMILY
-	bool "Enable Font-family"
+config FONT_PATH_MAX
+	int "Font path max length"
+	default 128
+
+config FONT_NAME_MAX
+	int "Font name max length"
+	default 32
+
+config FONT_EXT_NAME
+	string "Font file extension"
+	default "ttf"
+
+config FONT_EXT_MAX
+	int "Font file extension max length"
+	default 8
+
+config FONT_CACHE_SIZE
+	int "Font cache size"
+	default 8
+	---help---
+		The maximum number of caches for reuse freetype info
+
+config FONT_USE_LOG_USER
+	bool "Use LV_LOG_USER to print details"
 	default n
 
-config FONT_FAMILY_LIST
-	string "Font-family fallback list"
-	default ""
-	depends on FONT_USE_FONT_FAMILY
-	---help---
-		Use ';' to separate family.
-		Use ',' to separate fallback font.
-		For example:
-		Font1,Font1Fallback1,Font1Fallback2...;
-		Font2,Font2Fallback1,Font2Fallback2...;
-		...
+config FONT_USE_FONT_FAMILY
+	bool "Enable font-family"
+	select NETUTILS_CJSON
+	default n
 
-menuconfig FONT_USE_EMOJI
-	bool "Enable Emoji support"
+config FONT_CONFIG_FILE_PATH
+	string "Font config file path"
+	depends on FONT_USE_FONT_FAMILY
+	default "/etc/font_config.json"
+
+config FONT_USE_EMOJI
+	bool "Enable emoji support"
+	depends on FONT_USE_FONT_FAMILY
 	default y
 
-if FONT_USE_EMOJI
-
-config FONT_EMOJI_PATH
-	string "Emoji resource path"
-	default "/resource/system/emoji"
-
-config FONT_EMOJI_EXT_NAME
-	string "Emoji file extension name"
-	default "bin"
-
-config FONT_EMOJI_SIZE_DEFAULT
-	int "Emoji default size"
-	default 50
-
-config FONT_EMOJI_UNICODE_START
-	int "Emoji unicode start"
-	default 40960
-
-config FONT_EMOJI_UNICODE_TOTAL
-	int "Emoji unicode total"
-	default 100
-
-endif # FONT_USE_EMOJI
+config FONT_EMOJI_HEADER
+	string "Name header used to identify Emoji"
+	depends on FONT_USE_EMOJI
+	default "Emoji"
 
 endif # LVX_USE_FONT_MANAGER
 

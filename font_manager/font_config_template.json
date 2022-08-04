@@ -1,0 +1,75 @@
+{
+    "emoji-list": [{
+            "font-name": "Emoji_Local",
+            "path": "/resource/system/emoji/",
+            "ext": ".bin",
+            "match-size": {
+                "min": 30,
+                "max": 40
+            },
+            "unicode-range": {
+                "begin": 40960,
+                "end": 41060
+            }
+        },
+        {
+            "font-name": "Emoji_WeChat",
+            "path": "/resource/system/wechat/emoji24/",
+            "ext": ".png",
+            "match-size": {
+                "min": 24,
+                "max": 29
+            },
+            "unicode-range": {
+                "begin": 61440,
+                "end": 61561
+            }
+        },
+        {
+            "font-name": "Emoji_WeChat",
+            "path": "/resource/system/wechat/emoji30/",
+            "ext": ".png",
+            "match-size": {
+                "min": 30,
+                "max": 39
+            },
+            "unicode-range": {
+                "begin": 61440,
+                "end": 61561
+            }
+        }
+    ],
+
+    "font-family": [{
+            "font-name": "MiSansW_Demibold",
+            "fallback": [
+                "MiSansW_Regular",
+                "Emoji_Local",
+                "Emoji_WeChat"
+            ]
+        },
+        {
+            "font-name": "MiSansW_Semibold",
+            "fallback": [
+                "MiSansW_Regular",
+                "Emoji_Local",
+                "Emoji_WeChat"
+            ]
+        },
+        {
+            "font-name": "MiSansW_Medium",
+            "fallback": [
+                "MiSansW_Regular",
+                "Emoji_Local",
+                "Emoji_WeChat"
+            ]
+        },
+        {
+            "font-name": "MiSansW_Regular",
+            "fallback": [
+                "Emoji_Local",
+                "Emoji_WeChat"
+            ]
+        }
+    ]
+}

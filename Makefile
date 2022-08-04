@@ -30,6 +30,8 @@ endif
 
 ifeq ($(CONFIG_LVX_USE_FONT_MANAGER), y)
 CSRCS += ext/lvx_font_manager.c
+CSRCS += $(wildcard ext/font_manager/*.c)
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(APPDIR)/netutils/cjson/cJSON}
 endif
 
 CSRCS += ext/lvx_async.c
