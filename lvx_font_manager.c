@@ -12,6 +12,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 
 #ifndef __NuttX__
@@ -426,23 +427,52 @@ static bool font_name_combine(char * buff, uint16_t buff_len, const char * name)
 
 #if defined(CONFIG_FONT_USE_EMOJI)
 
-#define IS_EMOJI(letter) \
-    (letter >=  CONFIG_FONT_EMOJI_UNICODE_START \
-  && letter <= (CONFIG_FONT_EMOJI_UNICODE_START + CONFIG_FONT_EMOJI_UNICODE_TOTAL))
+#define IS_EMOJI(unicode) \
+    ((unicode) >=  CONFIG_FONT_EMOJI_UNICODE_START \
+  && (unicode) <= (CONFIG_FONT_EMOJI_UNICODE_START + CONFIG_FONT_EMOJI_UNICODE_TOTAL))
 
-static bool emoji_get_imgfont_cb(const lv_font_t* font, void* img_src, uint16_t len,
+static bool emoji_get_imgfont_cb(const lv_font_t * font, void * img_src, uint16_t len,
                                  uint32_t unicode, uint32_t unicode_next)
 {
     LV_UNUSED(unicode_next);
 
-    if (IS_EMOJI(unicode)) {
-        char* path = (char*)img_src;
-        lv_snprintf(path, len,
-                    CONFIG_FONT_EMOJI_PATH "/%" PRIu32 "." CONFIG_FONT_EMOJI_EXT_NAME, unicode);
-        return true;
+    if(!IS_EMOJI(unicode)) {
+        return false;
     }
 
-    return false;
+    /* Using the following method is more than
+     * 10 times faster than the 'snprintf' method
+     */
+
+    static const char base_path_str[] = CONFIG_FONT_EMOJI_PATH "/";
+    char num_str[16];
+    static const char ext_str[] = "." CONFIG_FONT_EMOJI_EXT_NAME;
+    static const int max_size = sizeof(base_path_str) + sizeof(num_str) + sizeof(ext_str);
+
+    if(len < max_size) {
+        LV_LOG_ERROR("buf len(%d) < max_size(%d), "
+                     "not enough buffers to generate path string",
+                     len, max_size);
+        return false;
+    }
+
+    char * path = img_src;
+
+    /* Copy base path, no terminator required */
+    lv_memcpy(path, base_path_str, sizeof(base_path_str) - 1);
+
+    /* Generate number string (unicode-range: 0 ~ 0x10FFFF) */
+    itoa(unicode, num_str, 10);
+
+    /* Copy number string */
+    char * cur_p = path + sizeof(base_path_str) - 1;
+    const char * src_p = num_str;
+    while ((*cur_p++ = *src_p++) != '\0');
+
+    /* Copy the extension, including the terminator */
+    lv_memcpy(cur_p - 1, ext_str, sizeof(ext_str));
+
+    return true;
 }
 
 #endif /* CONFIG_FONT_USE_EMOJI */
