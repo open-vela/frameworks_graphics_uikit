@@ -1199,35 +1199,6 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
             ? ser->start_point
             : 0;
 
-#ifdef CONFIG_LV_USE_GPU_INTERFACE
-            float* path = NULL;
-            if (lv_gpu_getmode() != LV_GPU_MODE_POWERSAVE) {
-                if (crowded_mode) {
-                    path = lv_mem_buf_get(w * GPU_POINT_PATH_SIZE);
-                } else {
-                    path = lv_mem_buf_get(chart->point_cnt * GPU_POINT_PATH_SIZE +
-                        (chart->point_cnt - 1) * GPU_LINE_PATH_SIZE);
-                }
-            }
-            float* path_p = path;
-            lv_gpu_curve_fill_t fill = {
-                .color = ser->color,
-                .opa = point_dsc_default.bg_opa,
-                .type = CURVE_FILL_COLOR
-            };
-            lv_gpu_buffer_t gpu_buf = {
-                .buf = draw_ctx->buf,
-                .buf_area = draw_ctx->buf_area,
-                .clip_area = (lv_area_t*)draw_ctx->clip_area,
-                .cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
-                .w = lv_area_get_width(draw_ctx->buf_area),
-                .h = lv_area_get_height(draw_ctx->buf_area)
-            };
-            gpu_point_dsc_t point_dsc = {
-                .w = point_w,
-                .h = point_h
-            };
-#endif
         p[0].x = 0;
         p[1].x = 0;
 
@@ -1317,15 +1288,7 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                             if (p[0].y == p[1].y)
                                 p[1].y++; /*If they are the same no line will be
                                            drawn*/
-#ifdef CONFIG_LV_USE_GPU_INTERFACE
-                            if (path) {
-                                path_p += gpu_fill_path(path_p, GPU_LINE_PATH, p, &line_dsc_default);
-                            } else {
-#endif
                             lv_draw_line(draw_ctx, &line_dsc_default, &p[0], &p[1]);
-#ifdef CONFIG_LV_USE_GPU_INTERFACE
-                            }
-#endif
                             p[1].x++; /*Compensate the previous x--*/
                             y_min = y_cur; /*Start the line of the next x from
                                               the current last y*/
@@ -1354,29 +1317,12 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
 
                     if (ser->y_points[p_prev] != LVX_CHART_POINT_NONE
                         && ser->y_points[p_act] != LVX_CHART_POINT_NONE) {
-#ifdef CONFIG_LV_USE_GPU_INTERFACE
-                        if (path) {
-                            path_p += gpu_fill_path(path_p, GPU_LINE_PATH, p, &line_dsc_default);
-                        } else {
-#endif
                         lv_draw_line(draw_ctx, &line_dsc_default, &p[0], &p[1]);
-#ifdef CONFIG_LV_USE_GPU_INTERFACE
-                        }
-#endif
                     }
 
                     if (point_w && point_h
                         && ser->y_points[p_prev] != LVX_CHART_POINT_NONE) {
-#ifdef CONFIG_LV_USE_GPU_INTERFACE
-                        if (path) {
-                            lv_point_t tmp[2] = { p[0], p[0] };
-                            path_p += gpu_fill_path(path_p, GPU_POINT_PATH, tmp, &point_dsc);
-                        } else {
-#endif
                         lv_draw_rect(draw_ctx, &point_dsc_default, &point_area);
-#ifdef CONFIG_LV_USE_GPU_INTERFACE
-                        }
-#endif
                     }
 
                     lv_event_send(obj, LV_EVENT_DRAW_PART_END, &part_draw_dsc);
@@ -1400,26 +1346,10 @@ static void draw_series_line(lv_obj_t* obj, lv_draw_ctx_t* draw_ctx)
                 part_draw_dsc.draw_area = &point_area;
                 part_draw_dsc.value = ser->y_points[p_act];
                 lv_event_send(obj, LV_EVENT_DRAW_PART_BEGIN, &part_draw_dsc);
-#ifdef CONFIG_LV_USE_GPU_INTERFACE
-                if (path) {
-                    p[0] = p[1];
-                    path_p += gpu_fill_path(path_p, GPU_POINT_PATH, p, &point_dsc);
-                } else {
-#endif
                 lv_draw_rect(draw_ctx, &point_dsc_default, &point_area);
-#ifdef CONFIG_LV_USE_GPU_INTERFACE
-                }
-#endif
                 lv_event_send(obj, LV_EVENT_DRAW_PART_END, &part_draw_dsc);
             }
         }
-
-#ifdef CONFIG_LV_USE_GPU_INTERFACE
-        if (path && path_p != path) {
-            gpu_draw_path(path, (path_p - path) * sizeof(float), &fill, &gpu_buf);
-            lv_mem_buf_release(path);
-        }
-#endif
     }
     draw_ctx->clip_area = clip_area_ori;
 }
