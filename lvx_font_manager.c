@@ -97,7 +97,12 @@ lv_font_t* lvx_font_create(const char* name, uint16_t size, LV_FT_FONT_STYLE sty
     newfont.weight = size;
 
     if (!lvx_font_create_core(&newfont)) {
+#ifdef CONFIG_FONT_USE_LV_FONT_DEFAULT
+        FONT_LOG_WARN("Use LV_FONT_DEFAULT(%p)", LV_FONT_DEFAULT);
+        return (lv_font_t*)LV_FONT_DEFAULT;
+#else
         return NULL;
+#endif /* CONFIG_FONT_USE_LV_FONT_DEFAULT */
     }
 
     return newfont.font;
@@ -109,6 +114,13 @@ void lvx_font_destroy(lv_font_t* delfont)
         FONT_LOG_WARN("delfont is NULL");
         return;
     }
+
+#ifdef CONFIG_FONT_USE_LV_FONT_DEFAULT
+    if (delfont == LV_FONT_DEFAULT) {
+        FONT_LOG_INFO("delfont == LV_FONT_DEFAULT, no need to delete");
+        return;
+    }
+#endif /* CONFIG_FONT_USE_LV_FONT_DEFAULT */
 
 #if FONT_USE_FONT_FAMILY
     lv_font_t* font_family = (lv_font_t*)delfont->fallback;
