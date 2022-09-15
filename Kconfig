@@ -54,6 +54,10 @@ config FONT_USE_LOG_USER
 	bool "Use LV_LOG_USER to print details"
 	default n
 
+config FONT_USE_LV_FONT_DEFAULT
+	bool "Use LV_FONT_DEFAULT when font creation fails"
+	default y
+
 config FONT_USE_FONT_FAMILY
 	bool "Enable font-family"
 	select NETUTILS_CJSON
