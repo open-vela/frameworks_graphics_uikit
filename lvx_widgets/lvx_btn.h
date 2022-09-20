@@ -22,6 +22,7 @@ extern "C" {
 typedef struct {
     lv_btn_t btn;
     lv_obj_t* label;
+    bool has_style_transform;
 }lvx_btn_t;
 
 extern const lv_obj_class_t lvx_btn_class;
