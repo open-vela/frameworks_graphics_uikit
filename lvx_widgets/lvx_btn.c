@@ -184,6 +184,7 @@ static void lvx_btn_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
     lv_obj_add_style(obj, &styles->local_style, LV_STATE_PRESSED);
     lv_obj_add_style(obj, &styles->local_style, 0);
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_PRESS_LOCK);
+    lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLL_ON_FOCUS);
 }
 
 static void lvx_btn_event(const lv_obj_class_t* class_p, lv_event_t* e)
@@ -198,20 +199,28 @@ static void lvx_btn_event(const lv_obj_class_t* class_p, lv_event_t* e)
     lv_obj_t* obj = lv_event_get_current_target(e);
     lvx_btn_t* btn = (lvx_btn_t*)obj;
     lv_event_code_t code = lv_event_get_code(e);
-    lv_coord_t w = 0, h = 0;
     if (code == LV_EVENT_SIZE_CHANGED) {
-        if (btn->label) {
-            lv_opa_t opa = lv_obj_get_style_opa(obj, 0);
-            lv_obj_set_style_opa(obj, opa * 80 / 100, LV_STATE_PRESSED);
-        } else {
+        if (!btn->label && btn->has_style_transform == false) {
+            btn->has_style_transform = true;
+            lv_coord_t w = 0, h = 0;
             w = lv_obj_get_width(obj);
             h = lv_obj_get_height(obj);
-            lv_obj_set_style_transform_width(obj, -w * 10 / 100,
+            lv_obj_set_style_transform_width(obj, -w / 10 / 2,
                                              LV_STATE_PRESSED);
-            lv_obj_set_style_transform_height(obj, -h * 10 / 100,
+            lv_obj_set_style_transform_height(obj, -h / 10 / 2,
                                               LV_STATE_PRESSED);
             lv_opa_t opa = lv_obj_get_style_opa(obj, 0);
             lv_obj_set_style_opa(obj, opa * 80 / 100, LV_STATE_PRESSED);
+        }
+    } else if (code == LV_EVENT_DRAW_MAIN_BEGIN) {
+        if (btn->has_style_transform == true && btn->label) {
+            btn->has_style_transform = false;
+            lv_opa_t opa = lv_obj_get_style_opa(obj, 0);
+            lv_obj_set_style_opa(obj, opa * 80 / 100, LV_STATE_PRESSED);
+            lv_obj_remove_local_style_prop(obj, LV_STYLE_TRANSFORM_WIDTH,
+                                           LV_STATE_PRESSED);
+            lv_obj_remove_local_style_prop(obj, LV_STYLE_TRANSFORM_HEIGHT,
+                                           LV_STATE_PRESSED);
         }
     }
 }
@@ -219,6 +228,9 @@ static void lvx_btn_event(const lv_obj_class_t* class_p, lv_event_t* e)
 static lv_obj_t* lvx_btn_set_label(lv_obj_t* obj)
 {
     lv_obj_t* label = lv_label_create(obj);
+    lv_obj_set_size(label, LV_PCT(90), LV_SIZE_CONTENT);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_center(label);
     return label;
 }
