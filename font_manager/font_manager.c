@@ -193,7 +193,7 @@ bool font_manager_delete_font(font_manager_t* manager, lv_font_t* font)
     if (!rec_node) {
         FONT_LOG_WARN("No record found for font: %p(%d),"
                       " it was not created by font manager",
-            font, font->line_height);
+            font, (int)font->line_height);
         return false;
     }
 
@@ -333,7 +333,7 @@ static bool font_manager_check_resource(font_manager_t* manager)
         {
             FONT_LOG_WARN("Font: %p(%d) -> ref: %s(%d)",
                 node,
-                node->font.line_height,
+                (int)node->font.line_height,
                 node->ft_info->name,
                 node->ft_info->weight);
         }
