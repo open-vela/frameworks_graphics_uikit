@@ -80,62 +80,6 @@ config FONT_EMOJI_HEADER
 
 endif # LVX_USE_FONT_MANAGER
 
-config LVX_USE_WIDGETS
-	bool "Enable widgets extension"
-	default y
-	---help---
-		Enable widgets extension
-
-if LVX_USE_WIDGETS
-
-config	LVX_USE_THEME_EXTENDED
-	bool "LVX_USE_THEME_EXTENDED"
-	default y
-	---help---
-		Enable use theme extended
-
-config LVX_USE_BTN
-	bool "LVX_USE_BTN"
-	default y
-	---help---
-		Enable use lvx_btn widgets
-
-config LVX_USE_RADIO
-	bool "LVX_USE_RADIO"
-	default y
-	---help---
-		Enable use lvx_radio widgets
-
-config LVX_USE_SWITCH
-	bool "LVX_USE_SWITCH"
-	default y
-	---help---
-		Enable use lvx_switch widgets
-
-config LVX_USE_PICKER
-	bool "LVX_USE_PICKER"
-	default y
-	---help---
-		Enable use lvx_picker widgets
-
-config LVX_USE_MSGBOX
-	bool "LVX_USE_MSGBOX"
-	default y
-	---help---
-		Enable use lvx_msgbox widgets
-
-config LVX_USE_ARC_SCROLLBAR
-	bool "LVX_USE_ARC_SCROLLBAR"
-	default y
-	---help---
-		Enable use lvx_arc_scrollbar widgets
-
-config LVX_USE_CHART
-	bool "LVX_USE_CHART"
-	default y
-	---help---
-		Enable use lvx_chart widgets
-
 config LVX_USE_RLE
 	bool "RLE binary file compression support"
 	default y
@@ -150,6 +94,5 @@ config LVX_USE_BIN_DECODER
 		Enalbe decoder to file .bin. Unlike the lvgl default bin decoder, this
 		one read all file data to buffer.
 
-endif # LVX_USE_WIDGETS
 
 endif # LVGL_EXTENSION
