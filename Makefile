@@ -36,23 +36,4 @@ endif
 
 CSRCS += ext/lvx_async.c
 
-# widgets depend on extension
-ifeq ($(CONFIG_LVX_USE_WIDGETS), y)
-
-# theme extended depend on use widgets
-ifeq ($(CONFIG_LVX_USE_THEME_EXTENDED), y)
-CSRCS += ext/lvx_themes/lvx_theme_extended.c
-# end CONFIG_LVX_USE_THEME_EXTENDED
-endif
-
-# c resource
-CSRCS += $(wildcard ext/res/*.c)
-
-# All lvx_widgets depend on theme extension
-CSRCS += $(wildcard ext/lvx_widgets/*.c)
-
-# end LVX_USE_WIDGETS
-endif
-
 endif #CONFIG_LVGL_EXTENSION
-
