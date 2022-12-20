@@ -231,7 +231,7 @@ static lv_res_t decoder_info(struct _lv_img_decoder_t * decoder,
         *header = file_header.header;
 
         return LV_RES_OK;
-     } else {
+     } else if (src_type == LV_IMG_SRC_VARIABLE) {
         const lv_img_dsc_t * img_dsc = src;
         const lv_rle_header_t * rleheader = (const lv_rle_header_t * )img_dsc->data;
         if (rleheader->magic != RLE_HEADER_MAGIC) {
