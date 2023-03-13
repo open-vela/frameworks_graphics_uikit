@@ -34,6 +34,12 @@ CSRCS += $(wildcard ext/font_manager/*.c)
 CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(APPDIR)/netutils/cjson/cJSON}
 endif
 
+CSRCS += $(wildcard ext/video/*.c)
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/../external/ffmpeg/ffmpeg
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/../frameworks/media/include
+CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(APPDIR)/netutils/cjson/cJSON}
+
 CSRCS += ext/lvx_async.c
+CSRCS += ext/lv_ext.c
 
 endif #CONFIG_LVGL_EXTENSION
