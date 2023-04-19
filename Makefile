@@ -31,14 +31,14 @@ endif
 ifeq ($(CONFIG_LVX_USE_FONT_MANAGER), y)
 CSRCS += ext/lvx_font_manager.c
 CSRCS += $(wildcard ext/font_manager/*.c)
-CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(APPDIR)/netutils/cjson/cJSON}
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/netutils/cjson/cJSON
 endif
 
 ifeq ($(CONFIG_LVX_USE_VIDEO_ADAPTER), y)
 CSRCS += $(wildcard ext/video/*.c)
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/../external/ffmpeg/ffmpeg
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/../frameworks/media/include
-CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" $(APPDIR)/netutils/cjson/cJSON}
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/netutils/cjson/cJSON
 endif
 
 CSRCS += ext/lvx_async.c
