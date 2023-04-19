@@ -20,9 +20,7 @@
 
 ifneq ($(CONFIG_LVGL_EXTENSION),)
 
-CFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" \
-	$(APPDIR)/graphics/lvgl/ext}
-CXXFLAGS += ${shell $(INCDIR) $(INCDIROPT) "$(CC)" \
-	$(APPDIR)/graphics/lvgl/ext}
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/graphics/lvgl/ext
+CXXFLAGS += ${INCDIR_PREFIX}$(APPDIR)/graphics/lvgl/ext
 
 endif
