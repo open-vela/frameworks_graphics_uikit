@@ -97,6 +97,13 @@ static lv_res_t decoder_info(lv_img_decoder_t* decoder, const void* src,
     if (res != LV_RES_OK)
         return res;
 
+    lv_img_src_t src_type = lv_img_src_get_type(src);
+    if(src_type == LV_IMG_SRC_VARIABLE){
+        if (header->cf == LV_IMG_CF_TRUE_COLOR ||
+            header->cf == LV_IMG_CF_TRUE_COLOR_ALPHA)
+            return LV_RES_INV;
+    }
+
     /* we insist this is a truecolor-alpha image. */
     header->cf = LV_IMG_CF_TRUE_COLOR_ALPHA;
     return LV_RES_OK;
