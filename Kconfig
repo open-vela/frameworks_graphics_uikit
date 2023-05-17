@@ -107,4 +107,17 @@ config LVX_VIDEO_CONFIG_FILE_PATH
 
 endif # LVX_USE_VIDEO_ADAPTER
 
+config LVX_USE_ANIMENGINE_ADAPTER
+	bool "Enable animation engine adapter"
+	depends on ANIMATION_ENGINE
+	default n
+
+if LVX_USE_ANIMENGINE_ADAPTER
+
+config LVX_ANIM_DEFAULT_PERIOD
+	int "animation engine default period"
+	default 16
+
+endif # LVX_USE_ANIMENGINE_ADAPTER
+
 endif # LVGL_EXTENSION
