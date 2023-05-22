@@ -43,6 +43,10 @@ void lv_ext_init(void)
     lvx_video_adapter_init();
 #endif
 
+#if defined(CONFIG_LVX_USE_BIN_DECODER)
+    lvx_bin_decoder_init();
+#endif
+
 #ifdef CONFIG_LVX_USE_RLE
     lvx_rle_decoder_init();
 #endif
