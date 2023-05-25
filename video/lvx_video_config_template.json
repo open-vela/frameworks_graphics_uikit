@@ -1,12 +1,4 @@
-{
-    "item0": {
-        "type": "video",
-        "source": "InVideo0",
-        "tunnel": "Invideo0_vtun"
-    },
-    "item1": {
-        "type": "camera",
-        "source": "InCamera0",
-        "tunnel": "InCamera0_vtun"
-    }
-}
+[
+    "Vtun_Video0",
+    "Vtun_Camera0"
+]
