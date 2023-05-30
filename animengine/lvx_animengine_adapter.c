@@ -300,7 +300,7 @@ static inline void anim_destroy(void* context)
  ****************************************************************************/
 anim_engine_handle_t lvx_anim_adapter_init(void)
 {
-    anim_context_t* anim_ctx = anim_init();
+    anim_context_t* anim_ctx = anim_engine_init();
     anim_ctx->get_property_cb = anim_get_property;
     anim_ctx->set_property_cb = anim_set_property;
     anim_ctx->get_tick_cb = lv_tick_get;
