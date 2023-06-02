@@ -299,7 +299,7 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
         goto error_file;
     }
 
-    img_buf = lv_mem_alloc(buf_len);
+    img_buf = lv_mem_aligned_alloc_draw_buf(LV_ATTRIBUTE_MEM_ALIGN_SIZE, buf_len);
     if (img_buf == NULL) {
         goto error_file;
     }
@@ -317,7 +317,7 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
         goto error_with_img_buf;
     }
 
-    void* file_buffer = lv_mem_alloc(size);
+    void* file_buffer = lv_mem_alloc_draw_buf(size);
     if (file_buffer == NULL) {
         goto error_with_img_buf;
     }
@@ -330,7 +330,7 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
 
     res = lv_fs_read(&f, file_buffer, size, &rd_cnt);
     if (res != LV_RES_INV || rd_cnt != size) {
-        lv_mem_free(file_buffer);
+        lv_mem_free_draw_buf(file_buffer);
         goto error_with_img_buf;
     }
 
@@ -351,13 +351,13 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
            size, buf_len, read_cost, decompress_cost);
 #endif
 
-    lv_mem_free(file_buffer);
+    lv_mem_free_draw_buf(file_buffer);
 
     if (decoded_len != buf_len) {
         LV_LOG_WARN("rle decode failed, decoded len: %" PRIu32
                     ", expected %" PRIu32 ".",
                     decoded_len, buf_len);
-        lv_mem_free(img_buf);
+        lv_mem_free_draw_buf(img_buf);
         return LV_RES_INV;
     }
 #else
@@ -371,7 +371,7 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
     if (decoded_len != buf_len) {
         LV_LOG_WARN("rle decode failed, decoded len: %d, expect %d.",
                     decoded_len, buf_len);
-        lv_mem_free(img_buf);
+        lv_mem_free_draw_buf(img_buf);
         return LV_RES_INV;
     }
 #endif
@@ -381,7 +381,7 @@ static inline lv_res_t decode_from_file(lv_img_decoder_t * decoder,
 
 #if RLE_DECODER_OPTIMIZE_FS
 error_with_img_buf:
-    lv_mem_free(img_buf);
+    lv_mem_free_draw_buf(img_buf);
 #endif
 
 error_file:
@@ -425,7 +425,7 @@ static inline lv_res_t decode_from_variable(lv_img_decoder_t * decoder,
         return LV_RES_INV;
     }
 
-    img_buf = lv_mem_alloc(buf_len);
+    img_buf = lv_mem_aligned_alloc_draw_buf(LV_ATTRIBUTE_MEM_ALIGN_SIZE, buf_len);
     if (img_buf == NULL) {
         return LV_RES_INV;
     }
@@ -440,7 +440,7 @@ static inline lv_res_t decode_from_variable(lv_img_decoder_t * decoder,
         LV_LOG_WARN("rle decode failed, decoded len: %" PRIu32
                     ", expected %" PRIu32 ".",
                     decoded_len, buf_len);
-        lv_mem_free(img_buf);
+        lv_mem_free_draw_buf(img_buf);
         return LV_RES_INV;
     }
 
@@ -492,7 +492,7 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder,
 #ifdef CONFIG_LV_USE_GPU_INTERFACE
     res = lv_gpu_decoder_open(decoder, &data->decoder_dsc);
     if (res == LV_RES_OK) {
-        lv_mem_free(img_data);
+        lv_mem_free_draw_buf(img_data);
         data->img_dsc.data = NULL;
     } else {
 #endif
@@ -501,7 +501,7 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder,
     }
 #endif
     if (res != LV_RES_OK) {
-        lv_mem_free(img_data);
+        lv_mem_free_draw_buf(img_data);
         lv_mem_free(data);
         return LV_RES_INV;
     }
@@ -537,7 +537,7 @@ static void decoder_close(lv_img_decoder_t *decoder, lv_img_decoder_dsc_t *dsc)
         }
 #endif
         if (decoder_data->img_dsc.data)
-            lv_mem_free((void*)decoder_data->img_dsc.data);
+            lv_mem_free_draw_buf((void*)decoder_data->img_dsc.data);
         lv_mem_free(dsc->user_data);
         dsc->user_data = NULL;
     }
