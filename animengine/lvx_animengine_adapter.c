@@ -34,6 +34,7 @@
 #endif
 
 #define LVX_OPACITY_ZOOM_NONE 0xFF
+#define LVX_ANGLE_RATIO 10
 
 /****************************************************************************
  * Private Types
@@ -179,10 +180,10 @@ static inline int anim_get_property(anim_layer_t* layer_obj, anim_value_t* v)
 
     case ANIM_PT_TRANSFORM_ROTATE: {
         if (layer_obj->layer_type == ANIM_LT_IMAGE) {
-            lvgl_value_to_anim_value(lv_img_get_angle(obj), v);
+            lvgl_value_to_anim_value(lv_img_get_angle(obj) / LVX_ANGLE_RATIO, v);
         } else {
             lvgl_value_to_anim_value(
-                lv_obj_get_style_transform_angle(obj, LV_PART_MAIN), v);
+                lv_obj_get_style_transform_angle(obj, LV_PART_MAIN) / LVX_ANGLE_RATIO, v);
         }
         break;
     }
@@ -273,9 +274,9 @@ static inline int anim_set_property(anim_layer_t* layer_obj,
 
     case ANIM_PT_TRANSFORM_ROTATE: {
         if (layer_obj->layer_type == ANIM_LT_IMAGE) {
-            lv_img_set_angle(obj, anim_value_to_lvgl_value(v));
+            lv_img_set_angle(obj, anim_value_to_lvgl_value(v) * LVX_ANGLE_RATIO);
         } else {
-            lv_obj_set_style_transform_angle(obj, anim_value_to_lvgl_value(v),
+            lv_obj_set_style_transform_angle(obj, anim_value_to_lvgl_value(v) * LVX_ANGLE_RATIO,
                 LV_PART_MAIN);
         }
         break;
