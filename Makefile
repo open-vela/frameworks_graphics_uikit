@@ -41,6 +41,10 @@ CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/../frameworks/media/include
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/netutils/cjson/cJSON
 endif
 
+ifeq ($(CONFIG_LVX_USE_VIDEO_EXAMPLE), y)
+CSRCS += $(wildcard ext/test/video/*.c)
+endif
+
 ifeq ($(CONFIG_LVX_USE_ANIMENGINE_ADAPTER), y)
 CSRCS += $(wildcard ext/animengine/*.c)
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/frameworks/graphics/animengine/include
