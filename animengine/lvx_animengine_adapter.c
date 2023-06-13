@@ -112,12 +112,12 @@ static inline int anim_get_property(anim_layer_t* layer_obj, anim_value_t* v)
     switch (layer_obj->property_type) {
 
     case ANIM_PT_TRANSFORM_WIDTH: {
-        lvgl_value_to_anim_value(lv_obj_get_width(obj), v);
+        lvgl_value_to_anim_value(lv_obj_get_style_transform_width(obj, LV_PART_MAIN), v);
         break;
     }
 
     case ANIM_PT_TRANSFORM_HEIGHT: {
-        lvgl_value_to_anim_value(lv_obj_get_height(obj), v);
+        lvgl_value_to_anim_value(lv_obj_get_style_transform_height(obj, LV_PART_MAIN), v);
         break;
     }
 
@@ -206,12 +206,12 @@ static inline int anim_set_property(anim_layer_t* layer_obj,
     switch (layer_obj->property_type) {
 
     case ANIM_PT_TRANSFORM_WIDTH: {
-        lv_obj_set_width(obj, anim_value_to_lvgl_value(v));
+        lv_obj_set_style_transform_width(obj, anim_value_to_lvgl_value(v), LV_PART_MAIN);
         break;
     }
 
     case ANIM_PT_TRANSFORM_HEIGHT: {
-        lv_obj_set_height(obj, anim_value_to_lvgl_value(v));
+        lv_obj_set_style_transform_height(obj, anim_value_to_lvgl_value(v), LV_PART_MAIN);
         break;
     }
 
