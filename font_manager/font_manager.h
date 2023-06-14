@@ -24,6 +24,7 @@ extern "C" {
  *      TYPEDEFS
  **********************/
 
+typedef struct _lv_freetype_info_t lv_freetype_info_t;
 typedef struct _font_manager_t font_manager_t;
 
 /**********************
@@ -56,7 +57,7 @@ void font_manager_set_base_path(font_manager_t* manager, const char* base_path);
  * @param ft_info font info.
  * @return point to the created font
  */
-lv_font_t* font_manager_create_font(font_manager_t* manager, const lv_ft_info_t* ft_info);
+lv_font_t* font_manager_create_font(font_manager_t* manager, const lv_freetype_info_t* ft_info);
 
 /**
  * Delete font.
@@ -74,7 +75,7 @@ bool font_manager_delete_font(font_manager_t* manager, lv_font_t* font);
  * @param ft_info fallback font information.
  * @return point to the first font of font-family
  */
-lv_font_t* font_manager_create_font_family(font_manager_t* manager, const lv_ft_info_t* ft_info);
+lv_font_t* font_manager_create_font_family(font_manager_t* manager, const lv_freetype_info_t* ft_info);
 
 /**
  * Delete font-family.

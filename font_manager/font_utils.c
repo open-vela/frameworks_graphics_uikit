@@ -366,12 +366,12 @@ void font_utils_json_font_family_free(font_family_config_t* config)
     lv_mem_free(config);
 }
 
-bool font_utils_ft_info_is_equal(const lv_ft_info_t* ft_info_1, const lv_ft_info_t* ft_info_2)
+bool font_utils_ft_info_is_equal(const lv_freetype_info_t* ft_info_1, const lv_freetype_info_t* ft_info_2)
 {
     LV_ASSERT_NULL(ft_info_1);
     LV_ASSERT_NULL(ft_info_2);
 
-    bool is_equal = (ft_info_1->weight == ft_info_2->weight
+    bool is_equal = (ft_info_1->size == ft_info_2->size
         && ft_info_1->style == ft_info_2->style
         && strcmp(ft_info_1->name, ft_info_2->name) == 0);
 

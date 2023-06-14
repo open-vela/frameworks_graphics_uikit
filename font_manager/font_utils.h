@@ -23,6 +23,12 @@ extern "C" {
  *      TYPEDEFS
  **********************/
 
+typedef struct _lv_freetype_info_t {
+    const char* name;
+    uint16_t size;
+    uint16_t style;
+} lv_freetype_info_t;
+
 typedef struct _font_utils_json_obj_t font_utils_json_obj_t;
 
 typedef struct {
@@ -114,7 +120,7 @@ void font_utils_json_font_family_free(font_family_config_t* config);
  * @param ft_info_2 font information 2.
  * @return return true if the fonts are equal.
  */
-bool font_utils_ft_info_is_equal(const lv_ft_info_t* ft_info_1, const lv_ft_info_t* ft_info_2);
+bool font_utils_ft_info_is_equal(const lv_freetype_info_t* ft_info_1, const lv_freetype_info_t* ft_info_2);
 
 /**********************
  *      MACROS

@@ -28,7 +28,8 @@
 
 /* freetype font reference node */
 typedef struct _font_refer_node_t {
-    lv_ft_info_t ft_info; /* freetype font info */
+    lv_font_t* font_p; /* lv_freetype gen font */
+    lv_freetype_info_t ft_info; /* freetype font info */
     char name[FONT_NAME_MAX]; /* name buffer */
     int ref_cnt; /* reference count */
 } font_refer_node_t;
@@ -36,7 +37,7 @@ typedef struct _font_refer_node_t {
 /* lvgl font record node */
 typedef struct _font_rec_node_t {
     lv_font_t font; /* lvgl font info */
-    const lv_ft_info_t* ft_info; /* referenced freetype resource */
+    font_refer_node_t* refer_node_p; /* referenced freetype resource */
 } font_rec_node_t;
 
 /* font manager object */
@@ -63,8 +64,8 @@ typedef struct _font_manager_t {
  **********************/
 
 static bool font_manager_check_resource(font_manager_t* manager);
-static lv_ft_info_t* font_manager_request_font(font_manager_t* manager, const lv_ft_info_t* ft_info);
-static bool font_manager_return_font(font_manager_t* manager, const lv_ft_info_t* ft_info);
+static font_refer_node_t* font_manager_request_font(font_manager_t* manager, const lv_freetype_info_t* ft_info);
+static bool font_manager_drop_font(font_manager_t* manager, font_refer_node_t* refer_node);
 static font_rec_node_t* font_manager_search_rec_node(font_manager_t* manager, lv_font_t* font);
 
 /**********************
@@ -157,14 +158,14 @@ void font_manager_set_base_path(font_manager_t* manager, const char* base_path)
     FONT_LOG_INFO("path: %s", manager->base_path);
 }
 
-lv_font_t* font_manager_create_font(font_manager_t* manager, const lv_ft_info_t* ft_info)
+lv_font_t* font_manager_create_font(font_manager_t* manager, const lv_freetype_info_t* ft_info)
 {
     LV_ASSERT_NULL(manager);
     LV_ASSERT_NULL(ft_info);
 
     /* Request freetype font */
-    lv_ft_info_t* freetype_font = font_manager_request_font(manager, ft_info);
-    if (!freetype_font) {
+    font_refer_node_t* refer_node = font_manager_request_font(manager, ft_info);
+    if (!refer_node) {
         return NULL;
     }
 
@@ -174,10 +175,10 @@ lv_font_t* font_manager_create_font(font_manager_t* manager, const lv_ft_info_t*
     lv_memset_00(rec_node, sizeof(font_rec_node_t));
 
     /* copy freetype_font data */
-    rec_node->font = *freetype_font->font;
+    rec_node->font = *refer_node->font_p;
 
-    /* record reference freetype_font */
-    rec_node->ft_info = freetype_font;
+    /* record reference node */
+    rec_node->refer_node_p = refer_node;
 
     FONT_LOG_INFO("success");
     return &rec_node->font;
@@ -198,7 +199,7 @@ bool font_manager_delete_font(font_manager_t* manager, lv_font_t* font)
     }
 
     /* return freetype font resource */
-    bool retval = font_manager_return_font(manager, rec_node->ft_info);
+    bool retval = font_manager_drop_font(manager, rec_node->refer_node_p);
     LV_ASSERT(retval);
 
     /* free rec_node */
@@ -211,7 +212,7 @@ bool font_manager_delete_font(font_manager_t* manager, lv_font_t* font)
 
 #if FONT_USE_FONT_FAMILY
 
-lv_font_t* font_manager_create_font_family(font_manager_t* manager, const lv_ft_info_t* ft_info)
+lv_font_t* font_manager_create_font_family(font_manager_t* manager, const lv_freetype_info_t* ft_info)
 {
     LV_ASSERT_NULL(manager);
     LV_ASSERT_NULL(ft_info);
@@ -223,7 +224,7 @@ lv_font_t* font_manager_create_font_family(font_manager_t* manager, const lv_ft_
 
     lv_font_t* start_font = NULL;
     lv_font_t* cur_font = NULL;
-    lv_ft_info_t ft_info_tmp = *ft_info;
+    lv_freetype_info_t ft_info_tmp = *ft_info;
 
     int font_family_arr_size = manager->font_family_config->font_family_arr_size;
     for (int font_index = 0; font_index < font_family_arr_size; font_index++) {
@@ -244,8 +245,8 @@ lv_font_t* font_manager_create_font_family(font_manager_t* manager, const lv_ft_
                 lv_font_t* font = font_manager_create_font(manager, &ft_info_tmp);
                 if (!font) {
                     FONT_LOG_INFO("%s(%d) <- %s(%d) create failed, continue...",
-                        ft_info->name, ft_info->weight,
-                        ft_info_tmp.name, ft_info->weight);
+                        ft_info->name, ft_info->size,
+                        ft_info_tmp.name, ft_info->size);
                     continue;
                 }
 
@@ -334,8 +335,8 @@ static bool font_manager_check_resource(font_manager_t* manager)
             FONT_LOG_WARN("Font: %p(%d) -> ref: %s(%d)",
                 node,
                 (int)node->font.line_height,
-                node->ft_info->name,
-                node->ft_info->weight);
+                node->refer_node_p->ft_info.name,
+                node->refer_node_p->ft_info.size);
         }
     }
 
@@ -350,7 +351,7 @@ static bool font_manager_check_resource(font_manager_t* manager)
         {
             FONT_LOG_WARN("Font: %s(%d), ref cnt = %d",
                 node->ft_info.name,
-                node->ft_info.weight,
+                node->ft_info.size,
                 node->ref_cnt);
         }
     }
@@ -378,7 +379,7 @@ static font_rec_node_t* font_manager_search_rec_node(font_manager_t* manager, lv
     return NULL;
 }
 
-static font_refer_node_t* font_manager_search_refer_node(font_manager_t* manager, const lv_ft_info_t* ft_info)
+static font_refer_node_t* font_manager_search_refer_node(font_manager_t* manager, const lv_freetype_info_t* ft_info)
 {
     LV_ASSERT_NULL(manager);
     LV_ASSERT_NULL(ft_info);
@@ -387,7 +388,7 @@ static font_refer_node_t* font_manager_search_refer_node(font_manager_t* manager
     _LV_LL_READ(&manager->refer_ll, refer_node)
     {
         if (font_utils_ft_info_is_equal(ft_info, &refer_node->ft_info)) {
-            FONT_LOG_INFO("font: %s(%d) matched", ft_info->name, ft_info->weight);
+            FONT_LOG_INFO("font: %s(%d) matched", ft_info->name, ft_info->size);
             return refer_node;
         }
     }
@@ -395,75 +396,74 @@ static font_refer_node_t* font_manager_search_refer_node(font_manager_t* manager
     return NULL;
 }
 
-static bool font_manager_create_font_warpper(font_manager_t* manager, lv_ft_info_t* ft_info)
+static lv_font_t* font_manager_create_font_warpper(font_manager_t* manager, const lv_freetype_info_t* ft_info)
 {
+    lv_font_t* font = NULL;
 #if FONT_USE_EMOJI
     /* match emoji */
     if (IS_EMOJI_NAME(ft_info->name)) {
         if (!manager->emoji_manager) {
             FONT_LOG_WARN("emoji manager not ready");
-            return false;
+            return NULL;
         }
 
-        lv_font_t* emoji_font = font_emoji_manager_create_font(manager->emoji_manager, ft_info->name, ft_info->weight);
+        lv_font_t* emoji_font = font_emoji_manager_create_font(manager->emoji_manager, ft_info->name, ft_info->size);
         if (!emoji_font) {
             FONT_LOG_INFO("emoji %s(%d) create failed",
                 ft_info->name,
-                ft_info->weight);
-            return false;
+                ft_info->size);
+            return NULL;
         }
-        ft_info->font = emoji_font;
-    } else
+        return emoji_font;
+    }
 #endif /* FONT_USE_EMOJI */
-    {
-        /* create freetype font */
+
+    /* create freetype font */
 #if (FONT_CACHE_SIZE > 0)
-        /* get reuse font from cache */
-        if (font_cache_manager_get_reuse(manager->cache_manager, ft_info)) {
-            return true;
-        }
-        /* cache miss */
+    font = font_cache_manager_get_reuse(manager->cache_manager, ft_info);
+    /* get reuse font from cache */
+    if (font) {
+        return font;
+    }
+    /* cache miss */
 #endif /* FONT_CACHE_SIZE */
-        if (!font_manager_check_font_file(manager, ft_info->name)) {
-            return false;
-        }
-
-        /* generate full file path */
-        char path_buf[PATH_MAX];
-        font_manager_generate_font_file_path(manager, ft_info->name, path_buf, sizeof(path_buf));
-
-        /* set full path to name */
-        ft_info->name = path_buf;
-
-        if (!lv_ft_font_init(ft_info)) {
-            FONT_LOG_ERROR("Freetype font init failed, name: %s, weight: %d, style: %d",
-                ft_info->name, ft_info->weight, ft_info->style);
-            return false;
-        }
+    if (!font_manager_check_font_file(manager, ft_info->name)) {
+        return NULL;
     }
 
-    return true;
+    /* generate full file path */
+    char path_buf[PATH_MAX];
+    font_manager_generate_font_file_path(manager, ft_info->name, path_buf, sizeof(path_buf));
+
+    font = lv_freetype_font_create(path_buf, ft_info->size, ft_info->style);
+
+    if (!font) {
+        FONT_LOG_ERROR("Freetype font init failed, name: %s, weight: %d, style: %d",
+            ft_info->name, ft_info->size, ft_info->style);
+        return NULL;
+    }
+    return font;
 }
 
-static void font_manager_delete_font_warpper(font_manager_t* manager, lv_ft_info_t* ft_info)
+static void font_manager_delete_font_warpper(font_manager_t* manager, font_refer_node_t* refer_node)
 {
 #if FONT_USE_EMOJI
-    if (IS_EMOJI_NAME(ft_info->name)) {
+    if (IS_EMOJI_NAME(refer_node->ft_info.name)) {
         if (manager->emoji_manager) {
-            font_emoji_manager_delete_font(manager->emoji_manager, ft_info->font);
+            font_emoji_manager_delete_font(manager->emoji_manager, refer_node->font_p);
         }
     } else
 #endif /* FONT_USE_EMOJI */
     {
 #if (FONT_CACHE_SIZE > 0)
-        font_cache_manager_set_reuse(manager->cache_manager, ft_info);
+        font_cache_manager_set_reuse(manager->cache_manager, refer_node->font_p, &refer_node->ft_info);
 #else
-        lv_ft_font_destroy(ft_info->font);
+        lv_freetype_font_del(refer_node->font_p);
 #endif /* FONT_CACHE_SIZE */
     }
 }
 
-static lv_ft_info_t* font_manager_request_font(font_manager_t* manager, const lv_ft_info_t* ft_info)
+static font_refer_node_t* font_manager_request_font(font_manager_t* manager, const lv_freetype_info_t* ft_info)
 {
     LV_ASSERT_NULL(manager);
     LV_ASSERT_NULL(ft_info);
@@ -473,17 +473,11 @@ static lv_ft_info_t* font_manager_request_font(font_manager_t* manager, const lv
     if (refer_node) {
         refer_node->ref_cnt++;
         FONT_LOG_INFO("refer_node existed, ref_cnt = %d", refer_node->ref_cnt);
-        return &refer_node->ft_info;
+        return refer_node;
     }
 
-    /* not fount refer_node, start to create font */
-    lv_ft_info_t ft_info_tmp;
-    lv_memset_00(&ft_info_tmp, sizeof(lv_ft_info_t));
-    ft_info_tmp.name = ft_info->name;
-    ft_info_tmp.weight = ft_info->weight;
-    ft_info_tmp.style = ft_info->style;
-
-    if (!font_manager_create_font_warpper(manager, &ft_info_tmp)) {
+    lv_font_t* font = font_manager_create_font_warpper(manager, ft_info);
+    if (!font) {
         return NULL;
     }
 
@@ -496,27 +490,19 @@ static lv_ft_info_t* font_manager_request_font(font_manager_t* manager, const lv
     refer_node->name[sizeof(refer_node->name) - 1] = '\0';
 
     /* copy font data */
-    refer_node->ft_info = ft_info_tmp;
+    refer_node->font_p = font;
+    refer_node->ft_info = *ft_info;
     refer_node->ft_info.name = refer_node->name;
     refer_node->ref_cnt = 1;
 
     FONT_LOG_INFO("success");
-    return &refer_node->ft_info;
+    return refer_node;
 }
 
-static bool font_manager_return_font(font_manager_t* manager, const lv_ft_info_t* ft_info)
+static bool font_manager_drop_font(font_manager_t* manager, font_refer_node_t* refer_node)
 {
     LV_ASSERT_NULL(manager);
-    LV_ASSERT_NULL(ft_info);
-
-    /* Check refer_node is existed */
-    font_refer_node_t* refer_node = font_manager_search_refer_node(manager, ft_info);
-    if (!refer_node) {
-        FONT_LOG_WARN("No record found for font: %s(%d),"
-                      " it was not created by font manager",
-            ft_info->name, ft_info->weight);
-        return false;
-    }
+    LV_ASSERT_NULL(refer_node);
 
     refer_node->ref_cnt--;
 
@@ -527,8 +513,8 @@ static bool font_manager_return_font(font_manager_t* manager, const lv_ft_info_t
     }
 
     /* if if ref_cnt is about to be 0, free font resource */
-    font_manager_delete_font_warpper(manager, &refer_node->ft_info);
-    refer_node->ft_info.font = NULL;
+    font_manager_delete_font_warpper(manager, refer_node);
+    refer_node->font_p = NULL;
 
     /* free refer_node */
     _lv_ll_remove(&manager->refer_ll, refer_node);

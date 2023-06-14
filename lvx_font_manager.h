@@ -46,10 +46,10 @@ void lvx_font_deinit(void);
  * create font.
  * @param name font name.eg:"simhei".
  * @param size font size.eg:16.
- * @param style font style. see LV_FT_FONT_STYLE for details.
+ * @param style font style. see LV_FREETYPE_FONT_STYLE for details.
  * @return lvgl font pointer.
  */
-lv_font_t* lvx_font_create(const char* name, uint16_t size, LV_FT_FONT_STYLE style);
+lv_font_t* lvx_font_create(const char* name, uint16_t size, uint16_t style);
 
 /**
  * destroy font.
