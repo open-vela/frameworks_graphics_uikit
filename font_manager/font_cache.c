@@ -20,8 +20,9 @@
  **********************/
 
 typedef struct {
-    lv_ft_info_t ft_info;
+    lv_freetype_info_t ft_info;
     char name[FONT_NAME_MAX];
+    lv_font_t* font;
 } font_cache_t;
 
 typedef struct _font_cache_manager_t {
@@ -85,36 +86,36 @@ void font_cache_manager_delete(font_cache_manager_t* manager)
     FONT_LOG_INFO("success");
 }
 
-bool font_cache_manager_get_reuse(font_cache_manager_t* manager, lv_ft_info_t* ft_info)
+lv_font_t* font_cache_manager_get_reuse(font_cache_manager_t* manager, const lv_freetype_info_t* ft_info)
 {
     LV_ASSERT_NULL(manager);
     LV_ASSERT_NULL(ft_info);
 
     lv_ll_t* cache_ll = &manager->cache_ll;
 
-    FONT_LOG_INFO("font: %s(%d) searching...", ft_info->name, ft_info->weight);
+    FONT_LOG_INFO("font: %s(%d) searching...", ft_info->name, ft_info->size);
 
     font_cache_t* cache;
     _LV_LL_READ(cache_ll, cache)
     {
         /* match font */
         if (font_utils_ft_info_is_equal(ft_info, &cache->ft_info)) {
-            ft_info->font = cache->ft_info.font;
+            lv_font_t* font = cache->font;
             FONT_LOG_INFO("cache hit");
 
             /* remove reused cache */
             _lv_ll_remove(cache_ll, cache);
             lv_mem_free(cache);
-            return true;
+            return font;
         }
     }
 
     FONT_LOG_INFO("cache miss");
 
-    return false;
+    return NULL;
 }
 
-void font_cache_manager_set_reuse(font_cache_manager_t* manager, const lv_ft_info_t* ft_info)
+void font_cache_manager_set_reuse(font_cache_manager_t* manager, lv_font_t* font, const lv_freetype_info_t* ft_info)
 {
     LV_ASSERT_NULL(manager);
     LV_ASSERT_NULL(ft_info);
@@ -135,10 +136,11 @@ void font_cache_manager_set_reuse(font_cache_manager_t* manager, const lv_ft_inf
     strncpy(cache->name, ft_info->name, sizeof(cache->name));
     cache->name[sizeof(cache->name) - 1] = '\0';
 
+    cache->font = font;
     cache->ft_info = *ft_info;
     cache->ft_info.name = cache->name;
 
-    FONT_LOG_INFO("insert font: %s(%d) to reuse list", ft_info->name, ft_info->weight);
+    FONT_LOG_INFO("insert font: %s(%d) to reuse list", ft_info->name, ft_info->size);
 }
 
 /**********************
@@ -150,8 +152,8 @@ static void font_cache_close(font_cache_manager_t* manager, font_cache_t* cache)
     LV_ASSERT_NULL(manager);
     LV_ASSERT_NULL(cache);
 
-    FONT_LOG_INFO("font: %s(%d) close", cache->ft_info.name, cache->ft_info.weight);
-    lv_ft_font_destroy(cache->ft_info.font);
+    FONT_LOG_INFO("font: %s(%d) close", cache->ft_info.name, cache->ft_info.size);
+    lv_freetype_font_del(cache->font);
 
     _lv_ll_remove(&manager->cache_ll, cache);
     lv_mem_free(cache);
