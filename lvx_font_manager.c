@@ -13,6 +13,7 @@
 
 #include "font_manager/font_log.h"
 #include "font_manager/font_manager.h"
+#include "font_manager/font_utils.h"
 
 #ifndef __NuttX__
 #include <uv.h>
@@ -30,7 +31,7 @@
  *  STATIC PROTOTYPES
  **********************/
 
-static bool lvx_font_create_core(lv_ft_info_t* newfont);
+static lv_font_t* lvx_font_create_core(lv_freetype_info_t* newfont);
 
 /**********************
  *  STATIC VARIABLES
@@ -88,24 +89,24 @@ void lvx_font_set_base_path(const char* path)
     font_manager_set_base_path(g_font_manager, path);
 }
 
-lv_font_t* lvx_font_create(const char* name, uint16_t size, LV_FT_FONT_STYLE style)
+lv_font_t* lvx_font_create(const char* name, uint16_t size, uint16_t style)
 {
-    lv_ft_info_t newfont;
+    lv_freetype_info_t newfont;
     lv_memset_00(&newfont, sizeof(newfont));
     newfont.name = name;
     newfont.style = style;
-    newfont.weight = size;
+    newfont.size = size;
 
-    if (!lvx_font_create_core(&newfont)) {
+    lv_font_t* font = lvx_font_create_core(&newfont);
+
+    if (!font) {
 #ifdef CONFIG_FONT_USE_LV_FONT_DEFAULT
         FONT_LOG_WARN("Use LV_FONT_DEFAULT(%p)", LV_FONT_DEFAULT);
-        return (lv_font_t*)LV_FONT_DEFAULT;
-#else
-        return NULL;
+        font = (lv_font_t*)LV_FONT_DEFAULT;
 #endif /* CONFIG_FONT_USE_LV_FONT_DEFAULT */
     }
 
-    return newfont.font;
+    return font;
 }
 
 void lvx_font_destroy(lv_font_t* delfont)
@@ -140,14 +141,14 @@ void lvx_font_destroy(lv_font_t* delfont)
  *   STATIC FUNCTIONS
  **********************/
 
-static bool lvx_font_create_core(lv_ft_info_t* newfont)
+static lv_font_t* lvx_font_create_core(lv_freetype_info_t* newfont)
 {
     LV_ASSERT_NULL(newfont);
 
     lvx_font_init();
-    if (newfont == NULL || newfont->name == NULL || newfont->weight == 0) {
+    if (newfont == NULL || newfont->name == NULL || newfont->size == 0) {
         FONT_LOG_ERROR("param error");
-        return false;
+        return NULL;
     }
 
     uint32_t start = lv_tick_get();
@@ -155,23 +156,22 @@ static bool lvx_font_create_core(lv_ft_info_t* newfont)
 
     lv_font_t* font = font_manager_create_font(g_font_manager, newfont);
     if (!font) {
-        return false;
+        return NULL;
     }
-    newfont->font = font;
 
 #if FONT_USE_FONT_FAMILY
     lv_font_t* font_family = font_manager_create_font_family(g_font_manager, newfont);
     if (font_family) {
         font->fallback = font_family;
         FONT_LOG_INFO("%s(%d) add font-family success",
-            newfont->name, newfont->weight);
+            newfont->name, newfont->size);
     }
 #endif /* FONT_USE_FONT_FAMILY */
 
     FONT_LOG_INFO("font[%p]: %s(%d) create success, cost %" LV_PRIu32 "ms",
-        newfont->font, newfont->name, newfont->weight, lv_tick_elaps(start));
+        font, newfont->name, newfont->size, lv_tick_elaps(start));
 
-    return true;
+    return font;
 }
 
 #endif /* LVX_USE_FONT_MANAGER */

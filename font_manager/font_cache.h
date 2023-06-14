@@ -28,6 +28,7 @@ extern "C" {
  *      TYPEDEFS
  **********************/
 
+typedef struct _lv_freetype_info_t lv_freetype_info_t;
 typedef struct _font_cache_manager_t font_cache_manager_t;
 
 /**********************
@@ -53,14 +54,14 @@ void font_cache_manager_delete(font_cache_manager_t* manager);
  * @param ft_info font info.
  * @return returns true on success.
  */
-bool font_cache_manager_get_reuse(font_cache_manager_t* manager, lv_ft_info_t* ft_info);
+lv_font_t* font_cache_manager_get_reuse(font_cache_manager_t* manager, const lv_freetype_info_t* ft_info);
 
 /**
  * Set fonts to be reused.
  * @param manager pointer to font cache manager.
  * @param ft_info font info.
  */
-void font_cache_manager_set_reuse(font_cache_manager_t* manager, const lv_ft_info_t* ft_info);
+void font_cache_manager_set_reuse(font_cache_manager_t* manager, lv_font_t* font, const lv_freetype_info_t* ft_info);
 
 /**********************
  *      MACROS
