@@ -60,10 +60,10 @@ extern "C" {
 
 anim_engine_handle_t lvx_anim_adapter_init(void);
 
-#endif /* LVX_USE_ANIMENGINE_ADAPTER */
-
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* LVX_USE_ANIMENGINE_ADAPTER */
 
 #endif /* __LVX_ANIMATION_ENGINE_ADAPTER_H__ */
