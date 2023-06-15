@@ -24,6 +24,8 @@
 
 #if LVX_USE_ANIMENGINE_ADAPTER
 
+#include "lvx_property_callback_macro.h"
+
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
@@ -296,11 +298,67 @@ static inline void anim_destroy(void* context)
     lv_timer_del(ctx->timer_handle);
 }
 
+_DEFINE_ANIM_PROPERTY_CB_SELECTOR_(
+    style,
+    img_opa,
+    lv_obj_set_style_img_opa,
+    lv_obj_get_style_img_opa,
+    lv_opa_t,
+    LVX_OPACITY_ZOOM_NONE,
+    LV_PART_MAIN);
+
+_DEFINE_ANIM_PROPERTY_CB_(
+    image,
+    img_angle,
+    lv_img_set_angle,
+    lv_img_get_angle,
+    int16_t,
+    LVX_ANGLE_RATIO);
+
+_DEFINE_ANIM_PROPERTY_CB_(
+    image,
+    img_zoom,
+    lv_img_set_zoom,
+    lv_img_get_zoom,
+    uint16_t,
+    LV_IMG_ZOOM_NONE);
+
+static inline bool lvx_anim_register_property(void)
+{
+    anim_property_callback_t property_cb;
+
+#define _REGISTER_ANIM_PROPERTY_ENTRY_(module, style_name)         \
+    property_cb.get_property_cb = _##module##_get_##style_name##_; \
+    property_cb.set_property_cb = _##module##_set_##style_name##_; \
+    anim_register_property(#style_name, property_cb)
+
+    _REGISTER_ANIM_PROPERTY_ENTRY_(style, img_opa);
+    _REGISTER_ANIM_PROPERTY_ENTRY_(image, img_angle);
+    _REGISTER_ANIM_PROPERTY_ENTRY_(image, img_zoom);
+
+#undef _REGISTER_ANIM_PROPERTY_ENTRY_
+    return true;
+}
+
+void lvx_anim_unregister_property(void)
+{
+#define _UNREGISTER_ANIM_PROPERTY_ENTRY_(module, style_name) \
+    anim_unregister_property(#style_name)
+
+    _UNREGISTER_ANIM_PROPERTY_ENTRY_(style, img_opa);
+    _UNREGISTER_ANIM_PROPERTY_ENTRY_(image, img_angle);
+    _UNREGISTER_ANIM_PROPERTY_ENTRY_(image, img_zoom);
+
+#undef _UNREGISTER_ANIM_PROPERTY_ENTRY_
+}
+
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 anim_engine_handle_t lvx_anim_adapter_init(void)
 {
+    lvx_anim_register_property();
+
     anim_context_t* anim_ctx = anim_engine_init();
     anim_ctx->get_property_cb = anim_get_property;
     anim_ctx->set_property_cb = anim_set_property;
