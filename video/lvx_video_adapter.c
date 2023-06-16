@@ -59,6 +59,10 @@
 
 #define VTUN_HEADER "Vtun_"
 
+#define VTUN_SERVER_PATH_HEAD "vtun_server_path"
+
+#define MEDIA_PLAYER_PREPARE_OPT "format=sasp:noheader=1"
+
 /****************************************************************************
  * Private Type Declarations
  ****************************************************************************/
@@ -120,6 +124,31 @@ static int strstart(const char* str, const char* pfx,
         *ptr = str;
     }
 
+    return !*pfx;
+}
+
+/****************************************************************************
+ * Name: strcontain
+ ****************************************************************************/
+
+static bool strcontain(const char* str, const char* pfx)
+{
+    int index = 0;
+    int str_len = strlen(str);
+    int pfx_len = strlen(pfx);
+    if (str_len < pfx_len) {
+        return false;
+    }
+    while (index < str_len - pfx_len && *pfx) {
+        while (*str && *str != *pfx) {
+            str++;
+        }
+        while (*str && *pfx && *str == *pfx) {
+            str++;
+            pfx++;
+        }
+        index++;
+    }
     return !*pfx;
 }
 
@@ -391,20 +420,26 @@ static void* video_adapter_open(struct _lvx_video_vtable_t* vtable,
     }
 
     if (!strstart(src, CAMERA_SRC_HEADER, NULL)) {
-        char vtun_src[32] = "movie_async@";
         const char* url = NULL;
         strstart(ctx->cfg.vtun_name, VTUN_HEADER, &url);
 
-        ctx->handle = media_player_open(strcat(vtun_src, url));
+        ctx->handle = media_player_open(url);
 
         if (!ctx->handle) {
             LV_LOG_ERROR("media open : %s failed!", url);
             goto fail;
         }
 
-        if (media_player_prepare(ctx->handle, src, NULL) < 0) {
-            LV_LOG_ERROR("media prepare:%s failed!", url);
-            goto fail;
+        if (!strcontain(src, VTUN_SERVER_PATH_HEAD)) {
+            if (media_player_prepare(ctx->handle, src, NULL) < 0) {
+                LV_LOG_ERROR("media prepare:%s failed!", url);
+                goto fail;
+            }
+        } else {
+            if (media_player_prepare(ctx->handle, NULL, MEDIA_PLAYER_PREPARE_OPT) < 0) {
+                LV_LOG_ERROR("media prepare:%s failed!", MEDIA_PLAYER_PREPARE_OPT);
+                goto fail;
+            }
         }
     }
 
