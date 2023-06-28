@@ -27,6 +27,14 @@ extern "C" {
 
 typedef struct _lvx_video_vtable_t lvx_video_vtable_t;
 
+typedef enum {
+    LVX_VIDEO_FIT_CONTAIN,
+    LVX_VIDEO_FIT_COVER,
+    LVX_VIDEO_FIT_FILL,
+    LVX_VIDEO_FIT_SCALE_DOWN,
+    LVX_VIDEO_FIT_NONE,
+} LVX_VIDEO_FIT_TYPE;
+
 typedef struct {
     lv_img_t img;
     lv_timer_t* timer;
@@ -35,6 +43,7 @@ typedef struct {
     int32_t cur_time;
     void* video_ctx;
     lvx_video_vtable_t* vtable;
+    LVX_VIDEO_FIT_TYPE fit_type;
 } lvx_video_t;
 
 struct _lvx_video_vtable_t {
@@ -56,6 +65,12 @@ struct _lvx_video_vtable_t {
     int (*video_adapter_stop)(struct _lvx_video_vtable_t* vtable, void* ctx);
 
     int (*video_adapter_close)(struct _lvx_video_vtable_t* vtable, void* ctx);
+
+    int (*video_adapter_loop)(struct _lvx_video_vtable_t* vtable, void* ctx, int loop);
+
+    int (*video_adapter_get_player_state)(struct _lvx_video_vtable_t* vtable, void* ctx);
+
+    int (*video_adapter_write_data)(struct _lvx_video_vtable_t* vtable, void* ctx, void* data, size_t len);
 };
 
 extern const lv_obj_class_t lvx_video_class;
@@ -76,7 +91,12 @@ int lvx_video_stop(lv_obj_t* obj);
 int lvx_video_seek(lv_obj_t* obj, int pos);
 int lvx_video_pause(lv_obj_t* obj);
 int lvx_video_resume(lv_obj_t* obj);
-int lvx_video_get_dur(lv_obj_t* obj, int32_t* dur, int32_t* cur);
+int lvx_video_get_dur(lv_obj_t* obj);
+int lvx_video_set_loop(lv_obj_t* obj, int loop);
+void lvx_video_set_fittype(lv_obj_t* obj, int fit_type);
+void lvx_video_set_poster(lv_obj_t* obj, const char* poster_path);
+bool lvx_video_is_playing(lv_obj_t* obj);
+int lvx_video_write_data(lv_obj_t* obj, void* data, size_t len);
 
 /**********************
  *      MACROS
