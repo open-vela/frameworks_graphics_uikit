@@ -391,10 +391,11 @@ static void* video_adapter_open(struct _lvx_video_vtable_t* vtable,
     }
 
     if (!strstart(src, CAMERA_SRC_HEADER, NULL)) {
+        char vtun_src[32] = "movie_async@";
         const char* url;
         strstart(ctx->cfg.vtun_name, VTUN_HEADER, &url);
 
-        ctx->handle = media_player_open(url);
+        ctx->handle = media_player_open(strcat(vtun_src, url));
 
         if (!ctx->handle) {
             LV_LOG_ERROR("media open : %s failed!", url);
@@ -658,6 +659,50 @@ static void video_adapter_destroy(struct lvx_video_adapter_ctx_s* adapter_ctx)
 }
 
 /****************************************************************************
+ * Name: video_adapter_loop
+ ****************************************************************************/
+
+static int video_adapter_loop(struct _lvx_video_vtable_t* vtable,
+    void* ctx, int loop)
+{
+    struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
+
+    if (media_player_set_looping(video_ctx->handle, loop) < 0) {
+        LV_LOG_ERROR("media player set loop failed!");
+        return -1;
+    }
+
+    return 0;
+}
+
+/****************************************************************************
+ * Name: video_adapter_play_state
+ ****************************************************************************/
+static int video_adapter_get_player_state(struct _lvx_video_vtable_t* vtable,
+    void* ctx)
+{
+    struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
+
+    return media_player_is_playing(video_ctx->handle);
+}
+
+/****************************************************************************
+ * Name: video_adapter_write_data
+ ****************************************************************************/
+static int video_adapter_write_data(struct _lvx_video_vtable_t* vtable,
+    void* ctx, void* data, size_t len)
+{
+    struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
+
+    if (media_player_write_data(video_ctx->handle, data, len) < 0) {
+        LV_LOG_ERROR("media player write data failed!");
+        return -1;
+    }
+
+    return 0;
+}
+
+/****************************************************************************
  * Public Functions
  ****************************************************************************/
 
@@ -692,6 +737,9 @@ void lvx_video_adapter_init(void)
     adapter_ctx->vtable.video_adapter_resume = video_adapter_resume;
     adapter_ctx->vtable.video_adapter_stop = video_adapter_stop;
     adapter_ctx->vtable.video_adapter_close = video_adapter_close;
+    adapter_ctx->vtable.video_adapter_loop = video_adapter_loop;
+    adapter_ctx->vtable.video_adapter_get_player_state = video_adapter_get_player_state;
+    adapter_ctx->vtable.video_adapter_write_data = video_adapter_write_data;
 
     lvx_video_vtable_set_default(&(adapter_ctx->vtable));
 }
