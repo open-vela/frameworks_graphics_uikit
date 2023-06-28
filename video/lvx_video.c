@@ -7,6 +7,13 @@
  *      INCLUDES
  *********************/
 #include "lvx_video.h"
+#include "libavutil/intreadwrite.h"
+#include <fcntl.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 /*********************
  *      DEFINES
@@ -45,6 +52,56 @@ static lvx_video_vtable_t* g_video_default_vtable = NULL;
 /**********************
  *   GLOBAL FUNCTIONS
  **********************/
+static void lvx_video_apply_fittype(lvx_video_t* obj)
+{
+    float zoom = 1;
+    lv_obj_t* parent_obj = lv_obj_get_parent((lv_obj_t*)obj);
+    if (!parent_obj) {
+        LV_LOG_ERROR("lvx_video_apply_fittype get parent null!");
+        return;
+    }
+
+    lv_coord_t obj_width = lv_obj_get_width(parent_obj);
+    lv_coord_t obj_height = lv_obj_get_height(parent_obj);
+
+    if (obj->img_dsc.header.w == 0 || obj->img_dsc.header.h == 0 || obj_width == 0 || obj_height == 0)
+        return;
+
+    switch (obj->fit_type) {
+    case LVX_VIDEO_FIT_CONTAIN:
+        if (obj->img_dsc.header.w / (float)obj->img_dsc.header.h > obj_width / (float)obj_height) {
+            zoom = obj_width / (float)obj->img_dsc.header.w;
+        } else {
+            zoom = obj_height / (float)obj->img_dsc.header.h;
+        }
+        obj->img.zoom = LV_IMG_ZOOM_NONE * zoom;
+        break;
+    case LVX_VIDEO_FIT_COVER:
+        if (obj->img_dsc.header.w / (float)obj->img_dsc.header.h > obj_width / (float)obj_height) {
+            zoom = obj_height / (float)obj->img_dsc.header.h;
+        } else {
+            zoom = obj_width / (float)obj->img_dsc.header.w;
+        }
+        obj->img.zoom = LV_IMG_ZOOM_NONE * zoom;
+        break;
+    case LVX_VIDEO_FIT_FILL:
+        obj->img.w = obj_width;
+        obj->img.h = obj_height;
+        break;
+    case LVX_VIDEO_FIT_SCALE_DOWN:
+        if (obj->img_dsc.header.w * obj->img_dsc.header.h < obj_width * obj_height) {
+            obj->fit_type = LVX_VIDEO_FIT_NONE;
+        } else {
+            obj->fit_type = LVX_VIDEO_FIT_CONTAIN;
+        }
+        lvx_video_apply_fittype(obj);
+        break;
+    case LVX_VIDEO_FIT_NONE:
+        break;
+    default:
+        break;
+    }
+}
 
 void lvx_video_vtable_set_default(lvx_video_vtable_t* vtable)
 {
@@ -168,6 +225,62 @@ int lvx_video_resume(lv_obj_t* obj)
     return ret;
 }
 
+int lvx_video_get_dur(lv_obj_t* obj)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+
+    lvx_video_t* video_obj = (lvx_video_t*)obj;
+
+    return video_obj->vtable->video_adapter_get_dur(video_obj->vtable, video_obj->video_ctx);
+}
+
+int lvx_video_set_loop(lv_obj_t* obj, int loop)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+
+    lvx_video_t* video_obj = (lvx_video_t*)obj;
+
+    return video_obj->vtable->video_adapter_loop(video_obj->vtable, video_obj->video_ctx, loop);
+}
+
+void lvx_video_set_fittype(lv_obj_t* obj, int fit_type)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+
+    lvx_video_t* video_obj = (lvx_video_t*)obj;
+
+    video_obj->fit_type = (LVX_VIDEO_FIT_TYPE)fit_type;
+}
+
+void lvx_video_set_poster(lv_obj_t* obj, const char* poster_path)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+
+    lvx_video_t* video_obj = (lvx_video_t*)obj;
+
+    lv_img_set_src(&video_obj->img.obj, poster_path);
+}
+
+bool lvx_video_is_playing(lv_obj_t* obj)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+
+    lvx_video_t* video_obj = (lvx_video_t*)obj;
+
+    int pos = video_obj->vtable->video_adapter_get_player_state(video_obj->vtable, video_obj->video_ctx);
+
+    return pos ? true : false;
+}
+
+int lvx_video_write_data(lv_obj_t* obj, void* data, size_t len)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+
+    lvx_video_t* video_obj = (lvx_video_t*)obj;
+
+    return video_obj->vtable->video_adapter_write_data(video_obj->vtable, video_obj->video_ctx, data, len);
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
@@ -211,6 +324,7 @@ static void video_frame_task_cb(lv_timer_t* t)
     }
 
     if (first_frame) {
+        lvx_video_apply_fittype(video_obj);
         lv_img_set_src(&video_obj->img.obj, &video_obj->img_dsc);
     } else {
         lv_img_cache_invalidate_src(&video_obj->img_dsc);
