@@ -83,13 +83,6 @@ config LVX_USE_RLE
 		Enable decoder to file .rle. When enabled, rle file decoder is
 		registered to lvgl.
 
-config LVX_USE_BIN_DECODER
-	bool "Custom binary file decoder that load full bin to RAM"
-	default n
-	---help---
-		Enable decoder to file .bin. Unlike the lvgl default bin decoder, this
-		one read all file data to buffer.
-
 config LVX_USE_VIDEO_ADAPTER
 	bool "Enable video adapter based on media server"
 	depends on MEDIA_SERVER && NETUTILS_CJSON

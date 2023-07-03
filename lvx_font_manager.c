@@ -90,7 +90,7 @@ bool lvx_font_remove_path(lvx_font_path_handle_t handle)
 lv_font_t* lvx_font_create(const char* name, uint16_t size, uint16_t style)
 {
     lv_freetype_info_t newfont;
-    lv_memset_00(&newfont, sizeof(newfont));
+    lv_memzero(&newfont, sizeof(newfont));
     newfont.name = name;
     newfont.style = style;
     newfont.size = size;
@@ -135,6 +135,7 @@ void lvx_font_destroy(lv_font_t* delfont)
 
     FONT_LOG_INFO("font[%p] destroy success", delfont);
 }
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
@@ -161,13 +162,13 @@ static lv_font_t* lvx_font_create_core(lv_freetype_info_t* newfont)
     lv_font_t* font_family = font_manager_create_font_family(g_font_manager, newfont);
     if (font_family) {
         font->fallback = font_family;
-        FONT_LOG_INFO("%s(%d) add font-family success",
-            newfont->name, newfont->size);
+        FONT_LOG_INFO("%s(%d) add font-family success", newfont->name,
+            newfont->size);
     }
 #endif /* FONT_USE_FONT_FAMILY */
 
-    FONT_LOG_INFO("font[%p]: %s(%d) create success, cost %" LV_PRIu32 "ms",
-        font, newfont->name, newfont->size, lv_tick_elaps(start));
+    FONT_LOG_INFO("font[%p]: %s(%d) create success, cost %" LV_PRIu32 "ms", font,
+        newfont->name, newfont->size, lv_tick_elaps(start));
 
     return font;
 }

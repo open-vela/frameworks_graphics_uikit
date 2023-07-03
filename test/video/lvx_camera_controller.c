@@ -52,7 +52,7 @@ static void disable_buttons_exclude(camera_button_e button_mode, lv_obj_t* obj);
 static void enable_buttons_exclude(camera_button_e button_mode, lv_obj_t* obj);
 static void show_scan_result(char* msg_buff);
 #ifdef CONFIG_LV_USE_QRSCAN
-static int camera_scan(lv_img_dsc_t* img_dsc);
+static int camera_scan(lv_image_dsc_t* img_dsc);
 #endif
 
 /**********************
@@ -135,13 +135,13 @@ static inline lv_obj_t* camera_create_btn(lv_obj_t* parent, char* label_text,
     lv_align_t align, lv_coord_t align_x_ofs,
     lv_event_cb_t event_cb, bool checkable)
 {
-    lv_obj_t* btn = lv_btn_create(parent);
+    lv_obj_t* btn = lv_button_create(parent);
     lv_obj_t* label = lv_label_create(btn);
     lv_obj_center(label);
     lv_label_set_text(label, label_text);
     lv_obj_set_size(btn, LV_PCT(17), LV_PCT(6));
     lv_obj_align(btn, align, align_x_ofs, 0);
-    lv_obj_add_event_cb(btn, event_cb, LV_EVENT_CLICKED, parent);
+    lv_obj_add_event(btn, event_cb, LV_EVENT_CLICKED, parent);
     lv_obj_add_flag(btn, LV_OBJ_FLAG_CLICKABLE);
     if (checkable) {
         lv_obj_add_flag(btn, LV_OBJ_FLAG_CHECKABLE);
@@ -206,7 +206,7 @@ static void camera_scan_event_cb(lv_event_t* e)
 #ifdef CONFIG_LV_USE_QRSCAN
     lvx_camera_controller_t* camera_controller = (lvx_camera_controller_t*)obj;
 
-    lv_img_dsc_t* img_dsc;
+    lv_image_dsc_t* img_dsc;
 
     img_dsc = lvx_video_get_img_dsc(camera_controller->video);
     if (img_dsc == NULL) {
@@ -345,13 +345,13 @@ void show_scan_result(char* msg_buff)
     lv_obj_set_size(msg_obj, LV_PCT(100), LV_PCT(100));
     lv_obj_align(msg_obj, LV_ALIGN_CENTER, 0, 0);
 
-    lv_obj_t* msg_btn = lv_btn_create(msg_obj);
+    lv_obj_t* msg_btn = lv_button_create(msg_obj);
     lv_obj_align_to(msg_btn, msg_obj, LV_ALIGN_TOP_LEFT, LV_PCT(90), 0);
     lv_obj_t* cancel_label = lv_label_create(msg_btn);
     lv_label_set_text(cancel_label, "Quit");
     lv_obj_center(cancel_label);
     lv_obj_set_size(msg_btn, LV_PCT(10), LV_PCT(6));
-    lv_obj_add_event_cb(msg_btn, show_scan_result_cb, LV_EVENT_CLICKED, msg_obj);
+    lv_obj_add_event(msg_btn, show_scan_result_cb, LV_EVENT_CLICKED, msg_obj);
     lv_obj_add_flag(msg_btn, LV_OBJ_FLAG_CLICKABLE);
 
     lv_obj_t* title_label = lv_label_create(msg_obj);
@@ -369,7 +369,7 @@ void show_scan_result(char* msg_buff)
 }
 
 #ifdef CONFIG_LV_USE_QRSCAN
-static int camera_scan(lv_img_dsc_t* img_dsc)
+static int camera_scan(lv_image_dsc_t* img_dsc)
 {
 
     char* msg_buff = NULL;
@@ -385,7 +385,7 @@ static int camera_scan(lv_img_dsc_t* img_dsc)
 
     LV_LOG_INFO("\n===============================\n");
 
-    if (img_dsc->header.cf == LV_IMG_CF_TRUE_COLOR_ALPHA) {
+    if (img_dsc->header.cf == LV_COLOR_FORMAT_NATIVE_WITH_ALPHA) {
 
         gray_buff = (uint8_t*)lv_mem_alloc(img_dsc->data_size / (LV_COLOR_DEPTH >> 3));
         if (!gray_buff) {

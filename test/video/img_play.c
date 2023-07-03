@@ -155,12 +155,12 @@ const LV_ATTRIBUTE_MEM_ALIGN LV_ATTRIBUTE_LARGE_CONST LV_ATTRIBUTE_IMG_IMG_PLAY 
 #endif
 };
 
-const lv_img_dsc_t img_play = {
-  .header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
+const lv_image_dsc_t img_play = {
+  .header.cf = LV_COLOR_FORMAT_NATIVE_WITH_ALPHA,
   .header.always_zero = 0,
   .header.reserved = 0,
   .header.w = 30,
   .header.h = 30,
-  .data_size = 900 * LV_IMG_PX_SIZE_ALPHA_BYTE,
+  .data_size = 900 * _LV_COLOR_NATIVE_WITH_ALPHA_SIZE,
   .data = img_play_map,
 };
