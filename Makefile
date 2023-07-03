@@ -20,14 +20,6 @@
 
 ifneq ($(CONFIG_LVGL_EXTENSION),)
 
-ifeq ($(CONFIG_LVX_USE_RLE), y)
-CSRCS += ext/rle/lvx_rle_decoder.c
-endif
-
-ifeq ($(CONFIG_LVX_USE_BIN_DECODER), y)
-CSRCS += ext/bindecoder/lvx_bin_decoder.c
-endif
-
 ifeq ($(CONFIG_LVX_USE_FONT_MANAGER), y)
 CSRCS += ext/lvx_font_manager.c
 CSRCS += ext/lvx_font_stress.c

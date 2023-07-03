@@ -19,11 +19,12 @@
  *      DEFINES
  *********************/
 
-#if LV_FREETYPE_CACHE_TYPE == LV_FREETYPE_OUTLINE_CACHE && defined(CONFIG_ARCH_SIM)
-#define STRESS_TEST_OUTLINE 1
-#else
+// #if LV_FREETYPE_CACHE_TYPE == LV_FREETYPE_OUTLINE_CACHE && defined(CONFIG_ARCH_SIM)
+// #define STRESS_TEST_OUTLINE 1
+// #else
+// #define STRESS_TEST_OUTLINE 0
+// #endif
 #define STRESS_TEST_OUTLINE 0
-#endif
 
 #define VLC_OP_END 0x00
 #define VLC_OP_CLOSE 0x01
@@ -63,7 +64,7 @@ static void stress_timer_cb(lv_timer_t* timer);
 #if STRESS_TEST_OUTLINE
 static void freetype_outline_event_cb(lv_event_t* e);
 static void draw_letter(
-    lv_draw_ctx_t* draw_ctx,
+    lv_layer_t* draw_ctx,
     const lv_draw_label_dsc_t* dsc,
     const lv_point_t* pos_p,
     uint32_t letter);
@@ -83,7 +84,7 @@ static void draw_letter(
 
 void lvx_font_stres_config_init(lvx_font_stress_config_t* config)
 {
-    lv_memset_00(config, sizeof(lvx_font_stress_config_t));
+    lv_memzero(config, sizeof(lvx_font_stress_config_t));
     config->loop_cnt = 10000;
     config->label_cnt = 128;
 }
@@ -101,9 +102,9 @@ void lvx_font_stres_test(const lvx_font_stress_config_t* config)
     ctx.par = lv_scr_act();
 
     size_t arr_size = sizeof(lv_obj_t*) * ctx.config.label_cnt;
-    ctx.label_arr = lv_mem_alloc(arr_size);
+    ctx.label_arr = lv_malloc(arr_size);
     LV_ASSERT_MALLOC(ctx.label_arr);
-    lv_memset_00(ctx.label_arr, arr_size);
+    lv_memzero(ctx.label_arr, arr_size);
 
 #if STRESS_TEST_OUTLINE
     lv_freetype_outline_set_ref_size(128);
@@ -130,7 +131,7 @@ static int16_t outline_check_sum(const int16_t* buf, uint16_t len)
 }
 
 static void draw_letter(
-    lv_draw_ctx_t* draw_ctx,
+    lv_layer_t* draw_ctx,
     const lv_draw_label_dsc_t* dsc,
     const lv_point_t* pos_p,
     uint32_t letter)
@@ -154,10 +155,10 @@ static void draw_letter(
             glyph_dsc.bg_opa = LV_OPA_MIN;
             glyph_dsc.outline_opa = LV_OPA_MIN;
             glyph_dsc.shadow_opa = LV_OPA_MIN;
-            glyph_dsc.bg_img_opa = LV_OPA_MIN;
+            glyph_dsc.bg_image_opa = LV_OPA_MIN;
             glyph_dsc.border_color = dsc->color;
             glyph_dsc.border_width = 1;
-            draw_ctx->draw_rect(draw_ctx, &glyph_dsc, &glyph_coords);
+            lv_draw_rect(draw_ctx, &glyph_dsc, &glyph_coords);
 #endif
         }
         return;
@@ -179,8 +180,8 @@ static void draw_letter(
     gpos.x = pos_p->x + g.ofs_x;
     gpos.y = pos_p->y + real_h - g.ofs_y;
     /*If the letter is completely out of mask don't draw it*/
-    if (gpos.x + g.box_w < draw_ctx->clip_area->x1 || gpos.x > draw_ctx->clip_area->x2
-        || gpos.y + g.box_h < draw_ctx->clip_area->y1 || gpos.y > draw_ctx->clip_area->y2) {
+    if (gpos.x + g.box_w < draw_ctx->clip_area.x1 || gpos.x > draw_ctx->clip_area.x2
+        || gpos.y + g.box_h < draw_ctx->clip_area.y1 || gpos.y > draw_ctx->clip_area.y2) {
         return;
     }
 
@@ -210,24 +211,24 @@ static lv_freetype_outline_t outline_create(const lv_freetype_outline_event_para
         return NULL;
     }
 
-    my_outline_t* outline = lv_mem_alloc(sizeof(my_outline_t));
+    my_outline_t* outline = lv_malloc(sizeof(my_outline_t));
     LV_ASSERT_MALLOC(outline);
     if (!outline) {
         LV_LOG_WARN("outline alloc failed");
         return NULL;
     }
-    lv_memset_00(outline, sizeof(my_outline_t));
+    lv_memzero(outline, sizeof(my_outline_t));
 
     size_t path_data_size = path_data_len * sizeof(path_data_t);
 
-    path_data_t* path_data = lv_mem_alloc(path_data_size);
+    path_data_t* path_data = lv_malloc(path_data_size);
     LV_ASSERT_MALLOC(path_data);
     if (!path_data) {
         LV_LOG_WARN("path_data alloc failed");
-        lv_mem_free(outline);
+        lv_free(outline);
         return NULL;
     }
-    lv_memset_00(path_data, path_data_size);
+    lv_memzero(path_data, path_data_size);
 
     outline->data = path_data;
     outline->cur_ptr = path_data;
@@ -244,8 +245,8 @@ static void outline_delete(const lv_freetype_outline_event_param_t* param)
     if (outline) {
         int16_t sum = outline_check_sum(outline->data, outline->len - 1);
         LV_ASSERT_MSG(sum == *(outline->cur_ptr - 1), "check sum error!");
-        lv_mem_free(outline->data);
-        lv_mem_free(outline);
+        lv_free(outline->data);
+        lv_free(outline);
     }
 }
 
@@ -314,7 +315,7 @@ static void freetype_outline_event_cb(lv_event_t* e)
     lv_event_code_t code = lv_event_get_code(e);
     lv_freetype_outline_event_param_t* param = lv_event_get_param(e);
     switch (code) {
-    case LV_EVENT_CREATE:
+    case LV_EVENT_READY:
         param->outline = outline_create(param);
         break;
     case LV_EVENT_DELETE:

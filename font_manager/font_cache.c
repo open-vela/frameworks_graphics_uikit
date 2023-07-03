@@ -51,13 +51,13 @@ static void font_cache_manager_remove_tail(font_cache_manager_t* manager);
 
 font_cache_manager_t* font_cache_manager_create(uint32_t max_size)
 {
-    font_cache_manager_t* manager = lv_mem_alloc(sizeof(font_cache_manager_t));
+    font_cache_manager_t* manager = lv_malloc(sizeof(font_cache_manager_t));
     LV_ASSERT_MALLOC(manager);
     if (!manager) {
         FONT_LOG_ERROR("malloc failed for font_cache_manager_t");
         return NULL;
     }
-    lv_memset_00(manager, sizeof(font_cache_manager_t));
+    lv_memzero(manager, sizeof(font_cache_manager_t));
 
     _lv_ll_init(&manager->cache_ll, sizeof(font_cache_t));
     manager->max_size = max_size;
@@ -81,7 +81,7 @@ void font_cache_manager_delete(font_cache_manager_t* manager)
         cache = cache_next;
     }
 
-    lv_mem_free(manager);
+    lv_free(manager);
 
     FONT_LOG_INFO("success");
 }
@@ -105,7 +105,7 @@ lv_font_t* font_cache_manager_get_reuse(font_cache_manager_t* manager, const lv_
 
             /* remove reused cache */
             _lv_ll_remove(cache_ll, cache);
-            lv_mem_free(cache);
+            lv_free(cache);
             return font;
         }
     }
@@ -131,7 +131,7 @@ void font_cache_manager_set_reuse(font_cache_manager_t* manager, lv_font_t* font
     /* record reuse font */
     font_cache_t* cache = _lv_ll_ins_head(cache_ll);
     LV_ASSERT_MALLOC(cache);
-    lv_memset_00(cache, sizeof(font_cache_t));
+    lv_memzero(cache, sizeof(font_cache_t));
 
     strncpy(cache->name, ft_info->name, sizeof(cache->name));
     cache->name[sizeof(cache->name) - 1] = '\0';
@@ -153,10 +153,10 @@ static void font_cache_close(font_cache_manager_t* manager, font_cache_t* cache)
     LV_ASSERT_NULL(cache);
 
     FONT_LOG_INFO("font: %s(%d) close", cache->ft_info.name, cache->ft_info.size);
-    lv_freetype_font_del(cache->font);
+    lv_freetype_font_delete(cache->font);
 
     _lv_ll_remove(&manager->cache_ll, cache);
-    lv_mem_free(cache);
+    lv_free(cache);
 }
 
 static void font_cache_manager_remove_tail(font_cache_manager_t* manager)
