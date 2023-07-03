@@ -32,9 +32,9 @@ extern "C" {
 typedef struct _lvx_video_vtable_t lvx_video_vtable_t;
 
 typedef struct {
-    lv_img_t img;
+    lv_image_t img;
     lv_timer_t* timer;
-    lv_img_dsc_t img_dsc;
+    lv_image_dsc_t img_dsc;
     unsigned duration;
     unsigned cur_time;
     lv_area_t crop_coords;
@@ -97,7 +97,7 @@ int lvx_video_set_loop(lv_obj_t* obj, int loop);
 void lvx_video_set_poster(lv_obj_t* obj, const char* poster_path);
 bool lvx_video_is_playing(lv_obj_t* obj);
 int lvx_video_write_data(lv_obj_t* obj, void* data, size_t len);
-lv_img_dsc_t* lvx_video_get_img_dsc(lv_obj_t* obj);
+lv_image_dsc_t* lvx_video_get_img_dsc(lv_obj_t* obj);
 lv_event_code_t lvx_video_get_custom_event_id(lv_obj_t* obj);
 
 /**********************

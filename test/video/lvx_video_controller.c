@@ -66,7 +66,7 @@ lv_obj_t* lvx_video_controller_create(lv_obj_t* parent)
 
     video_controller->video = lvx_video_create(video_obj);
     lv_obj_center(video_controller->video);
-    lv_obj_add_event_cb(video_controller->video, video_event_cb, LV_EVENT_VALUE_CHANGED, video_controller);
+    lv_obj_add_event(video_controller->video, video_event_cb, LV_EVENT_VALUE_CHANGED, video_controller);
 
     /* init controller widgets */
     lv_obj_t* controller_obj = lv_obj_create(obj);
@@ -80,14 +80,14 @@ lv_obj_t* lvx_video_controller_create(lv_obj_t* parent)
 
     /* init click event callback for play button */
     lv_obj_add_flag(video_controller->play_imgbtn, LV_OBJ_FLAG_CHECKABLE);
-    lv_obj_add_event_cb(video_controller->play_imgbtn, play_pause_event_cb, LV_EVENT_CLICKED, video_controller->video);
+    lv_obj_add_event(video_controller->play_imgbtn, play_pause_event_cb, LV_EVENT_CLICKED, video_controller->video);
     lv_obj_add_flag(video_controller->play_imgbtn, LV_OBJ_FLAG_CLICKABLE);
 
     /* init progress slider */
     video_controller->progress_slider = lv_slider_create(controller_obj);
     lv_obj_set_size(video_controller->progress_slider, LV_PCT(76), 3);
     lv_obj_align_to(video_controller->progress_slider, video_controller->play_imgbtn, LV_ALIGN_OUT_RIGHT_MID, 2, 0);
-    lv_obj_add_event_cb(video_controller->progress_slider, progress_slider_event_cb, LV_EVENT_RELEASED,
+    lv_obj_add_event(video_controller->progress_slider, progress_slider_event_cb, LV_EVENT_RELEASED,
         video_controller->video);
 
     /* init duration label */
@@ -109,8 +109,8 @@ void lvx_video_controller_set_imgbtn(lv_obj_t* obj, const void* play_img, const 
     lv_imgbtn_set_src(play_imgbtn, LV_IMGBTN_STATE_RELEASED, NULL, play_img, NULL);
     lv_imgbtn_set_src(play_imgbtn, LV_IMGBTN_STATE_CHECKED_RELEASED, NULL, pause_img, NULL);
 
-    lv_img_header_t header;
-    lv_img_decoder_get_info(play_img, &header);
+    lv_image_header_t header;
+    lv_image_decoder_get_info(play_img, &header);
     lv_obj_set_width(play_imgbtn, header.w);
 
     lv_obj_align_to(video_controller->progress_slider, video_controller->play_imgbtn, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
