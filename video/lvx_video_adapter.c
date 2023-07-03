@@ -64,7 +64,7 @@
  ****************************************************************************/
 
 struct lvx_video_format_s {
-    lv_img_cf_t img_cf;
+    lv_color_format_t img_cf;
     lvx_vtun_frame_format video_cf;
 };
 
@@ -98,12 +98,14 @@ struct lvx_video_adapter_ctx_s {
 
 static const struct lvx_video_format_s g_video_format_map[] = {
 #if LV_COLOR_DEPTH == 32
-    { LV_IMG_CF_TRUE_COLOR_ALPHA, VTUN_FRAME_FORMAT_BGRA8888 },
+    { LV_COLOR_FORMAT_NATIVE_WITH_ALPHA, VTUN_FRAME_FORMAT_BGRA8888 },
 #endif
 #if LV_COLOR_DEPTH == 16
-    { LV_IMG_CF_TRUE_COLOR, VTUN_FRAME_FORMAT_RGB565 },
+    { LV_COLOR_FORMAT_NATIVE, VTUN_FRAME_FORMAT_RGB565 },
 #endif
-    { LV_IMG_CF_RESERVED_17, VTUN_FRAME_FORMAT_YUV420SP },
+    { LV_COLOR_FORMAT_NATIVE_REVERSED, VTUN_FRAME_FORMAT_YUV420SP },
+    { LV_COLOR_FORMAT_NATIVE_WITH_ALPHA, VTUN_FRAME_FORMAT_BGRA8888 },
+    { 0, VTUN_FRAME_FORMAT_YUV420SP},
 };
 
 /****************************************************************************
@@ -163,7 +165,7 @@ static int lvx_video_config_parse(cJSON* cjson,
         return -EINVAL;
     }
 
-    map->ctx = lv_mem_alloc(map->count * sizeof(struct lvx_video_ctx_s));
+    map->ctx = lv_malloc(map->count * sizeof(struct lvx_video_ctx_s));
     LV_ASSERT_MALLOC(map->ctx);
 
     if (!map->ctx) {
@@ -171,7 +173,7 @@ static int lvx_video_config_parse(cJSON* cjson,
         return -errno;
     }
 
-    lv_memset_00(map->ctx, map->count * sizeof(struct lvx_video_ctx_s));
+    lv_memset(map->ctx, 0, map->count * sizeof(struct lvx_video_ctx_s));
 
     cJSON_ArrayForEach(ele, cjson)
     {
@@ -223,7 +225,7 @@ static int lvx_video_config_init(const char* file_path,
 
     /* alloc string buffer */
 
-    json_buf = lv_mem_alloc(size + 1);
+    json_buf = lv_malloc(size + 1);
     LV_ASSERT_MALLOC(json_buf);
     if (!json_buf) {
         LV_LOG_ERROR("malloc failed for json_buf");
@@ -259,7 +261,7 @@ failed:
     lv_fs_close(&file);
 
     if (json_buf) {
-        lv_mem_free(json_buf);
+        lv_free(json_buf);
     }
 
     if (cjson) {
@@ -273,11 +275,11 @@ failed:
  * Name: lvx_video_format_converter
  ****************************************************************************/
 
-static lv_img_cf_t lvx_video_format_converter(lvx_vtun_frame_format format)
+static lv_color_format_t lvx_video_format_converter(lvx_vtun_frame_format format)
 {
     int i;
     int len = sizeof(g_video_format_map) / sizeof(struct lvx_video_format_s);
-    lv_img_cf_t cf = LV_IMG_CF_UNKNOWN;
+    lv_color_format_t cf = LV_COLOR_FORMAT_UNKNOWN;
 
     for (i = 0; i < len; i++) {
         if (g_video_format_map[i].video_cf == format) {
@@ -473,7 +475,8 @@ static int video_adapter_get_frame(struct _lvx_video_vtable_t* vtable,
         return -EPERM;
     }
 
-    lv_img_dsc_t* img_dsc = &video->img_dsc;
+    lv_image_dsc_t* img_dsc = &video->img_dsc;
+
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
     if (send(video_ctx->fd, &cmd, sizeof(cmd), MSG_NOSIGNAL) < 0) {
@@ -502,9 +505,9 @@ static int video_adapter_get_frame(struct _lvx_video_vtable_t* vtable,
     img_dsc->header.w = frame_p->w;
     img_dsc->header.h = frame_p->h;
     img_dsc->header.cf = lvx_video_format_converter(frame_p->format);
+    img_dsc->header.stride = frame_p->stride;
     img_dsc->data_size = frame_p->size;
     img_dsc->data = frame_p->addr;
-    img_dsc->stride = frame_p->stride;
 
     video->crop_coords.x1 = frame_p->crop_info.x1;
     video->crop_coords.x2 = frame_p->crop_info.x2;
@@ -721,13 +724,13 @@ static void video_adapter_destroy(struct lvx_video_adapter_ctx_s* adapter_ctx)
 
     if (ctx) {
         for (i = 0; i < map->count; i++) {
-            lv_mem_free(ctx[i].cfg.vtun_name);
+            lv_free(ctx[i].cfg.vtun_name);
         }
 
-        lv_mem_free(ctx);
+        lv_free(ctx);
     }
 
-    lv_mem_free(adapter_ctx);
+    lv_free(adapter_ctx);
 }
 
 /****************************************************************************
@@ -802,7 +805,7 @@ void lvx_video_adapter_init(void)
 {
     struct lvx_video_adapter_ctx_s* adapter_ctx;
 
-    adapter_ctx = lv_mem_alloc(sizeof(struct lvx_video_adapter_ctx_s));
+    adapter_ctx = lv_malloc(sizeof(struct lvx_video_adapter_ctx_s));
     LV_ASSERT_MALLOC(adapter_ctx);
     lv_memset(adapter_ctx, 0, sizeof(struct lvx_video_adapter_ctx_s));
 

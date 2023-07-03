@@ -103,7 +103,7 @@ font_utils_json_obj_t* font_utils_json_obj_create(const char* file_path)
     lv_fs_seek(&file, 0, LV_FS_SEEK_SET);
 
     /* alloc string buffer */
-    json_buf = lv_mem_alloc(size + 1);
+    json_buf = lv_malloc(size + 1);
     LV_ASSERT_MALLOC(json_buf);
     if (!json_buf) {
         FONT_LOG_ERROR("malloc failed for json_buf");
@@ -128,13 +128,13 @@ font_utils_json_obj_t* font_utils_json_obj_create(const char* file_path)
     }
 
     /* create json_obj */
-    json_obj = lv_mem_alloc(sizeof(font_utils_json_obj_t));
+    json_obj = lv_malloc(sizeof(font_utils_json_obj_t));
     LV_ASSERT_MALLOC(json_obj);
     if (!json_obj) {
         FONT_LOG_ERROR("malloc failed for font_utils_json_obj_t");
         goto failed;
     }
-    lv_memset_00(json_obj, sizeof(font_utils_json_obj_t));
+    lv_memzero(json_obj, sizeof(font_utils_json_obj_t));
 
     json_obj->json_buffer = json_buf;
     json_obj->cjson = cjson;
@@ -145,7 +145,7 @@ failed:
     lv_fs_close(&file);
 
     if (json_buf) {
-        lv_mem_free(json_buf);
+        lv_free(json_buf);
     }
 
     if (cjson) {
@@ -153,7 +153,7 @@ failed:
     }
 
     if (json_obj) {
-        lv_mem_free(json_obj);
+        lv_free(json_obj);
     }
 
     return NULL;
@@ -169,11 +169,11 @@ void font_utils_json_obj_delete(font_utils_json_obj_t* json_obj)
     }
 
     if (json_obj->json_buffer) {
-        lv_mem_free(json_obj->json_buffer);
+        lv_free(json_obj->json_buffer);
         json_obj->json_buffer = NULL;
     }
 
-    lv_mem_free(json_obj);
+    lv_free(json_obj);
 }
 
 font_emoji_config_t* font_utils_json_get_emoji_config(font_utils_json_obj_t* json_obj)
@@ -191,22 +191,22 @@ font_emoji_config_t* font_utils_json_get_emoji_config(font_utils_json_obj_t* jso
     }
 
     /* create font_emoji_config */
-    font_emoji_config_t* config = lv_mem_alloc(sizeof(font_emoji_config_t));
+    font_emoji_config_t* config = lv_malloc(sizeof(font_emoji_config_t));
     LV_ASSERT_MALLOC(config);
     if (!config) {
         FONT_LOG_ERROR("malloc failed for font_emoji_config_t");
         return NULL;
     }
-    lv_memset_00(config, sizeof(font_emoji_config_t));
+    lv_memzero(config, sizeof(font_emoji_config_t));
 
     /* create emoji_arr */
-    config->emoji_arr = lv_mem_alloc(sizeof(font_emoji_t) * emoji_list_arr_size);
+    config->emoji_arr = lv_malloc(sizeof(font_emoji_t) * emoji_list_arr_size);
     LV_ASSERT_MALLOC(config->emoji_arr);
     if (!config->emoji_arr) {
         FONT_LOG_ERROR("malloc failed for config->emoji_arr");
         goto failed;
     }
-    lv_memset_00(config->emoji_arr, sizeof(font_emoji_t) * emoji_list_arr_size);
+    lv_memzero(config->emoji_arr, sizeof(font_emoji_t) * emoji_list_arr_size);
     config->emoji_arr_size = emoji_list_arr_size;
 
     /* set item */
@@ -267,22 +267,22 @@ font_family_config_t* font_utils_json_get_font_family_config(font_utils_json_obj
     }
 
     /* create font_family_config */
-    font_family_config_t* config = lv_mem_alloc(sizeof(font_family_config_t));
+    font_family_config_t* config = lv_malloc(sizeof(font_family_config_t));
     LV_ASSERT_MALLOC(config);
     if (!config) {
         FONT_LOG_ERROR("malloc failed for font_family_config_t");
         return NULL;
     }
-    lv_memset_00(config, sizeof(font_family_config_t));
+    lv_memzero(config, sizeof(font_family_config_t));
 
     /* create font_family_arr */
-    config->font_family_arr = lv_mem_alloc(sizeof(font_family_t) * font_family_arr_size);
+    config->font_family_arr = lv_malloc(sizeof(font_family_t) * font_family_arr_size);
     LV_ASSERT_MALLOC(config->font_family_arr);
     if (!config->font_family_arr) {
         FONT_LOG_ERROR("malloc failed for config->font_family_arr");
         goto failed;
     }
-    lv_memset_00(config->font_family_arr, sizeof(font_family_t) * font_family_arr_size);
+    lv_memzero(config->font_family_arr, sizeof(font_family_t) * font_family_arr_size);
     config->font_family_arr_size = font_family_arr_size;
 
     /* set item */
@@ -306,13 +306,13 @@ font_family_config_t* font_utils_json_get_font_family_config(font_utils_json_obj
         }
 
         /* create fallback_arr */
-        font_family->fallback_arr = lv_mem_alloc(sizeof(font_family_fallback_t) * fallback_arr_size);
+        font_family->fallback_arr = lv_malloc(sizeof(font_family_fallback_t) * fallback_arr_size);
         LV_ASSERT_MALLOC(font_family->fallback_arr);
         if (!font_family->fallback_arr) {
             FONT_LOG_ERROR("malloc failed for font_family->fallback_arr");
             goto failed;
         }
-        lv_memset_00(font_family->fallback_arr, sizeof(font_family_fallback_t) * fallback_arr_size);
+        lv_memzero(font_family->fallback_arr, sizeof(font_family_fallback_t) * fallback_arr_size);
         font_family->fallback_arr_size = fallback_arr_size;
 
         /* set fallback */
@@ -342,10 +342,10 @@ void font_utils_json_emoji_config_free(font_emoji_config_t* config)
 {
     LV_ASSERT_NULL(config);
     if (config->emoji_arr) {
-        lv_mem_free(config->emoji_arr);
+        lv_free(config->emoji_arr);
         config->emoji_arr = NULL;
     }
-    lv_mem_free(config);
+    lv_free(config);
 }
 
 void font_utils_json_font_family_free(font_family_config_t* config)
@@ -356,14 +356,14 @@ void font_utils_json_font_family_free(font_family_config_t* config)
             font_family_t* font_family = &config->font_family_arr[i];
 
             if (font_family->fallback_arr) {
-                lv_mem_free(font_family->fallback_arr);
+                lv_free(font_family->fallback_arr);
                 font_family->fallback_arr = NULL;
             }
         }
-        lv_mem_free(config->font_family_arr);
+        lv_free(config->font_family_arr);
         config->font_family_arr = NULL;
     }
-    lv_mem_free(config);
+    lv_free(config);
 }
 
 bool font_utils_ft_info_is_equal(const lv_freetype_info_t* ft_info_1, const lv_freetype_info_t* ft_info_2)

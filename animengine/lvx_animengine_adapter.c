@@ -76,14 +76,8 @@ static inline lv_color_t anim_value_to_lvgl_color(const anim_value_t* v)
     if (!v || v->type != ANIM_VT_COLOR) {
         return lv_color_make(255, 0, 0);
     }
-#if LV_COLOR_DEPTH == 32
-    lv_color_t color;
-    color.full = v->v.color.full;
-    return color;
-#else
     return lv_color_make(v->v.color.ch.red, v->v.color.ch.green,
         v->v.color.ch.blue);
-#endif
 }
 
 static inline void lvgl_value_to_anim_value(lv_coord_t v, anim_value_t* pv)
@@ -95,13 +89,9 @@ static inline void lvgl_value_to_anim_value(lv_coord_t v, anim_value_t* pv)
 static inline void lvgl_color_to_anim_value(lv_color_t v, anim_value_t* pv)
 {
     pv->type = ANIM_VT_COLOR;
-#if LV_COLOR_DEPTH == 32
-    pv->v.color.full = v.full;
-#else
-    pv->v.color.ch.red = v.ch.red;
-    pv->v.color.ch.green = v.ch.green;
-    pv->v.color.ch.blue = v.ch.blue;
-#endif
+    pv->v.color.ch.red = v.red;
+    pv->v.color.ch.green = v.green;
+    pv->v.color.ch.blue = v.blue;
 }
 
 static inline int anim_get_property(anim_layer_t* layer_obj, anim_value_t* v)
@@ -126,7 +116,7 @@ static inline int anim_get_property(anim_layer_t* layer_obj, anim_value_t* v)
     case ANIM_PT_OPACITY: {
         switch (layer_obj->layer_type) {
         case ANIM_LT_IMAGE:
-            lvgl_value_to_anim_value(lv_obj_get_style_img_opa(obj, LV_PART_MAIN), v);
+            lvgl_value_to_anim_value(lv_obj_get_style_image_opa(obj, LV_PART_MAIN), v);
             break;
         default:
             lvgl_value_to_anim_value(lv_obj_get_style_opa(obj, LV_PART_MAIN), v);
@@ -171,21 +161,22 @@ static inline int anim_get_property(anim_layer_t* layer_obj, anim_value_t* v)
 
     case ANIM_PT_TRANSFORM_SCALE: {
         if (layer_obj->layer_type == ANIM_LT_IMAGE) {
-            lvgl_value_to_anim_value(lv_img_get_zoom(obj), v);
+            lvgl_value_to_anim_value(lv_image_get_scale(obj), v);
         } else {
+            // TODO:lvgl V9 update
             lvgl_value_to_anim_value(
-                lv_obj_get_style_transform_zoom(obj, LV_PART_MAIN), v);
+                lv_obj_get_style_transform_scale_x(obj, LV_PART_MAIN), v);
         }
-        v->v.fv = v->v.fv / LV_IMG_ZOOM_NONE * 1.0;
+        v->v.fv = v->v.fv / LV_SCALE_NONE * 1.0;
         break;
     }
 
     case ANIM_PT_TRANSFORM_ROTATE: {
         if (layer_obj->layer_type == ANIM_LT_IMAGE) {
-            lvgl_value_to_anim_value(lv_img_get_angle(obj) / LVX_ANGLE_RATIO, v);
+            lvgl_value_to_anim_value(lv_image_get_rotation(obj) / LVX_ANGLE_RATIO, v);
         } else {
             lvgl_value_to_anim_value(
-                lv_obj_get_style_transform_angle(obj, LV_PART_MAIN) / LVX_ANGLE_RATIO, v);
+                lv_obj_get_style_transform_rotation(obj, LV_PART_MAIN) / LVX_ANGLE_RATIO, v);
         }
         break;
     }
@@ -221,7 +212,7 @@ static inline int anim_set_property(anim_layer_t* layer_obj,
         lv_opa_t opa = v->v.fv * LVX_OPACITY_ZOOM_NONE;
         switch (layer_obj->layer_type) {
         case ANIM_LT_IMAGE:
-            lv_obj_set_style_img_opa(obj, opa, LV_PART_MAIN);
+            lv_obj_set_style_image_opa(obj, opa, LV_PART_MAIN);
             break;
         default:
             lv_obj_set_style_opa(obj, opa, LV_PART_MAIN);
@@ -263,12 +254,12 @@ static inline int anim_set_property(anim_layer_t* layer_obj,
     }
 
     case ANIM_PT_TRANSFORM_SCALE: {
-        lv_coord_t scale = v->v.fv * LV_IMG_ZOOM_NONE;
+        lv_coord_t scale = v->v.fv * LV_SCALE_NONE;
         if (scale != 0) {
             if (layer_obj->layer_type == ANIM_LT_IMAGE) {
-                lv_img_set_zoom(obj, scale);
+                lv_image_set_scale(obj, scale);
             } else {
-                lv_obj_set_style_transform_zoom(obj, scale, LV_PART_MAIN);
+                lv_obj_set_style_transform_scale(obj, scale, LV_PART_MAIN);
             }
         }
         break;
@@ -276,9 +267,9 @@ static inline int anim_set_property(anim_layer_t* layer_obj,
 
     case ANIM_PT_TRANSFORM_ROTATE: {
         if (layer_obj->layer_type == ANIM_LT_IMAGE) {
-            lv_img_set_angle(obj, anim_value_to_lvgl_value(v) * LVX_ANGLE_RATIO);
+            lv_image_set_rotation(obj, anim_value_to_lvgl_value(v) * LVX_ANGLE_RATIO);
         } else {
-            lv_obj_set_style_transform_angle(obj, anim_value_to_lvgl_value(v) * LVX_ANGLE_RATIO,
+            lv_obj_set_style_transform_rotation(obj, anim_value_to_lvgl_value(v) * LVX_ANGLE_RATIO,
                 LV_PART_MAIN);
         }
         break;
@@ -301,8 +292,8 @@ static inline void anim_destroy(void* context)
 _DEFINE_ANIM_PROPERTY_CB_SELECTOR_(
     style,
     img_opa,
-    lv_obj_set_style_img_opa,
-    lv_obj_get_style_img_opa,
+    lv_obj_set_style_image_opa,
+    lv_obj_get_style_image_opa,
     lv_opa_t,
     LVX_OPACITY_ZOOM_NONE,
     LV_PART_MAIN);
@@ -310,18 +301,18 @@ _DEFINE_ANIM_PROPERTY_CB_SELECTOR_(
 _DEFINE_ANIM_PROPERTY_CB_(
     image,
     img_angle,
-    lv_img_set_angle,
-    lv_img_get_angle,
+    lv_image_set_rotation,
+    lv_image_get_rotation,
     int16_t,
     LVX_ANGLE_RATIO);
 
 _DEFINE_ANIM_PROPERTY_CB_(
     image,
     img_zoom,
-    lv_img_set_zoom,
-    lv_img_get_zoom,
+    lv_image_set_scale,
+    lv_image_get_scale,
     uint16_t,
-    LV_IMG_ZOOM_NONE);
+    LV_SCALE_NONE);
 
 _DEFINE_ANIM_PROPERTY_CB_(
     object,

@@ -36,7 +36,7 @@ const lv_obj_class_t lvx_video_class = {
     .destructor_cb = lvx_video_destructor,
     .event_cb = lvx_video_event,
     .instance_size = sizeof(lvx_video_t),
-    .base_class = &lv_img_class
+    .base_class = &lv_image_class
 };
 
 static lvx_video_vtable_t* g_video_default_vtable = NULL;
@@ -135,7 +135,9 @@ int lvx_video_stop(lv_obj_t* obj)
 
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
-    lv_img_cache_invalidate_src(&video_obj->img_dsc);
+    lv_cache_lock();
+    lv_cache_invalidate(lv_cache_find(&video_obj->img_dsc, LV_CACHE_SRC_TYPE_PTR, 0, 0));
+    lv_cache_unlock();
 
     if ((ret = video_obj->vtable->video_adapter_stop(video_obj->vtable, video_obj->video_ctx)) == 0) {
         lv_timer_pause(video_obj->timer);
@@ -207,7 +209,7 @@ void lvx_video_set_poster(lv_obj_t* obj, const char* poster_path)
 
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
-    lv_img_set_src(&video_obj->img.obj, poster_path);
+    lv_image_set_src(&video_obj->img.obj, poster_path);
 }
 
 bool lvx_video_is_playing(lv_obj_t* obj)
@@ -230,7 +232,7 @@ int lvx_video_write_data(lv_obj_t* obj, void* data, size_t len)
     return video_obj->vtable->video_adapter_write_data(video_obj->vtable, video_obj->video_ctx, data, len);
 }
 
-lv_img_dsc_t* lvx_video_get_img_dsc(lv_obj_t* obj)
+lv_image_dsc_t* lvx_video_get_img_dsc(lv_obj_t* obj)
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
 
@@ -274,7 +276,9 @@ static void lvx_video_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
-    lv_img_cache_invalidate_src(&video_obj->img_dsc);
+    lv_cache_lock();
+    lv_cache_invalidate(lv_cache_find(&video_obj->img_dsc, LV_CACHE_SRC_TYPE_PTR, 0, 0));
+    lv_cache_unlock();
 
     video_obj->vtable->video_adapter_close(video_obj->vtable, video_obj->video_ctx);
 
@@ -302,16 +306,18 @@ static void video_frame_task_cb(lv_timer_t* t)
     }
 
     if (first_frame) {
-        lv_img_set_src(&video_obj->img.obj, &video_obj->img_dsc);
+        lv_image_set_src(&video_obj->img.obj, &video_obj->img_dsc);
         lvx_video_set_crop(video_obj);
-        lv_event_send(obj, video_obj->custom_event_id, NULL);
+        lv_event_send(&((lv_obj_t*)video_obj)->spec_attr->event_list, &(lv_event_t){ .current_target = (lv_obj_t*)video_obj, .original_target = (lv_obj_t*)video_obj, .code = LV_EVENT_VALUE_CHANGED, .param = NULL }, NULL);
     } else {
-        lv_img_cache_invalidate_src(&video_obj->img_dsc);
+        lv_cache_lock();
+        lv_cache_invalidate(lv_cache_find(&video_obj->img_dsc, LV_CACHE_SRC_TYPE_PTR, 0, 0));
+        lv_cache_unlock();
         lv_obj_invalidate(obj);
     }
 
     if (video_obj->cur_time != last_frame_time) {
-        lv_event_send((lv_obj_t*)video_obj, LV_EVENT_VALUE_CHANGED, NULL);
+        lv_event_send(&((lv_obj_t*)video_obj)->spec_attr->event_list, &(lv_event_t){ .current_target = (lv_obj_t*)video_obj, .original_target = (lv_obj_t*)video_obj, .code = LV_EVENT_VALUE_CHANGED, .param = NULL }, false);
     }
 }
 
@@ -319,11 +325,11 @@ static void lvx_video_event(const lv_obj_class_t* class_p, lv_event_t* e)
 {
     LV_UNUSED(class_p);
 
-    lv_res_t res;
+    lv_result_t res;
 
     /*Call the ancestor's event handler*/
     res = lv_obj_event_base(MY_CLASS, e);
-    if (res != LV_RES_OK)
+    if (res != LV_RESULT_OK)
         return;
 }
 

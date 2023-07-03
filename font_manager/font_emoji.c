@@ -8,6 +8,8 @@
  *********************/
 
 #include "font_emoji.h"
+#include <limits.h>
+#include <sys/types.h>
 
 #if FONT_USE_EMOJI
 
@@ -30,9 +32,11 @@ typedef struct _font_emoji_manager_t {
  *  STATIC PROTOTYPES
  **********************/
 
-static bool generate_path(font_emoji_t* emoji, uint32_t unicode, char* path, uint16_t len);
-static bool get_imgfont_cb(const lv_font_t* font, void* img_src, uint16_t len,
-    uint32_t unicode, uint32_t unicode_next);
+static bool generate_path(font_emoji_t* emoji, uint32_t unicode, char* path,
+    uint16_t len);
+static const void* get_imgfont_path(const lv_font_t* font, uint32_t unicode,
+    uint32_t unicode_next, lv_coord_t* offset_y,
+    void* user_data);
 
 /**********************
  *  STATIC VARIABLES
@@ -46,7 +50,8 @@ static bool get_imgfont_cb(const lv_font_t* font, void* img_src, uint16_t len,
  *   GLOBAL FUNCTIONS
  **********************/
 
-font_emoji_manager_t* font_emoji_manager_create(font_utils_json_obj_t* json_obj)
+font_emoji_manager_t*
+font_emoji_manager_create(font_utils_json_obj_t* json_obj)
 {
     LV_ASSERT_NULL(json_obj);
 
@@ -56,14 +61,14 @@ font_emoji_manager_t* font_emoji_manager_create(font_utils_json_obj_t* json_obj)
         return NULL;
     }
 
-    font_emoji_manager_t* manager = lv_mem_alloc(sizeof(font_emoji_manager_t));
+    font_emoji_manager_t* manager = lv_malloc(sizeof(font_emoji_manager_t));
     LV_ASSERT_MALLOC(manager);
     if (!manager) {
         font_utils_json_emoji_config_free(config);
         FONT_LOG_ERROR("malloc failed for font_emoji_manager_t");
         return NULL;
     }
-    lv_memset_00(manager, sizeof(font_emoji_manager_t));
+    lv_memzero(manager, sizeof(font_emoji_manager_t));
     manager->config = config;
 
     FONT_LOG_INFO("success");
@@ -75,10 +80,11 @@ void font_emoji_manager_delete(font_emoji_manager_t* manager)
     LV_ASSERT_NULL(manager);
 
     font_utils_json_emoji_config_free(manager->config);
-    lv_mem_free(manager);
+    lv_free(manager);
 }
 
-lv_font_t* font_emoji_manager_create_font(font_emoji_manager_t* manager, const char* name, uint16_t height)
+lv_font_t* font_emoji_manager_create_font(font_emoji_manager_t* manager,
+    const char* name, uint16_t height)
 {
     LV_ASSERT_NULL(manager);
     LV_ASSERT_NULL(name);
@@ -89,10 +95,8 @@ lv_font_t* font_emoji_manager_create_font(font_emoji_manager_t* manager, const c
         font_emoji_t* emoji = &config->emoji_arr[i];
 
         /* match name and height */
-        if (strcmp(name, emoji->font_name) == 0
-            && height >= emoji->match_size.min
-            && height <= emoji->match_size.max) {
-            lv_font_t* imgfont = lv_imgfont_create(height, get_imgfont_cb);
+        if (strcmp(name, emoji->font_name) == 0 && height >= emoji->match_size.min && height <= emoji->match_size.max) {
+            lv_font_t* imgfont = lv_imgfont_create(height, get_imgfont_path, NULL);
             LV_ASSERT_NULL(imgfont);
             if (!imgfont) {
                 FONT_LOG_ERROR("emoji create failed");
@@ -111,7 +115,8 @@ lv_font_t* font_emoji_manager_create_font(font_emoji_manager_t* manager, const c
     return NULL;
 }
 
-void font_emoji_manager_delete_font(font_emoji_manager_t* manager, lv_font_t* font)
+void font_emoji_manager_delete_font(font_emoji_manager_t* manager,
+    lv_font_t* font)
 {
     LV_ASSERT_NULL(manager);
     LV_ASSERT_NULL(font);
@@ -123,7 +128,8 @@ void font_emoji_manager_delete_font(font_emoji_manager_t* manager, lv_font_t* fo
  *   STATIC FUNCTIONS
  **********************/
 
-static bool generate_path(font_emoji_t* emoji, uint32_t unicode, char* path, uint16_t len)
+static bool generate_path(font_emoji_t* emoji, uint32_t unicode, char* path,
+    uint16_t len)
 {
     /* Using the following method is more than
      * 10 times faster than the 'snprintf' method
@@ -152,20 +158,22 @@ static bool generate_path(font_emoji_t* emoji, uint32_t unicode, char* path, uin
     return true;
 }
 
-static bool get_imgfont_cb(const lv_font_t* font, void* img_src, uint16_t len,
-    uint32_t unicode, uint32_t unicode_next)
+static const void* get_imgfont_path(const lv_font_t* font, uint32_t unicode,
+    uint32_t unicode_next, lv_coord_t* offset_y,
+    void* user_data)
 {
     LV_UNUSED(unicode_next);
 
     font_emoji_t* emoji = font->user_data;
     LV_ASSERT_NULL(emoji);
 
-    if (unicode >= emoji->unicode_range.begin
-        && unicode <= emoji->unicode_range.end) {
-        return generate_path(emoji, unicode, (char*)img_src, len);
+    if (unicode >= emoji->unicode_range.begin && unicode <= emoji->unicode_range.end) {
+        static char path[PATH_MAX];
+        generate_path(emoji, unicode, path, sizeof(path));
+        return path;
     }
 
-    return false;
+    return NULL;
 }
 
 #endif /* FONT_USE_EMOJI */
