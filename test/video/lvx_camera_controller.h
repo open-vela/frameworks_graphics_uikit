@@ -27,9 +27,10 @@ extern "C" {
 typedef struct {
     lv_obj_t obj;
     lv_obj_t* video;
-    lv_obj_t* take_picture_btn;
-    lv_obj_t* picture_btn;
-    lv_obj_t* recorder_btn;
+    lv_obj_t* photo_btn;
+    lv_obj_t* burst_btn;
+    lv_obj_t* record_btn;
+    lv_obj_t* scan_btn;
 } lvx_camera_controller_t;
 
 extern const lv_obj_class_t lvx_camera_controller_class;
