@@ -50,6 +50,10 @@ CSRCS += $(wildcard ext/animengine/*.c)
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/frameworks/graphics/animengine/include
 endif
 
+ifneq ($(CONFIG_LV_USE_QRSCAN),)
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/graphics/lvgl/lvgl/src/extra/libs/qrscan
+endif
+
 CSRCS += ext/lvx_async.c
 CSRCS += ext/lv_ext.c
 
