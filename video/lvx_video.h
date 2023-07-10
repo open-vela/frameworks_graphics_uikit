@@ -97,6 +97,7 @@ void lvx_video_set_fittype(lv_obj_t* obj, int fit_type);
 void lvx_video_set_poster(lv_obj_t* obj, const char* poster_path);
 bool lvx_video_is_playing(lv_obj_t* obj);
 int lvx_video_write_data(lv_obj_t* obj, void* data, size_t len);
+lv_img_dsc_t* lvx_video_get_img_dsc(lv_obj_t* obj);
 
 /**********************
  *      MACROS
