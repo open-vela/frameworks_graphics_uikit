@@ -281,6 +281,15 @@ int lvx_video_write_data(lv_obj_t* obj, void* data, size_t len)
     return video_obj->vtable->video_adapter_write_data(video_obj->vtable, video_obj->video_ctx, data, len);
 }
 
+lv_img_dsc_t* lvx_video_get_img_dsc(lv_obj_t* obj)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+
+    lvx_video_t* video_obj = (lvx_video_t*)obj;
+
+    return &video_obj->img_dsc;
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
