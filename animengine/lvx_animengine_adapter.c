@@ -323,6 +323,22 @@ _DEFINE_ANIM_PROPERTY_CB_(
     uint16_t,
     LV_IMG_ZOOM_NONE);
 
+_DEFINE_ANIM_PROPERTY_CB_(
+    object,
+    obj_x,
+    lv_obj_set_x,
+    lv_obj_get_x,
+    lv_coord_t,
+    1);
+
+_DEFINE_ANIM_PROPERTY_CB_(
+    object,
+    obj_y,
+    lv_obj_set_y,
+    lv_obj_get_y,
+    lv_coord_t,
+    1);
+
 static inline bool lvx_anim_register_property(void)
 {
     anim_property_callback_t property_cb;
@@ -336,6 +352,9 @@ static inline bool lvx_anim_register_property(void)
     _REGISTER_ANIM_PROPERTY_ENTRY_(image, img_angle);
     _REGISTER_ANIM_PROPERTY_ENTRY_(image, img_zoom);
 
+    _REGISTER_ANIM_PROPERTY_ENTRY_(object, obj_x);
+    _REGISTER_ANIM_PROPERTY_ENTRY_(object, obj_y);
+
 #undef _REGISTER_ANIM_PROPERTY_ENTRY_
     return true;
 }
@@ -348,6 +367,9 @@ void lvx_anim_unregister_property(void)
     _UNREGISTER_ANIM_PROPERTY_ENTRY_(style, img_opa);
     _UNREGISTER_ANIM_PROPERTY_ENTRY_(image, img_angle);
     _UNREGISTER_ANIM_PROPERTY_ENTRY_(image, img_zoom);
+
+    _UNREGISTER_ANIM_PROPERTY_ENTRY_(object, obj_x);
+    _UNREGISTER_ANIM_PROPERTY_ENTRY_(object, obj_y);
 
 #undef _UNREGISTER_ANIM_PROPERTY_ENTRY_
 }
