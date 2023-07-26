@@ -297,7 +297,7 @@ static struct lvx_video_ctx_s* lvx_find_avail_ctx(const char* src,
     }
 
     for (i = 0; i < map->count; i++) {
-        const char* url;
+        const char* url = NULL;
         strstart(ctx[i].cfg.vtun_name, VTUN_HEADER, &url);
         if (!ctx[i].handle && strstart(url, src_header, NULL)) {
             return &ctx[i];
@@ -392,7 +392,7 @@ static void* video_adapter_open(struct _lvx_video_vtable_t* vtable,
 
     if (!strstart(src, CAMERA_SRC_HEADER, NULL)) {
         char vtun_src[32] = "movie_async@";
-        const char* url;
+        const char* url = NULL;
         strstart(ctx->cfg.vtun_name, VTUN_HEADER, &url);
 
         ctx->handle = media_player_open(strcat(vtun_src, url));
