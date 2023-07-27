@@ -35,6 +35,8 @@ extern "C" {
  */
 void lvx_rle_decoder_init(void);
 
+void lvx_rle_decoder_custom_init(lv_img_decoder_t * dec);
+
 /**********************
  *      MACROS
  **********************/
