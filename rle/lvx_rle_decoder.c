@@ -76,13 +76,21 @@ static void decoder_close(lv_img_decoder_t * dec, lv_img_decoder_dsc_t * dsc);
  *   GLOBAL FUNCTIONS
  **********************/
 
-void lvx_rle_decoder_init(void)
+/**
+ * Register the RLE decoder functions in LVGL
+ */
+void lvx_rle_decoder_custom_init(lv_img_decoder_t * dec)
 {
-    lv_img_decoder_t * dec = lv_img_decoder_create();
     lv_img_decoder_set_info_cb(dec, decoder_info);
     lv_img_decoder_set_open_cb(dec, decoder_open);
     lv_img_decoder_set_read_line_cb(dec, decoder_read_line);
     lv_img_decoder_set_close_cb(dec, decoder_close);
+}
+
+void lvx_rle_decoder_init(void)
+{
+    lv_img_decoder_t * dec = lv_img_decoder_create();
+    lvx_rle_decoder_custom_init(dec);
 }
 
 /**********************
@@ -489,6 +497,10 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder,
     data->decoder_dsc.src_type = LV_IMG_SRC_VARIABLE;
     data->decoder_dsc.src = &data->img_dsc;
 
+#ifdef CONFIG_LV_USE_GPU_MANAGER
+    /* GPU manager will do post process by itself */
+    dsc->img_data = img_data;
+#else
 #ifdef CONFIG_LV_USE_GPU_INTERFACE
     res = lv_gpu_decoder_open(decoder, &data->decoder_dsc);
     if (res == LV_RES_OK) {
@@ -507,6 +519,7 @@ static lv_res_t decoder_open(lv_img_decoder_t * decoder,
     }
 
     dsc->img_data = data->decoder_dsc.img_data;
+#endif
     dsc->user_data = data;
     return LV_RES_OK;
 }
@@ -527,6 +540,7 @@ static void decoder_close(lv_img_decoder_t *decoder, lv_img_decoder_dsc_t *dsc)
 {
     if (dsc->user_data) {
         lv_rle_decoder_data_t* decoder_data = dsc->user_data;
+#ifndef CONFIG_LV_USE_GPU_MANAGER
 #ifdef CONFIG_LV_USE_GPU_INTERFACE
         if (decoder_data->img_dsc.data == NULL) {
             lv_gpu_decoder_close(decoder, &decoder_data->decoder_dsc);
@@ -535,6 +549,7 @@ static void decoder_close(lv_img_decoder_t *decoder, lv_img_decoder_dsc_t *dsc)
         lv_img_decoder_built_in_close(decoder, &decoder_data->decoder_dsc);
 #ifdef CONFIG_LV_USE_GPU_INTERFACE
         }
+#endif
 #endif
         if (decoder_data->img_dsc.data)
             lv_mem_free_draw_buf((void*)decoder_data->img_dsc.data);
