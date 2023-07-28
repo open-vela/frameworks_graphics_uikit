@@ -32,7 +32,7 @@
 #ifdef CONFIG_LVX_ANIM_DEFAULT_PERIOD
 #define LVX_ANIM_DEFAULT_PERIOD CONFIG_LVX_ANIM_DEFAULT_PERIOD
 #else
-#define LVX_ANIM_DEFAULT_PERIOD 16
+#define LVX_ANIM_DEFAULT_PERIOD 33
 #endif
 
 #define LVX_OPACITY_ZOOM_NONE 0xFF
@@ -343,17 +343,18 @@ static inline bool lvx_anim_register_property(void)
 {
     anim_property_callback_t property_cb;
 
-#define _REGISTER_ANIM_PROPERTY_ENTRY_(module, style_name)         \
-    property_cb.get_property_cb = _##module##_get_##style_name##_; \
-    property_cb.set_property_cb = _##module##_set_##style_name##_; \
+#define _REGISTER_ANIM_PROPERTY_ENTRY_(module, style_name, check_value_cb) \
+    property_cb.get_property_cb = _##module##_get_##style_name##_;         \
+    property_cb.set_property_cb = _##module##_set_##style_name##_;         \
+    property_cb.check_legality_cb = check_value_cb;                        \
     anim_register_property(#style_name, property_cb)
 
-    _REGISTER_ANIM_PROPERTY_ENTRY_(style, img_opa);
-    _REGISTER_ANIM_PROPERTY_ENTRY_(image, img_angle);
-    _REGISTER_ANIM_PROPERTY_ENTRY_(image, img_zoom);
+    _REGISTER_ANIM_PROPERTY_ENTRY_(style, img_opa, checkOpacityLegality);
+    _REGISTER_ANIM_PROPERTY_ENTRY_(image, img_angle, checkRotateLegality);
+    _REGISTER_ANIM_PROPERTY_ENTRY_(image, img_zoom, checkScaleLegality);
 
-    _REGISTER_ANIM_PROPERTY_ENTRY_(object, obj_x);
-    _REGISTER_ANIM_PROPERTY_ENTRY_(object, obj_y);
+    _REGISTER_ANIM_PROPERTY_ENTRY_(object, obj_x, checkPositionLegality);
+    _REGISTER_ANIM_PROPERTY_ENTRY_(object, obj_y, checkPositionLegality);
 
 #undef _REGISTER_ANIM_PROPERTY_ENTRY_
     return true;
@@ -386,6 +387,7 @@ anim_engine_handle_t lvx_anim_adapter_init(void)
     anim_ctx->set_property_cb = anim_set_property;
     anim_ctx->get_tick_cb = lv_tick_get;
     anim_ctx->destroy_cb = anim_destroy;
+    anim_ctx->frame_period = LVX_ANIM_DEFAULT_PERIOD;
     lv_timer_t* anim_timer = lv_timer_create(anim_timer_cb, LVX_ANIM_DEFAULT_PERIOD, anim_ctx->engine_handle);
     anim_ctx->timer_handle = anim_timer;
     return anim_ctx->engine_handle;
