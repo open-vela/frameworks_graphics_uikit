@@ -52,7 +52,7 @@ extern "C" {
     {                                                                                  \
         _CHECK_CONDITION_VALIDITY                                                      \
         lvx_setter(obj, (data_type)(v->v.fv * ratio), selector);                       \
-        LV_LOG_USER("obj|name|value|animV|time: %p|%s|%d|%f|%" PRId32,                 \
+        LV_LOG_INFO("obj|name|value|animV|time: %p|%s|%d|%f|%" PRId32,                 \
             obj, #style_name, (int)(v->v.fv * ratio + 0.5), v->v.fv, v->current_time); \
         return 0;                                                                      \
     }                                                                                  \
@@ -73,7 +73,7 @@ extern "C" {
     {                                                                                  \
         _CHECK_CONDITION_VALIDITY                                                      \
         lvx_setter(obj, (data_type)(v->v.fv * ratio));                                 \
-        LV_LOG_USER("obj|name|value|animV|time: %p|%s|%d|%f|%" PRId32,                 \
+        LV_LOG_INFO("obj|name|value|animV|time: %p|%s|%d|%f|%" PRId32,                 \
             obj, #style_name, (int)(v->v.fv * ratio + 0.5), v->v.fv, v->current_time); \
         return 0;                                                                      \
     }                                                                                  \
