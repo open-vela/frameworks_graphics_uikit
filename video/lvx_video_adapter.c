@@ -28,7 +28,7 @@
 #ifdef CONFIG_NET_RPMSG
 #include <netpacket/rpmsg.h>
 #endif /* CONFIG_NET_RPMSG */
-#include "libavdevice/vtun.h"
+#include "lvx_vtun.h"
 #include "media_player.h"
 #include <errno.h>
 #include <fcntl.h>
@@ -65,7 +65,7 @@
 
 struct lvx_video_format_s {
     lv_img_cf_t img_cf;
-    AVVtunFrameFormat video_cf;
+    lvx_vtun_frame_format video_cf;
 };
 
 struct lvx_video_ctx_config_s {
@@ -267,7 +267,7 @@ failed:
  * Name: lvx_video_format_converter
  ****************************************************************************/
 
-static lv_img_cf_t lvx_video_format_converter(AVVtunFrameFormat format)
+static lv_img_cf_t lvx_video_format_converter(lvx_vtun_frame_format format)
 {
     int i;
     int len = sizeof(g_video_format_map) / sizeof(struct lvx_video_format_s);
@@ -433,7 +433,7 @@ static int video_adapter_get_frame(struct _lvx_video_vtable_t* vtable,
 {
     struct pollfd fds[1];
     char cmd = VTUN_CTRL_EVT_FRAME_REQ;
-    AVVtunFrame* frame_p = NULL;
+    lvx_vtun_frame* frame_p = NULL;
     lv_img_dsc_t* img_dsc = &video->img_dsc;
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
