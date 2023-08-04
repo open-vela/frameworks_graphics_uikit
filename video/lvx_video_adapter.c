@@ -630,7 +630,7 @@ static int video_adapter_stop(struct _lvx_video_vtable_t* vtable,
 
     if (video_ctx->handle) {
         if ((ret = media_player_stop(video_ctx->handle)) < 0) {
-            LV_LOG_ERROR("media player resume failed!");
+            LV_LOG_ERROR("media player stop failed!");
             return ret;
         }
     } else {
@@ -661,7 +661,7 @@ static int video_adapter_close(struct _lvx_video_vtable_t* vtable,
 
     if (video_ctx->handle) {
         if ((ret = media_player_close(video_ctx->handle, 0)) < 0) {
-            LV_LOG_ERROR("media player resume failed!");
+            LV_LOG_ERROR("media player close failed!");
             return ret;
         }
 

@@ -7,8 +7,11 @@
  *      INCLUDES
  *********************/
 #include "lvx_camera_controller.h"
-#include "lv_qrscan.h"
 #include "media_recorder.h"
+#ifdef CONFIG_LV_USE_QRSCAN
+#include "lv_qrscan.h"
+#endif
+
 #include <ext/video/lvx_video.h>
 #include <stdio.h>
 
@@ -45,9 +48,12 @@ static void camera_scan_event_cb(lv_event_t* e);
 static void anim_opa_cb(lv_timer_t* t);
 static void camera_start(const char* params, const char* src);
 static void camera_stop(void);
-static int camera_scan(FAR lv_img_dsc_t* img_dsc);
 static void disable_buttons_exclude(camera_button_e button_mode, lv_obj_t* obj);
 static void enable_buttons_exclude(camera_button_e button_mode, lv_obj_t* obj);
+static void show_scan_result(char* msg_buff);
+#ifdef CONFIG_LV_USE_QRSCAN
+static int camera_scan(lv_img_dsc_t* img_dsc);
+#endif
 
 /**********************
  *  STATIC VARIABLES
@@ -239,6 +245,7 @@ static void camera_recorder_event_cb(lv_event_t* e)
 static void camera_scan_event_cb(lv_event_t* e)
 {
     lv_obj_t* obj = e->user_data;
+#ifdef CONFIG_LV_USE_QRSCAN
     lvx_camera_controller_t* camera_controller = (lvx_camera_controller_t*)obj;
 
     lv_img_dsc_t* img_dsc;
@@ -254,6 +261,13 @@ static void camera_scan_event_cb(lv_event_t* e)
     camera_scan(img_dsc);
 
     enable_buttons_exclude(CAMERA_SCAN, obj);
+#else
+    disable_buttons_exclude(CAMERA_SCAN, obj);
+
+    show_scan_result("Please Config LV_USE_QRSCAN.");
+
+    enable_buttons_exclude(CAMERA_SCAN, obj);
+#endif
 }
 
 static void anim_opa_cb(lv_timer_t* t)
@@ -367,7 +381,7 @@ void show_scan_result_cb(lv_event_t* e)
     lv_obj_del(obj);
 }
 
-void show_scan_result(FAR char* msg_buff)
+void show_scan_result(char* msg_buff)
 {
     lv_obj_t* msg_obj = lv_obj_create(lv_scr_act());
     lv_obj_set_size(msg_obj, LV_PCT(100), LV_PCT(100));
@@ -396,12 +410,13 @@ void show_scan_result(FAR char* msg_buff)
     }
 }
 
+#ifdef CONFIG_LV_USE_QRSCAN
 static int camera_scan(lv_img_dsc_t* img_dsc)
 {
 
-    FAR char* msg_buff = NULL;
-    FAR uint8_t* gray_buff;
-    FAR struct quirc* qr;
+    char* msg_buff = NULL;
+    uint8_t* gray_buff;
+    struct quirc* qr;
     int ret = -1;
 
     qr = lv_qrscan_create();
@@ -439,3 +454,4 @@ ERR:
 
     return ret;
 }
+#endif
