@@ -102,6 +102,7 @@ struct lvx_video_adapter_ctx_s {
 
 static const struct lvx_video_format_s g_video_format_map[] = {
     { LV_IMG_CF_TRUE_COLOR_ALPHA, VTUN_FRAME_FORMAT_BGRA8888 },
+    { LV_IMG_CF_RESERVED_17, VTUN_FRAME_FORMAT_YUV420SP},
 };
 
 /****************************************************************************
