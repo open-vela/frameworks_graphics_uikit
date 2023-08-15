@@ -48,7 +48,7 @@ typedef struct {
 
 struct _lvx_video_vtable_t {
 
-    void* (*video_adapter_open)(struct _lvx_video_vtable_t* vtable, const char* src);
+    void* (*video_adapter_open)(struct _lvx_video_vtable_t* vtable, const char* src, const char* option);
 
     int (*video_adapter_get_frame)(struct _lvx_video_vtable_t* vtable, void* ctx, lvx_video_t* video);
 
@@ -84,6 +84,7 @@ lvx_video_vtable_t* lvx_video_vtable_get_default(void);
 
 lv_obj_t* lvx_video_create(lv_obj_t* parent);
 void lvx_video_set_src(lv_obj_t* obj, const char* src);
+void lvx_video_set_src_opt(lv_obj_t* obj, const char* src, const char* option);
 void lvx_video_set_timer_period(lv_obj_t* obj, uint32_t peroid);
 void lvx_video_set_vtable(lv_obj_t* obj, lvx_video_vtable_t* vtable);
 int lvx_video_start(lv_obj_t* obj);
