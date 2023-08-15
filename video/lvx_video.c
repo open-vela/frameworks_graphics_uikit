@@ -118,11 +118,16 @@ lv_obj_t* lvx_video_create(lv_obj_t* parent)
 
 void lvx_video_set_src(lv_obj_t* obj, const char* src)
 {
+    lvx_video_set_src_opt(obj, src, NULL);
+}
+
+void lvx_video_set_src_opt(lv_obj_t* obj, const char* src, const char* option)
+{
     LV_ASSERT_OBJ(obj, MY_CLASS);
 
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
-    if ((video_obj->video_ctx = video_obj->vtable->video_adapter_open(video_obj->vtable, src)) != NULL) {
+    if ((video_obj->video_ctx = video_obj->vtable->video_adapter_open(video_obj->vtable, src, option)) != NULL) {
         video_obj->duration = video_obj->vtable->video_adapter_get_dur(video_obj->vtable, video_obj->video_ctx);
     }
 }
