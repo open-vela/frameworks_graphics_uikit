@@ -300,25 +300,6 @@ static void font_manager_generate_font_file_path(
     lv_snprintf(buf, buf_size, "%s/%s." FONT_EXT_NAME, manager->base_path, name);
 }
 
-static bool font_manager_check_font_file(font_manager_t* manager, const char* name)
-{
-    LV_ASSERT_NULL(manager);
-    LV_ASSERT_NULL(name);
-
-    char path_buf[PATH_MAX];
-    font_manager_generate_font_file_path(manager, name, path_buf, sizeof(path_buf));
-
-    /* Check if font file exists */
-    int ret = access(path_buf, F_OK);
-    if (ret != 0) {
-        FONT_LOG_WARN("Can't access font file: %s", path_buf);
-        return false;
-    }
-
-    FONT_LOG_INFO("font: %s access OK", path_buf);
-    return true;
-}
-
 static bool font_manager_check_resource(font_manager_t* manager)
 {
     LV_ASSERT_NULL(manager);
@@ -427,9 +408,6 @@ static lv_font_t* font_manager_create_font_warpper(font_manager_t* manager, cons
     }
     /* cache miss */
 #endif /* FONT_CACHE_SIZE */
-    if (!font_manager_check_font_file(manager, ft_info->name)) {
-        return NULL;
-    }
 
     /* generate full file path */
     char path_buf[PATH_MAX];
