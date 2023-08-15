@@ -59,10 +59,6 @@
 
 #define VTUN_HEADER "Vtun_"
 
-#define VTUN_SERVER_PATH_HEAD "vtun_server_path"
-
-#define MEDIA_PLAYER_PREPARE_OPT "format=sasp:noheader=1"
-
 /****************************************************************************
  * Private Type Declarations
  ****************************************************************************/
@@ -125,31 +121,6 @@ static int strstart(const char* str, const char* pfx,
         *ptr = str;
     }
 
-    return !*pfx;
-}
-
-/****************************************************************************
- * Name: strcontain
- ****************************************************************************/
-
-static bool strcontain(const char* str, const char* pfx)
-{
-    int index = 0;
-    int str_len = strlen(str);
-    int pfx_len = strlen(pfx);
-    if (str_len < pfx_len) {
-        return false;
-    }
-    while (index < str_len - pfx_len && *pfx) {
-        while (*str && *str != *pfx) {
-            str++;
-        }
-        while (*str && *pfx && *str == *pfx) {
-            str++;
-            pfx++;
-        }
-        index++;
-    }
     return !*pfx;
 }
 
@@ -405,8 +376,12 @@ static int lvx_connect_to_server(const char* vtun_name)
  ****************************************************************************/
 
 static void* video_adapter_open(struct _lvx_video_vtable_t* vtable,
-    const char* src)
+    const char* src, const char* option)
 {
+    if (!vtable) {
+        return NULL;
+    }
+
     struct lvx_video_adapter_ctx_s* adapter_ctx = (struct lvx_video_adapter_ctx_s*)vtable;
     struct lvx_video_ctx_s* ctx = lvx_find_avail_ctx(src, &(adapter_ctx->map));
 
@@ -431,19 +406,11 @@ static void* video_adapter_open(struct _lvx_video_vtable_t* vtable,
             goto fail;
         }
 
-        if (!strcontain(src, VTUN_SERVER_PATH_HEAD)) {
-            if (media_player_prepare(ctx->handle, src, NULL) < 0) {
-                LV_LOG_ERROR("media prepare:%s failed!", url);
-                goto fail;
-            }
-        } else {
-            if (media_player_prepare(ctx->handle, NULL, MEDIA_PLAYER_PREPARE_OPT) < 0) {
-                LV_LOG_ERROR("media prepare:%s failed!", MEDIA_PLAYER_PREPARE_OPT);
-                goto fail;
-            }
+        if (media_player_prepare(ctx->handle, src, option) < 0) {
+            LV_LOG_ERROR("media prepare:%s %s failed!", src, option);
+            goto fail;
         }
     }
-
     return ctx;
 
 fail:
@@ -470,6 +437,11 @@ static int video_adapter_get_frame(struct _lvx_video_vtable_t* vtable,
     struct pollfd fds[1];
     char cmd = VTUN_CTRL_EVT_FRAME_REQ;
     lvx_vtun_frame* frame_p = NULL;
+
+    if (!ctx || !video) {
+        return -EPERM;
+    }
+
     lv_img_dsc_t* img_dsc = &video->img_dsc;
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
@@ -514,6 +486,10 @@ static int video_adapter_get_dur(struct _lvx_video_vtable_t* vtable,
     void* ctx)
 {
     unsigned int duration = 0;
+    if (!ctx) {
+        return -EPERM;
+    }
+
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
     if (!video_ctx->handle) {
@@ -535,8 +511,11 @@ static int video_adapter_start(struct _lvx_video_vtable_t* vtable,
     void* ctx)
 {
     int ret;
-    struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
+    if (!ctx) {
+        return -EPERM;
+    }
 
+    struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
     if (video_ctx->handle) {
         if ((ret = media_player_start(video_ctx->handle)) < 0) {
             LV_LOG_ERROR("media player start failed!");
@@ -561,6 +540,10 @@ static int video_adapter_seek(struct _lvx_video_vtable_t* vtable,
     void* ctx, int pos)
 {
     int ret;
+    if (!ctx) {
+        return -EPERM;
+    }
+
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
     if (!video_ctx->handle) {
@@ -583,6 +566,10 @@ static int video_adapter_pause(struct _lvx_video_vtable_t* vtable,
     void* ctx)
 {
     int ret;
+    if (!ctx) {
+        return -EPERM;
+    }
+
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
     if (!video_ctx->handle) {
@@ -605,6 +592,10 @@ static int video_adapter_resume(struct _lvx_video_vtable_t* vtable,
     void* ctx)
 {
     int ret;
+    if (!ctx) {
+        return -EPERM;
+    }
+
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
     if (!video_ctx->handle) {
@@ -627,6 +618,10 @@ static int video_adapter_stop(struct _lvx_video_vtable_t* vtable,
     void* ctx)
 {
     int ret;
+    if (!ctx) {
+        return -EPERM;
+    }
+
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
     if (video_ctx->handle) {
@@ -653,6 +648,10 @@ static int video_adapter_close(struct _lvx_video_vtable_t* vtable,
     void* ctx)
 {
     int ret;
+    if (!ctx) {
+        return -EPERM;
+    }
+
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
     if (video_ctx->fd > 0) {
@@ -701,6 +700,10 @@ static void video_adapter_destroy(struct lvx_video_adapter_ctx_s* adapter_ctx)
 static int video_adapter_loop(struct _lvx_video_vtable_t* vtable,
     void* ctx, int loop)
 {
+    if (!ctx) {
+        return -EPERM;
+    }
+
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
     if (media_player_set_looping(video_ctx->handle, loop) < 0) {
@@ -717,6 +720,10 @@ static int video_adapter_loop(struct _lvx_video_vtable_t* vtable,
 static int video_adapter_get_player_state(struct _lvx_video_vtable_t* vtable,
     void* ctx)
 {
+    if (!ctx) {
+        return -EPERM;
+    }
+
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
     return media_player_is_playing(video_ctx->handle);
@@ -728,6 +735,10 @@ static int video_adapter_get_player_state(struct _lvx_video_vtable_t* vtable,
 static int video_adapter_write_data(struct _lvx_video_vtable_t* vtable,
     void* ctx, void* data, size_t len)
 {
+    if (!ctx) {
+        return -EPERM;
+    }
+
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
     if (media_player_write_data(video_ctx->handle, data, len) < 0) {
