@@ -29,4 +29,9 @@ config LVX_DEFAULT_VIDEO_PATH
 
 endif # LVX_USE_VIDEO_EXAMPLE
 
+config LVX_USE_DEMO_BANDX
+	bool "Smart Band demo"
+	depends on LV_USE_FRAGMENT
+	default n
+
 endif # EXAMPLES_LVEXTDEMO

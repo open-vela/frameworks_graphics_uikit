@@ -1,10 +1,10 @@
 /**
- * @file lv_demos.h
+ * @file resource.h
  *
  */
 
-#ifndef LV_EXT_DEMOS_H
-#define LV_EXT_DEMOS_H
+#ifndef RESOURCE_H
+#define RESOURCE_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -13,16 +13,9 @@ extern "C" {
 /*********************
  *      INCLUDES
  *********************/
+
 #include <lvgl/lvgl.h>
 
-#ifdef CONFIG_LVX_USE_VIDEO_EXAMPLE
-#include "video/lvx_camera_example.h"
-#include "video/lvx_video_example.h"
-#endif
-
-#ifdef CONFIG_LVX_USE_DEMO_BANDX
-#include "bandx/lvx_bandx_demo.h"
-#endif
 /*********************
  *      DEFINES
  *********************/
@@ -35,12 +28,20 @@ extern "C" {
  * GLOBAL PROTOTYPES
  **********************/
 
+void resource_init(void);
+
+const lv_font_t * resource_get_font(const char * key);
+
+const void * resource_get_img(const char * key);
+
+lv_style_t * resource_get_style(const char * key);
+
 /**********************
  *      MACROS
  **********************/
 
 #ifdef __cplusplus
-} /* extern "C" */
+} /*extern "C"*/
 #endif
 
-#endif /*LV_EXT_DEMOS_H*/
+#endif /*RESOURCE_H*/
