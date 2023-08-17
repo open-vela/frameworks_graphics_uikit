@@ -4,6 +4,10 @@ ifeq ($(CONFIG_LVX_USE_VIDEO_EXAMPLE), y)
 CSRCS += $(wildcard video/*.c)
 endif
 
+ifeq ($(CONFIG_LVX_USE_DEMO_BANDX), y)
+CSRCS += $(shell find -L bandx -name "*.c")
+endif
+
 ifeq ($(CONFIG_ANIMATION_ENGINE_EXAMPLES), y)
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/frameworks/graphics/animengine/examples
 endif

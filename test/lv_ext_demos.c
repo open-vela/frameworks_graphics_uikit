@@ -80,6 +80,9 @@ static const demo_entry_info_t demos_entry_info[] = {
 #ifdef CONFIG_ANIM_ENGINE_FILE_DEMO
     { "anim_file", .entry_cb = anim_file_demo },
 #endif
+#ifdef CONFIG_LVX_USE_DEMO_BANDX
+    { "bandx", .entry_cb = lvx_bandx_demo },
+#endif
 
     { "", .entry_cb = NULL }
 };
