@@ -30,6 +30,7 @@ endif
 
 ifeq ($(CONFIG_LVX_USE_FONT_MANAGER), y)
 CSRCS += ext/lvx_font_manager.c
+CSRCS += ext/lvx_font_stress.c
 CSRCS += $(wildcard ext/font_manager/*.c)
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/netutils/cjson/cJSON
 endif
