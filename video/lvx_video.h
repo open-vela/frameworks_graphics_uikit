@@ -17,6 +17,10 @@ extern "C" {
 #include <lvgl/lvgl.h>
 #include <nuttx/config.h>
 
+#if defined(CONFIG_LVX_USE_VIDEO_ADAPTER)
+
+#include "media_event.h"
+
 /*********************
  *      DEFINES
  *********************/
@@ -49,6 +53,8 @@ typedef struct {
 struct _lvx_video_vtable_t {
 
     void* (*video_adapter_open)(struct _lvx_video_vtable_t* vtable, const char* src, const char* option);
+
+    int (*video_adapter_set_event_callback)(struct _lvx_video_vtable_t* vtable, void* ctx, void* cookie, media_event_callback event_callback);
 
     int (*video_adapter_get_frame)(struct _lvx_video_vtable_t* vtable, void* ctx, lvx_video_t* video);
 
@@ -85,6 +91,7 @@ lvx_video_vtable_t* lvx_video_vtable_get_default(void);
 lv_obj_t* lvx_video_create(lv_obj_t* parent);
 void lvx_video_set_src(lv_obj_t* obj, const char* src);
 void lvx_video_set_src_opt(lv_obj_t* obj, const char* src, const char* option);
+int lvx_video_set_event_callback(lv_obj_t* obj, void* cookie, media_event_callback event_callback);
 void lvx_video_set_timer_period(lv_obj_t* obj, uint32_t peroid);
 void lvx_video_set_vtable(lv_obj_t* obj, lvx_video_vtable_t* vtable);
 int lvx_video_start(lv_obj_t* obj);
@@ -103,6 +110,8 @@ lv_img_dsc_t* lvx_video_get_img_dsc(lv_obj_t* obj);
 /**********************
  *      MACROS
  **********************/
+
+#endif /* CONFIG_LVX_USE_VIDEO_ADAPTER */
 
 #ifdef __cplusplus
 } /* extern "C" */

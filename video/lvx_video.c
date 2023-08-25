@@ -8,6 +8,8 @@
  *********************/
 #include "lvx_video.h"
 
+#ifdef CONFIG_LVX_USE_VIDEO_ADAPTER
+
 /*********************
  *      DEFINES
  *********************/
@@ -130,6 +132,15 @@ void lvx_video_set_src_opt(lv_obj_t* obj, const char* src, const char* option)
     if ((video_obj->video_ctx = video_obj->vtable->video_adapter_open(video_obj->vtable, src, option)) != NULL) {
         video_obj->duration = video_obj->vtable->video_adapter_get_dur(video_obj->vtable, video_obj->video_ctx);
     }
+}
+
+int lvx_video_set_event_callback(lv_obj_t* obj, void* cookie, media_event_callback event_callback)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+
+    lvx_video_t* video_obj = (lvx_video_t*)obj;
+
+    return video_obj->vtable->video_adapter_set_event_callback(video_obj->vtable, video_obj->video_ctx, cookie, event_callback);
 }
 
 void lvx_video_set_timer_period(lv_obj_t* obj, uint32_t peroid)
@@ -354,3 +365,5 @@ static void lvx_video_event(const lv_obj_class_t* class_p, lv_event_t* e)
     if (res != LV_RES_OK)
         return;
 }
+
+#endif /* CONFIG_LVX_USE_VIDEO_ADAPTER */
