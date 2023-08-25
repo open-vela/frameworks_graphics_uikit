@@ -428,6 +428,31 @@ fail:
 }
 
 /****************************************************************************
+ * Name: video_adapter_set_event_callback
+ ****************************************************************************/
+static int video_adapter_set_event_callback(struct _lvx_video_vtable_t* vtable,
+    void* ctx, void* cookie, media_event_callback event_callback)
+{
+    int ret;
+    if (!ctx) {
+        return -EPERM;
+    }
+
+    struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
+
+    if (!video_ctx->handle) {
+        return -EINVAL;
+    }
+
+    if ((ret = media_player_set_event_callback(video_ctx->handle, cookie, event_callback)) < 0) {
+        LV_LOG_ERROR("media player set event callback failed!");
+        return ret;
+    }
+
+    return 0;
+}
+
+/****************************************************************************
  * Name: video_adapter_get_frame
  ****************************************************************************/
 
@@ -777,6 +802,7 @@ void lvx_video_adapter_init(void)
     }
 
     adapter_ctx->vtable.video_adapter_open = video_adapter_open;
+    adapter_ctx->vtable.video_adapter_set_event_callback = video_adapter_set_event_callback;
     adapter_ctx->vtable.video_adapter_get_frame = video_adapter_get_frame;
     adapter_ctx->vtable.video_adapter_get_dur = video_adapter_get_dur;
     adapter_ctx->vtable.video_adapter_start = video_adapter_start;
