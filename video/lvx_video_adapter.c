@@ -98,7 +98,7 @@ struct lvx_video_adapter_ctx_s {
 
 static const struct lvx_video_format_s g_video_format_map[] = {
     { LV_IMG_CF_TRUE_COLOR_ALPHA, VTUN_FRAME_FORMAT_BGRA8888 },
-    { LV_IMG_CF_RESERVED_17, VTUN_FRAME_FORMAT_YUV420SP},
+    { LV_IMG_CF_RESERVED_17, VTUN_FRAME_FORMAT_YUV420SP },
 };
 
 /****************************************************************************
@@ -473,6 +473,7 @@ static int video_adapter_get_frame(struct _lvx_video_vtable_t* vtable,
     img_dsc->header.cf = lvx_video_format_converter(frame_p->format);
     img_dsc->data_size = frame_p->size;
     img_dsc->data = frame_p->addr;
+    img_dsc->stride = frame_p->stride;
 
     video->cur_time = frame_p->current_ms / 1000;
     return OK;

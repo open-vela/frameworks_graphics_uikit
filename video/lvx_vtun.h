@@ -23,6 +23,7 @@ typedef struct {
     lvx_vtun_frame_format format;
     unsigned current_ms;
     size_t size;
+    int stride;
     void* addr;
     int w;
     int h;
