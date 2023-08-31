@@ -427,13 +427,28 @@ static int camera_scan(lv_img_dsc_t* img_dsc)
 
     LV_LOG_INFO("\n===============================\n");
 
-    gray_buff = (uint8_t*)lv_mem_alloc(img_dsc->data_size / 4);
-    if (!gray_buff) {
-        LV_LOG_ERROR("malloc failed");
+    if (img_dsc->header.cf == LV_IMG_CF_TRUE_COLOR_ALPHA) {
+
+        gray_buff = (uint8_t*)lv_mem_alloc(img_dsc->data_size / 4);
+        if (!gray_buff) {
+            LV_LOG_ERROR("malloc failed");
+            goto ERR;
+        }
+        bgra8888_to_gray(img_dsc->data, img_dsc->header.w * 4, img_dsc->header.w, img_dsc->header.h, gray_buff, img_dsc->header.w);
+
+    } else if (img_dsc->header.cf == LV_IMG_CF_RESERVED_17) {
+
+        gray_buff = (uint8_t*)lv_mem_alloc(img_dsc->data_size);
+        if (!gray_buff) {
+            LV_LOG_ERROR("malloc failed");
+            goto ERR;
+        }
+        nv12_to_gray(img_dsc->data, img_dsc->header.w, img_dsc->header.h, gray_buff);
+
+    } else {
+        show_scan_result("Can not support this color format");
         goto ERR;
     }
-
-    bgra8888_to_gray(img_dsc->data, img_dsc->header.w * 4, img_dsc->header.w, img_dsc->header.h, gray_buff, img_dsc->header.w);
 
     ret = lv_qrscan_scan(qr, img_dsc->header.w, img_dsc->header.h, gray_buff, &msg_buff);
     LV_LOG_INFO("camera scan result: [%s]\n", msg_buff ? msg_buff : "null");
