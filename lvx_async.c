@@ -21,6 +21,7 @@ typedef void (*refr_event_cb_t)(lv_disp_drv_t * disp_drv);
 typedef struct {
     lv_async_cb_t cb;
     void * user_data;
+    bool is_cancelled;
 } async_refr_info_t;
 
 /**********************
@@ -88,6 +89,7 @@ static lv_res_t lvx_async_refr_call(lv_ll_t * ll_p, lv_async_cb_t async_xcb, voi
 
     info->cb = async_xcb;
     info->user_data = user_data;
+    info->is_cancelled = false;
     return LV_RES_OK;
 }
 
@@ -98,18 +100,13 @@ static lv_res_t lvx_async_refr_call_cancel(lv_ll_t * ll_p, lv_async_cb_t async_x
     }
 
     lv_res_t res = LV_RES_INV;
-    async_refr_info_t * info = _lv_ll_get_head(ll_p);
+    async_refr_info_t * info;
 
-    while(info != NULL) {
-        async_refr_info_t * info_next = _lv_ll_get_next(ll_p, info);
-
+    _LV_LL_READ(ll_p, info) {
         if(info->cb == async_xcb && info->user_data == user_data) {
-            _lv_ll_remove(ll_p, info);
-            lv_mem_free(info);
+            info->is_cancelled = true;
             res = LV_RES_OK;
         }
-
-        info = info_next;
     }
 
     return res;
@@ -122,8 +119,11 @@ static void on_refr_event(lv_ll_t * ll_p)
     }
 
     async_refr_info_t * info;
+
     _LV_LL_READ(ll_p, info) {
-        info->cb(info->user_data);
+        if(!info->is_cancelled) {
+            info->cb(info->user_data);
+        }
     }
 
     _lv_ll_clear(ll_p);
