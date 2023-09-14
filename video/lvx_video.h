@@ -45,6 +45,7 @@ typedef struct {
     lv_img_dsc_t img_dsc;
     int32_t duration;
     int32_t cur_time;
+    lv_area_t crop_coords;
     void* video_ctx;
     lvx_video_vtable_t* vtable;
     LVX_VIDEO_FIT_TYPE fit_type;
