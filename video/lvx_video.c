@@ -330,6 +330,15 @@ static void lvx_video_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
     lv_timer_del(video_obj->timer);
 }
 
+static void lvx_video_set_crop(lvx_video_t* video_obj)
+{
+    int crop_width = video_obj->img_dsc.header.w - (video_obj->crop_coords.x1 + video_obj->crop_coords.x2);
+    int crop_height = video_obj->img_dsc.header.h - (video_obj->crop_coords.y1 + video_obj->crop_coords.y2);
+    lv_obj_set_size(&video_obj->img.obj, crop_width, crop_height);
+    lv_img_set_offset_x(&video_obj->img.obj, -video_obj->crop_coords.x1);
+    lv_img_set_offset_y(&video_obj->img.obj, -video_obj->crop_coords.y1);
+}
+
 static void video_frame_task_cb(lv_timer_t* t)
 {
     lv_obj_t* obj = t->user_data;
@@ -344,6 +353,7 @@ static void video_frame_task_cb(lv_timer_t* t)
     if (first_frame) {
         lvx_video_apply_fittype(video_obj);
         lv_img_set_src(&video_obj->img.obj, &video_obj->img_dsc);
+        lvx_video_set_crop(video_obj);
     } else {
         lv_img_cache_invalidate_src(&video_obj->img_dsc);
         lv_obj_invalidate(obj);

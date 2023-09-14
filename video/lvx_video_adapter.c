@@ -500,6 +500,11 @@ static int video_adapter_get_frame(struct _lvx_video_vtable_t* vtable,
     img_dsc->data = frame_p->addr;
     img_dsc->stride = frame_p->stride;
 
+    video->crop_coords.x1 = frame_p->crop_info.x1;
+    video->crop_coords.x2 = frame_p->crop_info.x2;
+    video->crop_coords.y1 = frame_p->crop_info.y1;
+    video->crop_coords.y2 = frame_p->crop_info.y2;
+
     video->cur_time = frame_p->current_ms / 1000;
     return OK;
 }
