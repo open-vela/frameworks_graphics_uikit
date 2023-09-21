@@ -56,32 +56,41 @@ static void on_root_event(lv_event_t * e)
 
 static void on_page_construct(lv_fragment_t * self, void * args)
 {
+    LV_LOG_INFO("self: %p args: %p", self, args);
 }
 
 static void on_page_destruct(lv_fragment_t * self)
 {
+    LV_LOG_INFO("self: %p", self);
 }
 
 static void on_page_attached(lv_fragment_t * self)
 {
+    LV_LOG_INFO("self: %p", self);
 }
 
 static void on_page_detached(lv_fragment_t * self)
 {
+    LV_LOG_INFO("self: %p", self);
 }
 
 static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
 {
+    LV_LOG_INFO("self: %p container: %p", self, container);
+
     lv_obj_t * root = lv_obj_create(container);
     lv_obj_remove_style_all(root);
     lv_obj_add_style(root, resource_get_style("root_def"), 0);
+    lv_obj_add_event(root, on_root_event, LV_EVENT_ALL, NULL);
+    lv_obj_clear_flag(root, LV_OBJ_FLAG_GESTURE_BUBBLE);
+    lv_obj_set_user_data(root, self);
     return root;
 }
 
 static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
 {
-    lv_obj_set_user_data(obj, self);
-    lv_obj_add_event(obj, on_root_event, LV_EVENT_ALL, NULL);
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+
     lv_obj_add_flag(obj, LV_OBJ_FLAG_CHECKABLE);
 
     static const lv_style_prop_t props[] = { LV_STYLE_BG_COLOR, LV_STYLE_PROP_INV };
@@ -96,14 +105,17 @@ static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
 
 static void on_page_will_delete(lv_fragment_t * self, lv_obj_t * obj)
 {
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
 }
 
 static void on_page_deleted(lv_fragment_t * self, lv_obj_t * obj)
 {
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
 }
 
 static bool on_page_event(lv_fragment_t * self, int code, void * user_data)
 {
+    LV_LOG_INFO("self: %p code: %d user_data: %p", self, code, user_data);
     return false;
 }
 
