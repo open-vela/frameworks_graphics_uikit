@@ -56,6 +56,12 @@ void page_pop(lv_fragment_t * self);
 /**********************
  *      MACROS
  **********************/
+#define PAGE_VER_RES 368
+#define PAGE_HOR_RES 194
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+#endif
 
 #endif /*CONFIG_LVX_USE_DEMO_BANDX*/
 
