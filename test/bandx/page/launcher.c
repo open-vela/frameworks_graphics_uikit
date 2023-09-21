@@ -40,7 +40,6 @@ typedef struct {
  *      MACROS
  **********************/
 
-#define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define APP_ICON_SIZE 100
 #define APP_ICON_PAD_VER (APP_ICON_SIZE / 2)
 #define APP_ICON_ANIM_TIME 200
@@ -129,6 +128,23 @@ static void app_icon_create(page_ctx_t * ctx, lv_obj_t * par, const app_entry_t 
     lv_label_set_text(label, entry->text);
 }
 
+static void on_root_event(lv_event_t * e)
+{
+    lv_obj_t * root = lv_event_get_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    page_ctx_t * ctx = lv_obj_get_user_data(root);
+
+    if(code == LV_EVENT_GESTURE) {
+        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+        if(dir == LV_DIR_RIGHT) {
+            lv_obj_send_event(root, LV_EVENT_LEAVE, NULL);
+        }
+    }
+    else if(code == LV_EVENT_LEAVE) {
+        page_pop(&ctx->base);
+    }
+}
+
 static void on_page_construct(lv_fragment_t * self, void * args)
 {
     LV_LOG_INFO("self: %p args: %p", self, args);
@@ -189,6 +205,9 @@ static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
     lv_obj_t * root = lv_obj_create(container);
     lv_obj_remove_style_all(root);
     lv_obj_add_style(root, resource_get_style("root_def"), 0);
+    lv_obj_add_event(root, on_root_event, LV_EVENT_ALL, NULL);
+    lv_obj_clear_flag(root, LV_OBJ_FLAG_GESTURE_BUBBLE);
+    lv_obj_set_user_data(root, self);
     return root;
 }
 

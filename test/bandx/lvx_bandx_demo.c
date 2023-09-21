@@ -58,7 +58,7 @@ void lvx_bandx_demo(char* info[], int size, void* param)
     lv_fragment_manager_t * manager = lv_fragment_manager_create(NULL);
 
     /* push first page */
-    lv_fragment_t * page = page_create("launcher", NULL);
+    lv_fragment_t * page = page_create("dialplate", NULL);
     lv_fragment_manager_push(manager, page, &root);
 }
 
