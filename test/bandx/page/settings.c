@@ -1,36 +1,26 @@
-/*
- * Copyright (C) 2020 Xiaomi Corporation
+/**
+ * @file settings.c
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
+
+/*********************
+ *      INCLUDES
+ *********************/
 #include "page.h"
 
-#if 0
+#include "../utils/lv_obj_ext_func.h"
+#include "../utils/lv_auto_event.h"
 
-static lv_obj_t * screen;
+#define BAR_SETTING_CNT 2
 
-#define BX_NAME "BandX"
-#define BX_VERSION "v1.0"
-
-LV_IMG_DECLARE(img_src_icon_volume_reduce);
-LV_IMG_DECLARE(img_src_icon_volume_add);
-LV_IMG_DECLARE(img_src_icon_minus);
-LV_IMG_DECLARE(img_src_icon_plus);
+/**********************
+ *      TYPEDEFS
+ **********************/
 
 typedef struct {
     const char * text;
-    const lv_img_dsc_t * img_src_left;
-    const lv_img_dsc_t * img_src_right;
+    const char * img_src_left;
+    const char * img_src_right;
     lv_coord_t y;
 
     lv_obj_t * img_left;
@@ -38,139 +28,230 @@ typedef struct {
     lv_obj_t * bar;
 } bar_setting_t;
 
-static bar_setting_t bar_setting_grp[] = {
-    {.text = "Volume", .img_src_left = &img_src_icon_volume_reduce, .img_src_right = &img_src_icon_volume_add, 24},
-    {.text = "Backlight", .img_src_left = &img_src_icon_minus, .img_src_right = &img_src_icon_plus, 98},
-};
+typedef struct {
+    lv_fragment_t base;
+    bar_setting_t bar_setting_grp[BAR_SETTING_CNT];
+} page_ctx_t;
 
-static lv_auto_event_data_t ae_grp[] = {
-    {&(bar_setting_grp[0].img_left), LV_EVENT_CLICKED, 500},
-    {&(bar_setting_grp[0].img_left), LV_EVENT_CLICKED, 500},
-    {&(bar_setting_grp[0].img_right), LV_EVENT_CLICKED, 500},
-    {&(bar_setting_grp[0].img_right), LV_EVENT_CLICKED, 500},
-    {&(bar_setting_grp[1].img_left), LV_EVENT_CLICKED, 500},
-    {&(bar_setting_grp[1].img_left), LV_EVENT_CLICKED, 500},
-    {&(bar_setting_grp[1].img_right), LV_EVENT_CLICKED, 500},
-    {&(bar_setting_grp[1].img_right), LV_EVENT_CLICKED, 500},
-    {&screen, LV_EVENT_LEAVE, 1000},
-};
+/**********************
+ *  STATIC PROTOTYPES
+ **********************/
 
-static void bar_setting_event_handler(lv_obj_t * obj, lv_event_t event)
+/**********************
+ *  STATIC VARIABLES
+ **********************/
+
+// static lv_auto_event_data_t ae_grp[] = {
+//     {&(bar_setting_grp[0].img_left), LV_EVENT_CLICKED, 500, NULL},
+//     {&(bar_setting_grp[0].img_right), LV_EVENT_CLICKED, 500, NULL},
+//     {&(bar_setting_grp[1].img_left), LV_EVENT_CLICKED, 500, NULL},
+//     {&(bar_setting_grp[1].img_right), LV_EVENT_CLICKED, 500, NULL},
+// };
+
+/**********************
+ *      MACROS
+ **********************/
+
+#define BX_NAME "BandX"
+#define BX_VERSION "v1.0"
+
+/**********************
+ *   GLOBAL FUNCTIONS
+ **********************/
+
+/**********************
+ *   STATIC FUNCTIONS
+ **********************/
+
+static void bar_setting_event_handler(lv_event_t * event)
 {
-    if(event == LV_EVENT_CLICKED) {
+    lv_obj_t * obj = lv_event_get_user_data(event);
+    lv_event_code_t code = lv_event_get_code(event);
+    if(code == LV_EVENT_CLICKED) {
         bar_setting_t * bar_setting = (bar_setting_t *)lv_obj_get_user_data(obj);
-        const lv_img_dsc_t * img_src = lv_img_get_src(obj);
-        int add_value = (img_src == bar_setting->img_src_left) ? -10 : +10;
+        const char * img_src = lv_img_get_src(obj);
+        int add_value = (strcmp(img_src, resource_get_img(bar_setting->img_src_left)) == 0) ? -10 : +10;
         int16_t old_value = lv_bar_get_value(bar_setting->bar);
         lv_bar_set_value(bar_setting->bar, old_value + add_value, LV_ANIM_ON);
     }
 }
 
+static void img_setting_set_style(lv_obj_t * img)
+{
+    lv_obj_add_event(img, bar_setting_event_handler, LV_EVENT_ALL, img);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_set_style_image_recolor_opa(img, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_image_recolor(img, lv_color_make(0x66, 0x66, 0x66), LV_PART_MAIN);
+    lv_obj_set_style_image_recolor(img, lv_color_make(0x00, 0x89, 0xFF), LV_STATE_PRESSED);
+}
+
 static void bar_setting_create(lv_obj_t * par, bar_setting_t * bar_setting, int len)
 {
     for(int i = 0; i < len; i++) {
-        lv_obj_t * obj_base = lv_obj_create(par, NULL);
-        lv_obj_set_size(obj_base, lv_obj_get_width(par) - 40, 50);
-        lv_obj_set_style_default(obj_base);
-        lv_obj_align(obj_base, NULL, LV_ALIGN_IN_TOP_MID, 0, bar_setting[i].y);
+        lv_obj_t * obj_base = lv_obj_create(par);
+        lv_obj_remove_style_all(obj_base);
+        lv_obj_set_size(obj_base, PAGE_HOR_RES - 40, 50);
+        lv_obj_clear_flag(obj_base, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_align(obj_base, LV_ALIGN_TOP_MID, 0, bar_setting[i].y);
 
-        lv_obj_t * label = lv_label_create(obj_base, NULL);
-        lv_obj_set_style_local_text_font(label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &font_bahnschrift_20);
-        lv_obj_set_style_local_text_color(label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_MAKE(0x66, 0x66, 0x66));
+        lv_obj_t * label = lv_label_create(obj_base);
+        lv_obj_set_style_text_font(label, resource_get_font("bahnschrift_20"),  LV_PART_MAIN);
+        lv_obj_set_style_text_color(label, lv_color_make(0x66, 0x66, 0x66), LV_PART_MAIN);
         lv_label_set_text(label, bar_setting[i].text);
-        lv_obj_align(label, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+        lv_obj_align_to(label, obj_base, LV_ALIGN_TOP_LEFT, 0, 0);
 
-        lv_obj_t * bar = lv_bar_create(obj_base, NULL);
+        lv_obj_t * bar = lv_bar_create(obj_base);
         lv_obj_set_size(bar, 74, 6);
-        lv_obj_set_style_local_bg_color(bar, LV_BAR_PART_INDIC, LV_STATE_DEFAULT, LV_COLOR_MAKE(0x00, 0x89, 0xFF));
-        lv_obj_set_style_local_bg_color(bar, LV_BAR_PART_BG, LV_STATE_DEFAULT, LV_COLOR_MAKE(0x33, 0x33, 0x33));
-        lv_obj_align(bar, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, -10);
+        lv_obj_set_style_bg_color(bar, lv_color_make(0x00, 0x89, 0xFF), LV_PART_INDICATOR);
+        lv_obj_set_style_bg_color(bar, lv_color_make(0x33, 0x33, 0x33), LV_PART_MAIN);
+        lv_obj_align(bar, LV_ALIGN_BOTTOM_MID, 0, -10);
         lv_bar_set_value(bar, 50, LV_ANIM_OFF);
         bar_setting[i].bar = bar;
 
-        lv_obj_t * img1 = lv_img_create(obj_base, NULL);
+        lv_obj_t * img1 = lv_img_create(obj_base);
+        lv_img_set_src(img1, resource_get_img(bar_setting[i].img_src_left));
         lv_obj_set_user_data(img1, &(bar_setting[i]));
-        lv_obj_set_event_cb(img1, bar_setting_event_handler);
-        lv_img_set_src(img1, bar_setting[i].img_src_left);
-        lv_obj_set_click(img1, true);
-        lv_obj_set_style_local_image_recolor_opa(img1, LV_IMG_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_COVER);
-        lv_obj_set_style_local_image_recolor(img1, LV_IMG_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_MAKE(0x66, 0x66, 0x66));
-        lv_obj_set_style_local_image_recolor(img1, LV_IMG_PART_MAIN, LV_STATE_PRESSED, LV_COLOR_MAKE(0x00, 0x89, 0xFF));
-        lv_obj_align(img1, bar, LV_ALIGN_OUT_LEFT_MID, -10, 0);
+        img_setting_set_style(img1);
+        lv_obj_align_to(img1, bar, LV_ALIGN_OUT_LEFT_MID, -10, 0);
 
-        lv_obj_t * img2 = lv_img_create(obj_base, img1);
-        lv_img_set_src(img2, bar_setting[i].img_src_right);
-        lv_obj_align(img2, bar, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
+        lv_obj_t * img2 = lv_img_create(obj_base);
+        lv_img_set_src(img2, resource_get_img(bar_setting[i].img_src_right));
+        lv_obj_set_user_data(img2, &(bar_setting[i]));
+        img_setting_set_style(img2);
+        lv_obj_align_to(img2, bar, LV_ALIGN_OUT_RIGHT_MID, 10, 0);
 
         bar_setting[i].img_left = img1;
         bar_setting[i].img_right = img2;
     }
 }
 
-static void sw_auto_show_event_handler(lv_obj_t * obj, lv_event_t event)
+static void sw_auto_show_event_handler(lv_event_t * event)
 {
-    if(event == LV_EVENT_VALUE_CHANGED) {
+    lv_event_code_t code = lv_event_get_code(event);
+    if(code == LV_EVENT_VALUE_CHANGED) {
         //page_set_autoshow_enable(!page_get_autoshow_enable());
     }
 }
 
 static void sw_auto_show_create(lv_obj_t * par)
 {
-    lv_obj_t * label = lv_label_create(par, NULL);
-    lv_obj_set_style_local_text_font(label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &font_bahnschrift_20);
-    lv_obj_set_style_local_text_color(label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_MAKE(0x66, 0x66, 0x66));
+    lv_obj_t * label = lv_label_create(par);
+    lv_obj_set_style_text_font(label, resource_get_font("bahnschrift_20"), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, lv_color_make(0x66, 0x66, 0x66), LV_PART_MAIN);
     lv_label_set_text(label, "Auto-show");
-    lv_obj_align(label, NULL, LV_ALIGN_IN_TOP_LEFT, 23, 187);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 23, 187);
 
-    lv_obj_t * sw = lv_switch_create(par, NULL);
+    lv_obj_t * sw = lv_switch_create(par);
     lv_obj_set_size(sw, 41, 23);
-    lv_obj_align(sw, label, LV_ALIGN_OUT_RIGHT_MID, 12, -5);
-    lv_obj_set_style_local_bg_color(sw, LV_SWITCH_PART_BG, LV_STATE_DEFAULT, LV_COLOR_MAKE(0x33, 0x33, 0x33));
-    lv_obj_set_style_local_bg_color(sw, LV_SWITCH_PART_INDIC, LV_STATE_DEFAULT, LV_COLOR_MAKE(0x00, 0x89, 0xFF));
-    lv_obj_set_style_local_bg_color(sw, LV_SWITCH_PART_KNOB, LV_STATE_DEFAULT, LV_COLOR_MAKE(0xAA, 0xAA, 0xAA));
-    lv_obj_set_style_local_outline_width(sw, LV_SWITCH_PART_BG, LV_STATE_DEFAULT, 0);
-    lv_obj_set_event_cb(sw, sw_auto_show_event_handler);
-    page_get_autoshow_enable() ? lv_switch_on(sw, LV_ANIM_OFF) : lv_switch_off(sw, LV_ANIM_OFF);
+    lv_obj_align_to(sw, label, LV_ALIGN_OUT_RIGHT_MID, 12, -5);
+    lv_obj_set_style_bg_color(sw, lv_color_make(0x33, 0x33, 0x33), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(sw, lv_color_make(0x00, 0x89, 0xFF), LV_PART_INDICATOR);
+    lv_obj_set_style_bg_color(sw, lv_color_make(0xAA, 0xAA, 0xAA), LV_PART_KNOB);
+    lv_obj_set_style_outline_width(sw, 0, LV_PART_MAIN);
+    lv_obj_add_event(sw, sw_auto_show_event_handler, LV_EVENT_ALL, sw);
+    // page_get_autoshow_enable() ? lv_switch_on(sw, LV_ANIM_OFF) : lv_switch_off(sw, LV_ANIM_OFF);
 }
 
 static void label_info_create(lv_obj_t * par)
 {
-    lv_obj_t * label = lv_label_create(par, NULL);
-    lv_obj_set_style_local_text_font(label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &font_bahnschrift_20);
-    lv_label_set_align(label, LV_LABEL_ALIGN_CENTER);
+    lv_obj_t * label = lv_label_create(par);
+    lv_obj_set_style_text_font(label, resource_get_font("bahnschrift_20"), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
     lv_label_set_text(label, BX_NAME " " BX_VERSION "\n"__DATE__
                       "\nBuild");
-    lv_obj_align(label, NULL, LV_ALIGN_IN_TOP_MID, 0, 270);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 270);
 }
 
-static void page_event_handler(lv_obj_t * obj, lv_event_t event)
+static void on_root_event(lv_event_t * e)
 {
-    if(event == LV_EVENT_GESTURE) {
-        lv_gesture_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-        if(dir == LV_GESTURE_DIR_RIGHT) {
-            lv_obj_send_event(obj, LV_EVENT_LEAVE, NULL);
+    lv_obj_t * root = lv_event_get_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    page_ctx_t * ctx = lv_obj_get_user_data(root);
+
+    if(code == LV_EVENT_GESTURE) {
+        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+        if(dir == LV_DIR_RIGHT) {
+            lv_obj_send_event(root, LV_EVENT_LEAVE, NULL);
         }
     }
-    else if(event == LV_EVENT_LEAVE) {
-        page_return_menu(true);
-    }
-    else if(event == LV_EVENT_DELETE) {
+    else if(code == LV_EVENT_LEAVE) {
+        page_pop(&ctx->base);
     }
 }
 
-lv_obj_t * page_settings_create(void)
+static void on_page_construct(lv_fragment_t * self, void * args)
 {
-    AUTO_EVENT_CREATE(ae_grp);
+    LV_LOG_INFO("self: %p args: %p", self, args);
 
-    lv_obj_t * scr = page_screen_create();
-    screen = scr;
-    lv_obj_set_event_cb(scr, page_event_handler);
+    page_ctx_t * ctx = (page_ctx_t *)self;
 
-    bar_setting_create(scr, bar_setting_grp, ARRAY_SIZE(bar_setting_grp));
-    sw_auto_show_create(scr);
-    label_info_create(scr);
+    bar_setting_t bar_setting_grp[BAR_SETTING_CNT] = {
+        {.text = "Volume", .img_src_left = "icon_volume_reduce", .img_src_right = "icon_volume_add", 24},
+        {.text = "Backlight", .img_src_left = "icon_minus", .img_src_right = "icon_plus", 98},
+    };
 
-    return scr;
+    for(int i = 0; i < BAR_SETTING_CNT; i++) {
+        ctx->bar_setting_grp[i] = bar_setting_grp[i];
+    }
+
 }
 
-#endif
+static void on_page_destruct(lv_fragment_t * self)
+{
+    LV_LOG_INFO("self: %p", self);
+}
+
+static void on_page_attached(lv_fragment_t * self)
+{
+    LV_LOG_INFO("self: %p", self);
+}
+
+static void on_page_detached(lv_fragment_t * self)
+{
+    LV_LOG_INFO("self: %p", self);
+}
+
+static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
+{
+    LV_LOG_INFO("self: %p container: %p", self, container);
+
+    lv_obj_t * root = lv_obj_create(container);
+    lv_obj_remove_style_all(root);
+    lv_obj_add_style(root, resource_get_style("root_def"), 0);
+    lv_obj_add_event(root, on_root_event, LV_EVENT_ALL, NULL);
+    lv_obj_clear_flag(root, LV_OBJ_FLAG_GESTURE_BUBBLE);
+    lv_obj_set_user_data(root, self);
+    return root;
+}
+
+static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
+{
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+
+    // lv_auto_event_create(ae_grp, ARRAY_SIZE(bar_setting_grp));
+
+    page_ctx_t * ctx = (page_ctx_t *)self;
+
+    bar_setting_create(obj, ctx->bar_setting_grp, BAR_SETTING_CNT);
+    sw_auto_show_create(obj);
+    label_info_create(obj);
+}
+
+static void on_page_will_delete(lv_fragment_t * self, lv_obj_t * obj)
+{
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+}
+
+static void on_page_deleted(lv_fragment_t * self, lv_obj_t * obj)
+{
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+}
+
+static bool on_page_event(lv_fragment_t * self, int code, void * user_data)
+{
+    LV_LOG_INFO("self: %p code: %d user_data: %p", self, code, user_data);
+    return false;
+}
+
+PAGE_CLASS_DEF(settings);
