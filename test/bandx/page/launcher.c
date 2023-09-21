@@ -8,6 +8,8 @@
  *********************/
 #include "page.h"
 
+
+#define APP_ENTRY_CNT 7
 /**********************
  *      TYPEDEFS
  **********************/
@@ -23,6 +25,7 @@ typedef struct {
     lv_style_t cont_style;
     lv_style_t icon_style;
     lv_style_t label_style;
+    app_entry_t app_entry[APP_ENTRY_CNT];
 } page_ctx_t;
 
 /**********************
@@ -32,16 +35,6 @@ typedef struct {
 /**********************
  *  STATIC VARIABLES
  **********************/
-
-static const app_entry_t g_app_entry[] = {
-    { "heart_rate", "Heart", 0xFF542A },
-    { "music", "Music", 0xEE4C84 },
-    { "stop_watch", "StWatch", 0x3CFFA7 },
-    { "flashlight", "Light", 0xFFB428 },
-    { "sleep", "Sleep", 0x001BC8 },
-    { "sport", "Sport", 0x9B5DFF },
-    { "settings", "Settings", 0x0089FF },
-};
 
 /**********************
  *      MACROS
@@ -138,6 +131,7 @@ static void app_icon_create(page_ctx_t * ctx, lv_obj_t * par, const app_entry_t 
 
 static void on_page_construct(lv_fragment_t * self, void * args)
 {
+    LV_LOG_INFO("self: %p args: %p", self, args);
     page_ctx_t * ctx = (page_ctx_t *)self;
 
     lv_style_init(&ctx->cont_style);
@@ -152,10 +146,26 @@ static void on_page_construct(lv_fragment_t * self, void * args)
     lv_style_init(&ctx->label_style);
     lv_style_set_text_font(&ctx->label_style, resource_get_font("erasbd_23"));
     lv_style_set_text_color(&ctx->label_style, lv_color_white());
+
+    app_entry_t app_entry[APP_ENTRY_CNT] = {
+        { "heart_rate", "Heart", 0xFF542A },
+        { "music", "Music", 0xEE4C84 },
+        { "stop_watch", "StWatch", 0x3CFFA7 },
+        { "flashlight", "Light", 0xFFB428 },
+        { "sleep", "Sleep", 0x001BC8 },
+        { "sport", "Sport", 0x9B5DFF },
+        { "settings", "Settings", 0x0089FF },
+    };
+
+    for(int i = 0; i < APP_ENTRY_CNT; i++) {
+        ctx->app_entry[i] = app_entry[i];
+    }
+
 }
 
 static void on_page_destruct(lv_fragment_t * self)
 {
+    LV_LOG_INFO("self: %p", self);
     page_ctx_t * ctx = (page_ctx_t *)self;
     lv_style_reset(&ctx->cont_style);
     lv_style_reset(&ctx->icon_style);
@@ -164,14 +174,18 @@ static void on_page_destruct(lv_fragment_t * self)
 
 static void on_page_attached(lv_fragment_t * self)
 {
+    LV_LOG_INFO("self: %p", self);
 }
 
 static void on_page_detached(lv_fragment_t * self)
 {
+    LV_LOG_INFO("self: %p", self);
 }
 
 static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
 {
+    LV_LOG_INFO("self: %p container: %p", self, container);
+
     lv_obj_t * root = lv_obj_create(container);
     lv_obj_remove_style_all(root);
     lv_obj_add_style(root, resource_get_style("root_def"), 0);
@@ -180,6 +194,8 @@ static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
 
 static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
 {
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+
     page_ctx_t * ctx = (page_ctx_t *)self;
 
     /* root */
@@ -189,11 +205,11 @@ static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
     lv_obj_set_style_pad_ver(obj, APP_ICON_PAD_VER, 0);
 
     /* apps */
-    for(int i = 0; i < ARRAY_SIZE(g_app_entry); i++) {
+    for(int i = 0; i < APP_ENTRY_CNT; i++) {
         app_icon_create(
             ctx,
             obj,
-            &g_app_entry[i]);
+            &ctx->app_entry[i]);
     }
 
     /* shadow image */
@@ -212,14 +228,17 @@ static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
 
 static void on_page_will_delete(lv_fragment_t * self, lv_obj_t * obj)
 {
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
 }
 
 static void on_page_deleted(lv_fragment_t * self, lv_obj_t * obj)
 {
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
 }
 
 static bool on_page_event(lv_fragment_t * self, int code, void * user_data)
 {
+    LV_LOG_INFO("self: %p code: %d user_data: %p", self, code, user_data);
     return false;
 }
 
