@@ -31,14 +31,6 @@ extern "C" {
 
 typedef struct _lvx_video_vtable_t lvx_video_vtable_t;
 
-typedef enum {
-    LVX_VIDEO_FIT_CONTAIN,
-    LVX_VIDEO_FIT_COVER,
-    LVX_VIDEO_FIT_FILL,
-    LVX_VIDEO_FIT_SCALE_DOWN,
-    LVX_VIDEO_FIT_NONE,
-} LVX_VIDEO_FIT_TYPE;
-
 typedef struct {
     lv_img_t img;
     lv_timer_t* timer;
@@ -48,7 +40,7 @@ typedef struct {
     lv_area_t crop_coords;
     void* video_ctx;
     lvx_video_vtable_t* vtable;
-    LVX_VIDEO_FIT_TYPE fit_type;
+    lv_event_code_t custom_event_id;
 } lvx_video_t;
 
 struct _lvx_video_vtable_t {
@@ -102,11 +94,11 @@ int lvx_video_pause(lv_obj_t* obj);
 int lvx_video_resume(lv_obj_t* obj);
 int lvx_video_get_dur(lv_obj_t* obj);
 int lvx_video_set_loop(lv_obj_t* obj, int loop);
-void lvx_video_set_fittype(lv_obj_t* obj, int fit_type);
 void lvx_video_set_poster(lv_obj_t* obj, const char* poster_path);
 bool lvx_video_is_playing(lv_obj_t* obj);
 int lvx_video_write_data(lv_obj_t* obj, void* data, size_t len);
 lv_img_dsc_t* lvx_video_get_img_dsc(lv_obj_t* obj);
+lv_event_code_t lvx_video_get_custom_event_id(lv_obj_t* obj);
 
 /**********************
  *      MACROS
