@@ -1,37 +1,22 @@
-/*
- * Copyright (C) 2020 Xiaomi Corporation
+/**
+ * @file sleep.c
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
+
+/*********************
+ *      INCLUDES
+ *********************/
 #include "page.h"
 
-#if 0
+#include "../utils/lv_auto_event.h"
+#include "../utils/lv_obj_ext_func.h"
 
-static lv_obj_t * screen;
+#define SLEEP_TIME_CNT 6
+#define SLEEP_INFO_CNT 4
 
-LV_IMG_DECLARE(img_src_arrow_up);
-LV_IMG_DECLARE(img_src_arrow_down);
-LV_IMG_DECLARE(img_src_sleep);
-
-static lv_obj_t * img_down;
-static lv_obj_t * img_up;
-
-static lv_obj_t * cont_sleep;
-#define CONT_SLEEP_MOVE_DOWN(down) \
-    LV_OBJ_ADD_ANIM(               \
-                                   cont_sleep,                \
-                                   y,                         \
-                                   (down) ? -lv_obj_get_height(cont_sleep) / 2 : 0, LV_ANIM_TIME_DEFAULT)
+/**********************
+ *      TYPEDEFS
+ **********************/
 
 typedef enum {
     SLEEP_TYPE_SHALLOW,
@@ -41,12 +26,10 @@ typedef enum {
     SLEEP_TYPE_MAX
 } sleep_type;
 
-static const lv_color_t sleep_type_color[SLEEP_TYPE_MAX] = {
-    _LV_COLOR_MAKE(0x3f, 0x71, 0xf5),
-    _LV_COLOR_MAKE(0x02, 0x31, 0x92),
-    _LV_COLOR_MAKE(0x7a, 0xc9, 0x43),
-    _LV_COLOR_MAKE(0xff, 0x93, 0x1e),
-};
+typedef struct {
+    const char * text;
+    sleep_type type;
+} sleep_info_t;
 
 typedef struct {
     sleep_type type;
@@ -54,157 +37,148 @@ typedef struct {
     uint32_t end_min;
 } sleep_time_t;
 
-static sleep_time_t sleep_time_grp[] = {
-    {SLEEP_TYPE_SHALLOW, 29, 588},
-    {SLEEP_TYPE_DEEP, 61, 80},
-    {SLEEP_TYPE_DEEP, 120, 200},
-    {SLEEP_TYPE_REM, 80, 95},
-    {SLEEP_TYPE_REM, 250, 310},
-    {SLEEP_TYPE_AWAKE, 400, 410},
-};
-
 typedef struct {
-    const char * text;
-    sleep_type type;
-} sleep_info_t;
+    lv_fragment_t base;
+    lv_obj_t * img_down;
+    lv_obj_t * img_up;
+    lv_obj_t * cont_sleep;
 
-static sleep_info_t sleep_info_grp[] = {
-    {"Shallow sleep", SLEEP_TYPE_SHALLOW},
-    {"Deep sleep", SLEEP_TYPE_DEEP},
-    {"REM", SLEEP_TYPE_REM},
-    {"Awake", SLEEP_TYPE_AWAKE},
-};
+    uint32_t sleep_type_color[SLEEP_TYPE_MAX];
+    sleep_time_t sleep_time_grp[SLEEP_TIME_CNT];
+    sleep_info_t sleep_info_grp[SLEEP_INFO_CNT];
 
-static lv_auto_event_data_t ae_grp[] = {
-    {&img_down, LV_EVENT_CLICKED, 2000},
-    {&img_up, LV_EVENT_CLICKED, 2000},
-    {&screen, LV_EVENT_LEAVE, 2000},
-};
+} page_ctx_t;
+
+/**********************
+ *  STATIC PROTOTYPES
+ **********************/
+
+/**********************
+ *  STATIC VARIABLES
+ **********************/
+
+/**********************
+ *      MACROS
+ **********************/
+
+#define CONT_SLEEP_MOVE_DOWN(down, obj)      \
+    LV_OBJ_ADD_ANIM(                     \
+                                         obj,             \
+                                         y,               \
+                                         (down) ? -PAGE_VER_RES : 0, LV_ANIM_TIME_DEFAULT)
+
+
+/**********************
+ *   GLOBAL FUNCTIONS
+ **********************/
+
+/**********************
+ *   STATIC FUNCTIONS
+ **********************/
+
+static void cont_sleep_create(lv_obj_t * par)
+{
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+    lv_obj_t * obj = lv_obj_create(par);
+    lv_obj_remove_style_all(obj);
+    lv_obj_set_size(obj, PAGE_HOR_RES, PAGE_VER_RES * 2);
+    lv_obj_align(obj, LV_ALIGN_TOP_MID, 0, 0);
+    lv_obj_set_style_bg_color(obj, lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_user_data(obj, ctx);
+
+    ctx->cont_sleep = obj;
+}
+
+static void img_arrow_event_handler(lv_event_t * event)
+{
+    lv_event_code_t code = lv_event_get_code(event);
+    lv_obj_t * obj = lv_event_get_target(event);
+    page_ctx_t * ctx = (page_ctx_t *) lv_event_get_user_data(event);
+
+    if(code == LV_EVENT_CLICKED) {
+        bool is_down = (strcmp(lv_img_get_src(obj), resource_get_img("arrow_down")) == 0);
+        CONT_SLEEP_MOVE_DOWN(is_down, ctx->cont_sleep);
+    }
+}
+
+static void img_arrow_create(lv_obj_t * par)
+{
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+
+    lv_obj_t * img1 = lv_img_create(par);
+    lv_img_set_src(img1, resource_get_img("arrow_down"));
+    lv_obj_align(img1, LV_ALIGN_TOP_MID, 0, 339);
+    lv_obj_add_event(img1, img_arrow_event_handler, LV_EVENT_ALL, ctx);
+    lv_obj_add_flag(img1, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t * img2 = lv_img_create(par);
+    lv_img_set_src(img2, resource_get_img("arrow_up"));
+    lv_obj_align(img2, LV_ALIGN_TOP_MID, 0, PAGE_VER_RES + 12);
+    lv_obj_add_event(img2, img_arrow_event_handler, LV_EVENT_ALL, ctx);
+    lv_obj_add_flag(img2, LV_OBJ_FLAG_CLICKABLE);
+
+    ctx->img_down = img1;
+    ctx->img_up = img2;
+}
 
 static void img_sleep_create(lv_obj_t * par)
 {
-    lv_obj_t * img = lv_img_create(par, NULL);
-    lv_img_set_src(img, &img_src_sleep);
-    lv_obj_align(img, NULL, LV_ALIGN_IN_TOP_MID, 0, 32);
+    lv_obj_t * img = lv_img_create(par);
+    lv_img_set_src(img, resource_get_img("sleep"));
+    lv_obj_align(img, LV_ALIGN_TOP_MID, 0, 32);
 }
 
 static void label_score_create(lv_obj_t * par)
 {
-    lv_obj_t * label1 = lv_label_create(par, NULL);
-    lv_obj_set_style_local_text_font(
+    lv_obj_t * label1 = lv_label_create(par);
+    lv_obj_set_style_text_font(
         label1,
-        LV_LABEL_PART_MAIN,
-        LV_STATE_DEFAULT,
-        &font_bahnschrift_20);
-    lv_obj_set_style_local_text_color(
-        label1,
-        LV_LABEL_PART_MAIN,
-        LV_STATE_DEFAULT,
-        LV_COLOR_MAKE(0x80, 0x80, 0x80));
+        resource_get_font("bahnschrift_20"),
+        LV_PART_MAIN);
+    lv_obj_set_style_text_color(label1, lv_color_hex(0x808080), LV_PART_MAIN);
     lv_label_set_text(label1, "Score");
-    lv_obj_align(label1, NULL, LV_ALIGN_IN_TOP_MID, 0, 123);
+    lv_obj_align(label1, LV_ALIGN_TOP_MID, 0, 123);
 
-    lv_obj_t * label2 = lv_label_create(par, NULL);
-    lv_obj_set_style_local_text_font(
+    lv_obj_t * label2 = lv_label_create(par);
+    lv_obj_set_style_text_font(
         label2,
-        LV_LABEL_PART_MAIN,
-        LV_STATE_DEFAULT,
-        &font_bahnschrift_72);
-    lv_obj_set_style_local_text_color(
-        label2,
-        LV_LABEL_PART_MAIN,
-        LV_STATE_DEFAULT,
-        LV_COLOR_WHITE);
+        resource_get_font("bahnschrift_72"),
+        LV_PART_MAIN);
+    lv_obj_set_style_text_color(label2, lv_color_white(), LV_PART_MAIN);
     lv_label_set_text(label2, "78");
-    lv_obj_align(label2, NULL, LV_ALIGN_IN_TOP_MID, 0, 148);
+    lv_obj_align(label2, LV_ALIGN_TOP_MID, 0, 148);
 }
 
 static void label_total_time_create(lv_obj_t * par)
 {
-    lv_obj_t * label1 = lv_label_create(par, NULL);
-    lv_obj_set_style_local_text_font(
-        label1,
-        LV_LABEL_PART_MAIN,
-        LV_STATE_DEFAULT,
-        &font_bahnschrift_20);
-    lv_obj_set_style_local_text_color(
-        label1,
-        LV_LABEL_PART_MAIN,
-        LV_STATE_DEFAULT,
-        LV_COLOR_MAKE(0x80, 0x80, 0x80));
+    lv_obj_t * label1 = lv_label_create(par);
+    lv_obj_set_style_text_font(label1, resource_get_font("bahnschrift_20"), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label1, lv_color_hex(0x808080), LV_PART_MAIN);
     lv_label_set_text(label1, "Total time");
-    lv_obj_align(label1, NULL, LV_ALIGN_IN_TOP_MID, 0, 224);
+    lv_obj_align(label1, LV_ALIGN_TOP_MID, 0, 224);
 
-    lv_obj_t * label2 = lv_label_create(par, label1);
-    lv_obj_set_style_local_text_color(
-        label2,
-        LV_LABEL_PART_MAIN,
-        LV_STATE_DEFAULT,
-        LV_COLOR_MAKE(0x3F, 0xA9, 0xF5));
-    lv_label_set_recolor(label2, true);
-    lv_label_set_align(label2, LV_LABEL_ALIGN_CENTER);
-    lv_label_set_text(
-        label2,
-        "8 h 52 min\n"
-        "00:29#808080 -#09:48");
-    lv_obj_align(label2, NULL, LV_ALIGN_IN_TOP_MID, 0, 249);
-}
+    lv_obj_t * label2 = lv_label_create(par);
+    lv_obj_set_style_text_font(label2, resource_get_font("bahnschrift_20"), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label2, lv_color_hex(0x3FA9F5), LV_PART_MAIN);
+    lv_label_set_text(label2, "8 h 52 min");
+    lv_obj_set_style_text_align(label2, LV_ALIGN_CENTER, 0);
+    lv_obj_align(label2, LV_ALIGN_TOP_MID, 0, 249);
 
-static void obj_sleep_time_create(lv_obj_t * par, sleep_time_t * sleep_time, int len)
-{
-    lv_obj_t * obj_base = lv_obj_create(par, NULL);
-    lv_obj_set_style_default(obj_base);
-    lv_obj_set_size(obj_base, 165, 74);
-    lv_obj_set_style_local_radius(obj_base, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, 10);
-    lv_obj_set_style_local_clip_corner(obj_base, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, 10);
-    lv_obj_align(obj_base, NULL, LV_ALIGN_IN_TOP_MID, 0, PAGE_VER_RES + 42);
+    lv_obj_t * spangroup = lv_spangroup_create(par);
+    lv_obj_set_style_text_font(spangroup, resource_get_font("bahnschrift_20"), LV_PART_MAIN);
 
-    uint32_t time_len = sleep_time[0].end_min - sleep_time[0].start_min;
-    uint32_t time_start = sleep_time[0].start_min;
-    lv_coord_t width_base = lv_obj_get_width(obj_base);
+    lv_span_t * span = lv_spangroup_new_span(spangroup);
+    lv_span_set_text_static(span, "00:29");
+    lv_style_set_text_color(&span->style, lv_color_hex(0x3FA9F5));
 
-    for(int i = 0; i < len; i++) {
-        uint8_t type_index = sleep_time[i].type;
-        lv_color_t color = sleep_type_color[type_index];
+    lv_span_t * span1 = lv_spangroup_new_span(spangroup);
+    lv_span_set_text_static(span1, "-");
+    lv_style_set_text_color(&span1->style, lv_color_hex(0x808080));
 
-        lv_obj_t * obj = lv_obj_create(obj_base, NULL);
-        lv_obj_set_style_default(obj);
-        lv_obj_set_style_local_bg_color(obj, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, color);
-
-        lv_coord_t width = width_base * (sleep_time[i].end_min - sleep_time[i].start_min) / time_len;
-        lv_coord_t x_ofs = width_base * (sleep_time[i].start_min - time_start) / time_len;
-
-        lv_obj_set_size(obj, width, lv_obj_get_height(obj_base));
-        lv_obj_align(obj, NULL, LV_ALIGN_IN_TOP_LEFT, x_ofs, 0);
-    }
-
-    lv_obj_t * label1 = lv_label_create(par, NULL);
-    lv_obj_set_style_local_text_font(label1, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &font_bahnschrift_15);
-    lv_obj_set_style_local_text_color(
-        label1,
-        LV_LABEL_PART_MAIN,
-        LV_STATE_DEFAULT,
-        LV_COLOR_MAKE(0x80, 0x80, 0x80));
-
-    uint32_t start_min = sleep_time[0].start_min;
-    lv_label_set_text_fmt(label1, "%02d:%02d", start_min / 60, start_min % 60);
-    lv_obj_align(label1, obj_base, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
-
-    lv_obj_t * label2 = lv_label_create(par, label1);
-    lv_obj_set_style_local_text_font(
-        label2,
-        LV_LABEL_PART_MAIN,
-        LV_STATE_DEFAULT,
-        &font_bahnschrift_15);
-    lv_obj_set_style_local_text_color(
-        label2,
-        LV_LABEL_PART_MAIN,
-        LV_STATE_DEFAULT,
-        LV_COLOR_MAKE(0x80, 0x80, 0x80));
-
-    uint32_t end_min = sleep_time[0].end_min;
-    lv_label_set_text_fmt(label2, "%02d:%02d", end_min / 60, end_min % 60);
-    lv_obj_align(label2, obj_base, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 5);
+    lv_span_t * span2 = lv_spangroup_new_span(spangroup);
+    lv_span_set_text_static(span2, "09:48");
+    lv_style_set_text_color(&span2->style, lv_color_hex(0x3FA9F5));
+    lv_obj_align(spangroup, LV_ALIGN_TOP_MID, 0, 274);
 }
 
 static uint32_t sleep_time_get_sum(sleep_time_t * sleep_time, int len, sleep_type check_type)
@@ -227,136 +201,249 @@ static uint32_t sleep_time_get_sum(sleep_time_t * sleep_time, int len, sleep_typ
     return sum;
 }
 
+static void obj_sleep_time_create(lv_obj_t * par, sleep_time_t * sleep_time, int len)
+{
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+
+    lv_obj_t * obj_base = lv_obj_create(par);
+    lv_obj_remove_style_all(obj_base);
+    lv_obj_set_size(obj_base, 165, 74);
+    lv_obj_set_style_radius(obj_base, 10, LV_PART_MAIN);
+    lv_obj_set_style_clip_corner(obj_base, 10, LV_PART_MAIN);
+
+    lv_obj_align(obj_base, LV_ALIGN_TOP_MID, 0, PAGE_VER_RES + 42);
+    lv_obj_clear_flag(obj_base, LV_OBJ_FLAG_SCROLLABLE);
+
+    uint32_t time_len = sleep_time[0].end_min - sleep_time[0].start_min;
+    uint32_t time_start = sleep_time[0].start_min;
+    lv_coord_t width_base = lv_obj_get_style_width(obj_base, 0);
+
+    for(int i = 0; i < len; i++) {
+        uint8_t type_index = sleep_time[i].type;
+        lv_color_t color = lv_color_hex(ctx->sleep_type_color[type_index]);
+
+        lv_obj_t * obj = lv_obj_create(obj_base);
+        lv_obj_set_style_radius(obj, 0, LV_PART_MAIN);
+        lv_obj_set_style_border_width(obj, 0, LV_PART_MAIN);
+        lv_obj_set_style_bg_color(obj, color, LV_PART_MAIN);
+
+        lv_coord_t width = width_base * (sleep_time[i].end_min - sleep_time[i].start_min) / time_len;
+        lv_coord_t x_ofs = width_base * (sleep_time[i].start_min - time_start) / time_len;
+
+        lv_obj_set_size(obj, width, lv_obj_get_style_height(obj_base, 0));
+        lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+        lv_obj_align(obj, LV_ALIGN_TOP_LEFT, x_ofs, 0);
+    }
+
+    lv_obj_t * label1 = lv_label_create(par);
+    lv_obj_set_style_text_font(
+        label1,
+        resource_get_font("bahnschrift_15"),
+        LV_PART_MAIN);
+    lv_obj_set_style_text_color(
+        label1,
+        lv_color_make(0x80, 0x80, 0x80),
+        LV_PART_MAIN);
+
+    uint32_t start_min = sleep_time[0].start_min;
+    lv_label_set_text_fmt(label1, "%02d:%02d", start_min / 60, start_min % 60);
+    lv_obj_align_to(label1, obj_base, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 5);
+
+    lv_obj_t * label2 = lv_label_create(par);
+    lv_obj_set_style_text_font(
+        label2,
+        resource_get_font("bahnschrift_15"),
+        LV_PART_MAIN);
+    lv_obj_set_style_text_color(
+        label2,
+        lv_color_make(0x80, 0x80, 0x80),
+        LV_PART_MAIN);
+
+    uint32_t end_min = sleep_time[0].end_min;
+    lv_label_set_text_fmt(label2, "%02d:%02d", end_min / 60, end_min % 60);
+    lv_obj_align_to(label2, obj_base, LV_ALIGN_OUT_BOTTOM_RIGHT, 0, 5);
+}
+
 static void obj_sleep_info_create(lv_obj_t * par, sleep_info_t * sleep_info, int len)
 {
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+
     for(int i = 0; i < len; i++) {
-        lv_obj_t * obj_base = lv_obj_create(par, NULL);
-        lv_obj_set_style_default(obj_base);
-        lv_obj_set_size(obj_base, lv_obj_get_width(par) - 40, 50);
-        //lv_obj_set_drag_parent(obj_base, true);
-        //lv_obj_set_gesture_parent(obj_base, true);
+        lv_obj_t * obj_base = lv_obj_create(par);
+        lv_obj_remove_style_all(obj_base);
+        lv_obj_set_style_bg_opa(obj_base, LV_OPA_0, LV_PART_MAIN);
+        lv_obj_set_size(obj_base, PAGE_HOR_RES - 40, 50);
+        lv_obj_clear_flag(obj_base, LV_OBJ_FLAG_SCROLLABLE);
 
-        lv_coord_t y_ofs = PAGE_VER_RES + 150 + (lv_obj_get_height(obj_base) + 5) * i;
-        lv_obj_align(obj_base, NULL, LV_ALIGN_IN_TOP_MID, 0, y_ofs);
+        lv_coord_t y_ofs = PAGE_VER_RES + 150 + (lv_obj_get_style_height(obj_base, 0) + 5) * i;
+        lv_obj_align(obj_base, LV_ALIGN_TOP_MID, 0, y_ofs);
 
-        lv_obj_t * label1 = lv_label_create(obj_base, NULL);
-        lv_obj_set_style_local_text_font(
+        lv_obj_t * label1 = lv_label_create(obj_base);
+        lv_obj_set_style_text_font(
             label1,
-            LV_LABEL_PART_MAIN,
-            LV_STATE_DEFAULT,
-            &font_bahnschrift_20);
-        lv_obj_set_style_local_text_color(
+            resource_get_font("bahnschrift_20"),
+            LV_PART_MAIN);
+        lv_obj_set_style_text_color(
             label1,
-            LV_LABEL_PART_MAIN,
-            LV_STATE_DEFAULT,
-            LV_COLOR_MAKE(0x80, 0x80, 0x80));
+            lv_color_make(0x80, 0x80, 0x80),
+            LV_PART_MAIN);
         lv_label_set_text(label1, sleep_info[i].text);
-        lv_obj_align(label1, NULL, LV_ALIGN_IN_TOP_LEFT, 0, 0);
+        lv_obj_align_to(label1, obj_base, LV_ALIGN_TOP_LEFT, 0, 0);
 
-        lv_obj_t * label2 = lv_label_create(obj_base, label1);
-        lv_obj_set_style_local_text_color(
+        lv_obj_t * label2 = lv_label_create(obj_base);
+        lv_obj_set_style_text_font(
             label2,
-            LV_LABEL_PART_MAIN,
-            LV_STATE_DEFAULT,
-            LV_COLOR_WHITE);
+            resource_get_font("bahnschrift_20"),
+            LV_PART_MAIN);
+        lv_obj_set_style_text_color(
+            label2,
+            lv_color_white(),
+            LV_PART_MAIN);
         uint32_t time = sleep_time_get_sum(
-                            sleep_time_grp,
-                            ARRAY_SIZE(sleep_time_grp),
+                            ctx->sleep_time_grp,
+                            SLEEP_TIME_CNT,
                             sleep_info[i].type);
         lv_label_set_text_fmt(label2, "%dh %dmin", time / 60, time % 60);
-        lv_obj_align(label2, NULL, LV_ALIGN_IN_BOTTOM_LEFT, 0, 0);
+        lv_obj_align_to(label2, obj_base, LV_ALIGN_BOTTOM_LEFT, 0, 0);
 
-        lv_obj_t * label3 = lv_label_create(obj_base, label2);
-        lv_obj_set_style_local_text_color(
+        lv_obj_t * label3 = lv_label_create(obj_base);
+        lv_obj_set_style_text_font(
             label3,
-            LV_LABEL_PART_MAIN,
-            LV_STATE_DEFAULT,
-            sleep_type_color[sleep_info[i].type]);
-        uint32_t time_len = sleep_time_grp[0].end_min - sleep_time_grp[0].start_min;
+            resource_get_font("bahnschrift_20"),
+            LV_PART_MAIN);
+        lv_obj_set_style_text_color(
+            label3,
+            lv_color_hex(ctx->sleep_type_color[sleep_info[i].type]),
+            LV_PART_MAIN);
+        uint32_t time_len = ctx->sleep_time_grp[0].end_min - ctx->sleep_time_grp[0].start_min;
         lv_label_set_text_fmt(label3, "%d%%", time * 100 / time_len);
-        lv_obj_align(label3, NULL, LV_ALIGN_IN_BOTTOM_RIGHT, 0, 0);
+        lv_obj_align_to(label3, obj_base, LV_ALIGN_BOTTOM_RIGHT, 0, 0);
     }
 }
 
-static void img_arrow_event_handler(lv_obj_t * obj, lv_event_t event)
+static void on_root_event(lv_event_t * e)
 {
-    if(event == LV_EVENT_CLICKED) {
-        bool is_down = (lv_img_get_src(obj) == &img_src_arrow_down);
-        CONT_SLEEP_MOVE_DOWN(is_down);
-    }
-}
+    lv_obj_t * root = lv_event_get_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    page_ctx_t * ctx = lv_obj_get_user_data(root);
 
-static void img_arrow_create(lv_obj_t * par)
-{
-    lv_obj_t * img1 = lv_img_create(par, NULL);
-    lv_img_set_src(img1, &img_src_arrow_down);
-    lv_obj_align(img1, NULL, LV_ALIGN_IN_TOP_MID, 0, 339);
-    lv_obj_set_event_cb(img1, img_arrow_event_handler);
-    lv_obj_set_click(img1, true);
-
-    lv_obj_t * img2 = lv_img_create(par, NULL);
-    lv_img_set_src(img2, &img_src_arrow_up);
-    lv_obj_align(img2, NULL, LV_ALIGN_IN_TOP_MID, 0, PAGE_VER_RES + 12);
-    lv_obj_set_event_cb(img2, img_arrow_event_handler);
-    lv_obj_set_click(img2, true);
-
-    img_down = img1;
-    img_up = img2;
-}
-
-static lv_obj_t * cont_sleep_create(lv_obj_t * par)
-{
-    lv_obj_t * obj = lv_cont_create(par, NULL);
-    lv_obj_set_size(obj, lv_obj_get_width(par), lv_obj_get_height(par) * 2);
-    lv_obj_align(obj, NULL, LV_ALIGN_IN_TOP_MID, 0, 0);
-    lv_obj_set_style_default(obj);
-
-    return obj;
-}
-
-static void page_event_handler(lv_obj_t * obj, lv_event_t event)
-{
-    if(event == LV_EVENT_GESTURE) {
-        lv_gesture_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-        if(dir == LV_GESTURE_DIR_RIGHT) {
-            if(dir == LV_GESTURE_DIR_RIGHT) {
-                lv_obj_send_event(obj, LV_EVENT_LEAVE, NULL);
-            }
+    if(code == LV_EVENT_GESTURE) {
+        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+        if(dir == LV_DIR_RIGHT) {
+            lv_obj_send_event(root, LV_EVENT_LEAVE, NULL);
         }
-        else if(dir == LV_GESTURE_DIR_TOP) {
-            CONT_SLEEP_MOVE_DOWN(true);
+        else if(dir == LV_DIR_BOTTOM) {
+            CONT_SLEEP_MOVE_DOWN(false, ctx->cont_sleep);
         }
-        else if(dir == LV_GESTURE_DIR_BOTTOM) {
-            CONT_SLEEP_MOVE_DOWN(false);
+        else if(dir == LV_DIR_TOP) {
+            CONT_SLEEP_MOVE_DOWN(true, ctx->cont_sleep);
         }
     }
-    else if(event == LV_EVENT_LEAVE) {
-        page_return_menu(true);
-    }
-    else if(event == LV_EVENT_DELETE) {
+    else if(code == LV_EVENT_LEAVE) {
+        page_pop(&ctx->base);
     }
 }
 
-lv_obj_t * page_sleep_create(void)
+static void on_page_construct(lv_fragment_t * self, void * args)
 {
-    AUTO_EVENT_CREATE(ae_grp);
+    LV_LOG_INFO("self: %p args: %p", self, args);
 
-    lv_obj_t * scr = page_screen_create();
-    screen = scr;
-    lv_obj_set_event_cb(scr, page_event_handler);
+    page_ctx_t * ctx = (page_ctx_t *) self;
 
-    lv_obj_t * cont = cont_sleep_create(scr);
-    cont_sleep = cont;
+    uint32_t sleep_type_color[SLEEP_TYPE_MAX] = {
+        0x3f71f5, 0x023192, 0x7ac943, 0xff931e,
+    };
 
-    img_arrow_create(cont);
-    img_sleep_create(cont);
-    label_score_create(cont);
-    label_total_time_create(cont);
+    for(int i = 0; i < SLEEP_TYPE_MAX; i++) {
+        ctx->sleep_type_color[i] = sleep_type_color[i];
+    }
 
-    obj_sleep_time_create(cont, sleep_time_grp, ARRAY_SIZE(sleep_time_grp));
-    obj_sleep_info_create(cont, sleep_info_grp, ARRAY_SIZE(sleep_info_grp));
+    sleep_time_t sleep_time_grp[SLEEP_TIME_CNT] = {
+        {SLEEP_TYPE_SHALLOW, 29, 588},
+        {SLEEP_TYPE_DEEP, 61, 80},
+        {SLEEP_TYPE_DEEP, 120, 200},
+        {SLEEP_TYPE_REM, 80, 95},
+        {SLEEP_TYPE_REM, 250, 310},
+        {SLEEP_TYPE_AWAKE, 400, 410},
+    };
 
-    return scr;
+    for(int i = 0; i < SLEEP_TIME_CNT; i++) {
+        ctx->sleep_time_grp[i] = sleep_time_grp[i];
+    }
+
+    sleep_info_t sleep_info_grp[SLEEP_INFO_CNT] = {
+        {"Shallow sleep", SLEEP_TYPE_SHALLOW},
+        {"Deep sleep", SLEEP_TYPE_DEEP},
+        {"REM", SLEEP_TYPE_REM},
+        {"Awake", SLEEP_TYPE_AWAKE},
+    };
+
+    for(int i = 0; i < SLEEP_INFO_CNT; i++) {
+        ctx->sleep_info_grp[i] = sleep_info_grp[i];
+    }
+
 }
 
-#endif
+static void on_page_destruct(lv_fragment_t * self)
+{
+    LV_LOG_INFO("self: %p", self);
+}
+
+static void on_page_attached(lv_fragment_t * self)
+{
+    LV_LOG_INFO("self: %p", self);
+}
+
+static void on_page_detached(lv_fragment_t * self)
+{
+    LV_LOG_INFO("self: %p", self);
+}
+
+static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
+{
+    LV_LOG_INFO("self: %p container: %p", self, container);
+
+    lv_obj_t * root = lv_obj_create(container);
+    lv_obj_remove_style_all(root);
+    lv_obj_add_style(root, resource_get_style("root_def"), 0);
+    lv_obj_add_event(root, on_root_event, LV_EVENT_ALL, NULL);
+    lv_obj_clear_flag(root, LV_OBJ_FLAG_GESTURE_BUBBLE);
+    lv_obj_clear_flag(root, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_user_data(root, self);
+    return root;
+}
+
+static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
+{
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+
+    page_ctx_t * ctx = (page_ctx_t *) self;
+
+    cont_sleep_create(obj);
+
+    img_arrow_create(ctx->cont_sleep);
+    img_sleep_create(ctx->cont_sleep);
+    label_score_create(ctx->cont_sleep);
+    label_total_time_create(ctx->cont_sleep);
+
+    obj_sleep_time_create(ctx->cont_sleep, ctx->sleep_time_grp, SLEEP_TIME_CNT);
+    obj_sleep_info_create(ctx->cont_sleep, ctx->sleep_info_grp, SLEEP_INFO_CNT);
+}
+
+static void on_page_will_delete(lv_fragment_t * self, lv_obj_t * obj)
+{
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+}
+
+static void on_page_deleted(lv_fragment_t * self, lv_obj_t * obj)
+{
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+}
+
+static bool on_page_event(lv_fragment_t * self, int code, void * user_data)
+{
+    LV_LOG_INFO("self: %p code: %d user_data: %p", self, code, user_data);
+    return false;
+}
+
+PAGE_CLASS_DEF(sleep);
