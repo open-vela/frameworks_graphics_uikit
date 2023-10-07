@@ -1,34 +1,25 @@
-/*
- * Copyright (C) 2020 Xiaomi Corporation
+/**
+ * @file stop_watch.c
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
+
+/*********************
+ *      INCLUDES
+ *********************/
 #include "page.h"
 
-#if 0
+#include "../utils/lv_auto_event.h"
+#include "../utils/lv_obj_ext_func.h"
+#define BTN_WIDTH 83
+#define BTN_HEIGHT 60
+#define BTN_CNT 2
 
-static lv_obj_t * screen;
-
-LV_IMG_DECLARE(img_src_icon_start);
-LV_IMG_DECLARE(img_src_icon_pause);
-LV_IMG_DECLARE(img_src_icon_reset);
-LV_IMG_DECLARE(img_src_icon_flag);
-
-static lv_obj_t * label_time;
-static lv_obj_t * list_history;
+/**********************
+ *      TYPEDEFS
+ **********************/
 
 typedef struct {
-    const lv_img_dsc_t * img_src;
+    const char * img_src;
     lv_obj_t * btn;
     lv_obj_t * img;
 } btn_sw_t;
@@ -44,284 +35,382 @@ enum BtnGrpEnum {
     BTN_FLAG_RESET,
 };
 
-static btn_sw_t btn_grp[] = {
-    {&img_src_icon_start},
-    {&img_src_icon_reset},
-};
+typedef struct {
+    lv_fragment_t base;
+    lv_obj_t * label_time;
+    lv_obj_t * list_history;
+    lv_timer_t * task_sw_update;
+    btn_sw_t btn_grp[BTN_CNT];
 
-static const lv_coord_t BTN_WIDTH = 83;
-static const lv_coord_t BTN_HEIGHT = 60;
+    lv_coord_t label_time_record_y;
+    lv_coord_t label_time_ready_y;
 
-static const lv_coord_t label_time_record_y = 18;
-static const lv_coord_t label_time_ready_y = 64;
+    bool sw_is_pause;
+    uint32_t sw_current_time;
+    uint32_t sw_interval_time;
+    uint32_t sw_last_time;
+    uint8_t sw_history_record_cnt;
+} page_ctx_t;
 
-static lv_timer_t * task_sw_update = NULL;
-static bool sw_is_pause = true;
-static uint32_t sw_current_time = 0;
-static uint32_t sw_interval_time = 0;
-static uint32_t sw_last_time = 0;
-static uint8_t sw_history_record_cnt = 0;
+/**********************
+ *  STATIC PROTOTYPES
+ **********************/
 
-static lv_auto_event_data_t ae_grp[] = {
-    {&(btn_grp[BTN_START_PAUSE].btn), LV_EVENT_CLICKED, 2000},
-    {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 453},
-    {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 888},
-    {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 1605},
-    {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 785},
-    {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 1200},
-    {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 1456},
-    {&(btn_grp[BTN_START_PAUSE].btn), LV_EVENT_CLICKED, 2000},
-    {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 1000},
-    {&screen, LV_EVENT_LEAVE, 2000},
-};
+/**********************
+ *  STATIC VARIABLES
+ **********************/
 
-static void sw_show_time(uint32_t ms)
+// static lv_auto_event_data_t ae_grp[] = {
+//     {&(btn_grp[BTN_START_PAUSE].btn), LV_EVENT_CLICKED, 2000},
+//     {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 453},
+//     {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 888},
+//     {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 1605},
+//     {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 785},
+//     {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 1200},
+//     {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 1456},
+//     {&(btn_grp[BTN_START_PAUSE].btn), LV_EVENT_CLICKED, 2000},
+//     {&(btn_grp[BTN_FLAG_RESET].btn), LV_EVENT_CLICKED, 1000},
+// };
+
+// static lv_auto_event_t * auto_event;
+
+/**********************
+ *      MACROS
+ **********************/
+
+/**********************
+ *   GLOBAL FUNCTIONS
+ **********************/
+
+/**********************
+ *   STATIC FUNCTIONS
+ **********************/
+
+static void line_sw_create(lv_obj_t * par)
+{
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+
+    static lv_point_precise_t line_points[] = {{0, 0}, {170, 0}};
+
+    lv_obj_t * line1 = lv_line_create(ctx->label_time);
+    lv_line_set_points(line1, line_points, ARRAY_SIZE(line_points));
+
+    lv_obj_set_style_line_color(
+        line1,
+        lv_color_make(0x80, 0x80, 0x80),
+        LV_STATE_DEFAULT);
+    lv_obj_set_style_line_width(line1, 2, LV_STATE_DEFAULT);
+    lv_obj_align_to(line1, ctx->label_time, LV_ALIGN_BOTTOM_MID, 0, -3);
+
+    lv_obj_t * line2 = lv_line_create(par);
+    lv_line_set_points(line2, line_points, ARRAY_SIZE(line_points));
+
+    lv_obj_set_style_line_color(
+        line2,
+        lv_color_make(0x80, 0x80, 0x80),
+        LV_STATE_DEFAULT);
+    lv_obj_set_style_line_width(line2, 2, LV_STATE_DEFAULT);
+    lv_obj_align_to(line2, par, LV_ALIGN_TOP_MID, 0, 286);
+}
+
+static void list_history_create(lv_obj_t * par)
+{
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+
+    lv_obj_t * list = lv_list_create(par);
+    lv_obj_set_style_text_font(list, resource_get_font("bahnschrift_20"), LV_PART_MAIN);
+    lv_obj_set_style_bg_color(list, lv_color_black(), LV_PART_MAIN);
+    lv_obj_set_style_border_width(list, 0, LV_PART_MAIN);
+
+    lv_obj_set_size(list, 170, 170);
+    lv_obj_align(list, LV_ALIGN_CENTER, 0, 0);
+    ctx->list_history = list;
+}
+
+static void label_time_create(lv_obj_t * par)
+{
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+
+    lv_obj_t * label = lv_label_create(par);
+    lv_obj_set_style_text_font(label, resource_get_font("bahnschrift_48"), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, lv_color_hex(0x87FFCE), LV_PART_MAIN);
+
+    lv_label_set_text(label, "00:00.00");
+    lv_label_set_long_mode(label, LV_LABEL_LONG_CLIP);
+    lv_obj_set_style_text_align(label, LV_ALIGN_CENTER, LV_PART_MAIN);
+    lv_obj_set_width(label, 185);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, ctx->label_time_ready_y);
+
+    ctx->label_time = label;
+}
+
+static void sw_show_time(uint32_t ms, lv_obj_t * label_time)
 {
     uint16_t min = 0, sec = 0, msec = 0;
     min = ms / 60000;
     sec = (ms - (min * 60000)) / 1000;
     msec = ms - (sec * 1000) - (min * 60000);
-    lv_label_set_text_fmt(label_time, "%02d:%02d.%03d", min, sec, msec);
+    lv_label_set_text_fmt(label_time, "%02d:%02d.%02d", min, sec, msec);
 }
 
-static void sw_pause(void)
+static void sw_pause(page_ctx_t * ctx)
 {
-    if(sw_is_pause) {
-        sw_interval_time = lv_tick_get() - sw_last_time;
-        lv_timer_set_prio(task_sw_update, lv_timer_PRIO_HIGH);
-        sw_is_pause = false;
+    if(ctx->sw_is_pause) {
+        ctx->sw_interval_time = lv_tick_get() - ctx->sw_last_time;
+        lv_timer_resume(ctx->task_sw_update);
+        ctx->sw_is_pause = false;
     }
     else {
-        sw_last_time = sw_current_time;
-        lv_timer_set_prio(task_sw_update, lv_timer_PRIO_OFF);
-        sw_is_pause = true;
+        ctx->sw_last_time = ctx->sw_current_time;
+        lv_timer_pause(ctx->task_sw_update);
+        ctx->sw_is_pause = true;
     }
 }
 
-static void sw_reset(void)
+static void sw_reset(page_ctx_t * ctx)
 {
-    sw_last_time = 0;
-    sw_current_time = 0;
-    sw_interval_time = 0;
-    sw_is_pause = true;
-    sw_history_record_cnt = 0;
-    lv_timer_set_prio(task_sw_update, lv_timer_PRIO_OFF);
-    sw_show_time(sw_current_time);
-    lv_list_clean(list_history);
+    ctx->sw_last_time = 0;
+    ctx->sw_current_time = 0;
+    ctx->sw_interval_time = 0;
+    ctx->sw_is_pause = true;
+    ctx->sw_history_record_cnt = 0;
+    lv_timer_pause(ctx->task_sw_update);
+    sw_show_time(ctx->sw_current_time, ctx->label_time);
+    lv_obj_clean(ctx->list_history);
 
-    if(lv_obj_get_y(label_time) == label_time_record_y) {
-        LV_OBJ_ADD_ANIM(label_time, y, label_time_ready_y, 500);
+    if(lv_obj_get_y(ctx->label_time) == ctx->label_time_record_y) {
+        LV_OBJ_ADD_ANIM(ctx->label_time, y, ctx->label_time_ready_y, 500);
     }
 }
 
 static void sw_update(lv_timer_t * task)
 {
-    sw_current_time = lv_tick_get() - sw_interval_time;
-    sw_show_time(sw_current_time);
+    page_ctx_t * ctx = (page_ctx_t *) task->user_data;
+
+    ctx->sw_current_time = lv_tick_get() - ctx->sw_interval_time;
+    sw_show_time(ctx->sw_current_time, ctx->label_time);
 }
 
-static void sw_record(void)
+static void sw_record(page_ctx_t * ctx)
 {
     lv_obj_t * list_btn;
-    lv_obj_t * label;
+    lv_obj_t * spangroup;
     uint16_t min = 0, sec = 0, msec = 0;
 
-    if(sw_history_record_cnt < 10 && !sw_is_pause) {
-        min = sw_current_time / 60000;
-        sec = (sw_current_time - (min * 60000)) / 1000;
-        msec = sw_current_time - (sec * 1000) - (min * 60000);
+    if(ctx->sw_history_record_cnt < 10 && !ctx->sw_is_pause) {
+        min = ctx->sw_current_time / 60000;
+        sec = (ctx->sw_current_time - (min * 60000)) / 1000;
+        msec = ctx->sw_current_time - (sec * 1000) - (min * 60000);
 
-        char buf[64];
-        lv_snprintf(
-            buf,
-            sizeof(buf),
-            "#87FFCE %d. #%02d:%02d.%03d",
-            sw_history_record_cnt + 1,
-            min,
-            sec,
-            msec);
+        char cnt_buf[8];
+        char time_buf[64];
 
-        list_btn = lv_list_add_btn(list_history, NULL, buf);
-        label = lv_obj_get_child(list_btn, NULL);
-        lv_label_set_recolor(label, true);
-        lv_list_focus(list_btn, LV_ANIM_ON);
-        lv_obj_set_style_default(list_btn);
-        lv_obj_set_style_local_text_decor(
+        lv_snprintf(cnt_buf, sizeof(cnt_buf), "%d. ", ctx->sw_history_record_cnt + 1);
+        lv_snprintf(time_buf, sizeof(time_buf), "%02d:%02d.%02d", min, sec, msec);
+
+        list_btn = lv_list_add_btn(ctx->list_history, NULL, NULL);
+        spangroup = lv_spangroup_create(list_btn);
+
+        lv_span_t * cnt_span = lv_spangroup_new_span(spangroup);
+        lv_span_set_text(cnt_span, cnt_buf);
+        lv_style_set_text_color(&cnt_span->style, lv_color_hex(0x87FFCE));
+
+        lv_span_t * time_span = lv_spangroup_new_span(spangroup);
+        lv_span_set_text(time_span, time_buf);
+        lv_style_set_text_color(&time_span->style, lv_color_hex(0xffffff));
+
+        lv_obj_add_state(list_btn, LV_STATE_FOCUSED);
+        lv_obj_set_style_bg_color(list_btn, lv_color_black(), 0);
+        lv_obj_set_style_text_decor(
             list_btn,
-            LV_BTN_PART_MAIN,
-            LV_STATE_FOCUSED,
-            LV_TEXT_DECOR_NONE);
-        sw_history_record_cnt++;
+            LV_TEXT_DECOR_NONE,
+            LV_STATE_FOCUSED);
+        ctx->sw_history_record_cnt++;
     }
 
-    if(lv_obj_get_y(label_time) == label_time_ready_y) {
-        LV_OBJ_ADD_ANIM(label_time, y, label_time_record_y, 500);
+    if(lv_obj_get_y(ctx->label_time) == ctx->label_time_ready_y) {
+        LV_OBJ_ADD_ANIM(ctx->label_time, y, ctx->label_time_record_y, 500);
     }
 }
 
-static void btn_grp_event_handler(lv_obj_t * obj, lv_event_t event)
+static void btn_grp_event_handler(lv_event_t *event)
 {
+    lv_event_code_t code = lv_event_get_code(event);
+    lv_obj_t * obj = lv_event_get_target(event);
+    page_ctx_t * ctx = (page_ctx_t *) lv_event_get_user_data(event);
 
-    if(event == LV_EVENT_CLICKED) {
-        lv_obj_t * img = lv_obj_get_child(obj, NULL);
-        const lv_img_dsc_t * img_src = lv_img_get_src(img);
+    if(code == LV_EVENT_CLICKED) {
+        lv_obj_t * img = lv_obj_get_child(obj, 0);
+        const char * img_src = lv_img_get_src(img);
 
-        if(obj == btn_grp[BTN_START_PAUSE].btn) {
-            sw_pause();
-            if(sw_is_pause) {
-                lv_img_set_src(btn_grp[BTN_START_PAUSE].img, &img_src_icon_start);
-                lv_img_set_src(btn_grp[BTN_FLAG_RESET].img, &img_src_icon_reset);
+        if(obj == ctx->btn_grp[BTN_START_PAUSE].btn) {
+            sw_pause(ctx);
+            if(ctx->sw_is_pause) {
+                lv_img_set_src(ctx->btn_grp[BTN_START_PAUSE].img, resource_get_img("icon_start"));
+                lv_img_set_src(ctx->btn_grp[BTN_FLAG_RESET].img, resource_get_img("icon_reset"));
             }
             else {
-                lv_img_set_src(btn_grp[BTN_START_PAUSE].img, &img_src_icon_pause);
-                lv_img_set_src(btn_grp[BTN_FLAG_RESET].img, &img_src_icon_flag);
-                lv_obj_set_state(btn_grp[BTN_FLAG_RESET].btn, LV_STATE_DEFAULT);
+                lv_img_set_src(ctx->btn_grp[BTN_START_PAUSE].img, resource_get_img("icon_pause"));
+                lv_img_set_src(ctx->btn_grp[BTN_FLAG_RESET].img, resource_get_img("icon_flag"));
+                lv_obj_clear_state(ctx->btn_grp[BTN_FLAG_RESET].btn, LV_STATE_DISABLED);
             }
         }
-        else if(obj == btn_grp[BTN_FLAG_RESET].btn) {
-            if(img_src == &img_src_icon_flag) {
-                sw_record();
+        else if(obj == ctx->btn_grp[BTN_FLAG_RESET].btn) {
+            if(strcmp(img_src, resource_get_img("icon_flag")) == 0) {
+                sw_record(ctx);
             }
             else {
-                if(sw_is_pause) {
-                    sw_reset();
-                    lv_obj_set_state(btn_grp[BTN_FLAG_RESET].btn, LV_STATE_DISABLED);
-                    sw_history_record_cnt = 0;
+                if(ctx->sw_is_pause) {
+                    sw_reset(ctx);
+                    lv_obj_add_state(ctx->btn_grp[BTN_FLAG_RESET].btn, LV_STATE_DISABLED);
+                    ctx->sw_history_record_cnt = 0;
                 }
             }
         }
     }
 }
 
-static void label_time_create(lv_obj_t * par)
-{
-    lv_obj_t * label = lv_label_create(par, NULL);
-
-    lv_obj_set_style_local_text_font(
-        label,
-        LV_LABEL_PART_MAIN,
-        LV_STATE_DEFAULT,
-        &font_bahnschrift_48);
-    lv_obj_set_style_local_text_color(
-        label,
-        LV_LABEL_PART_MAIN,
-        LV_STATE_DEFAULT,
-        LV_COLOR_MAKE(0x87, 0xFF, 0xCE));
-
-    lv_label_set_text(label, "00:00.000");
-    lv_label_set_long_mode(label, LV_LABEL_LONG_CROP);
-    lv_label_set_align(label, LV_LABEL_ALIGN_CENTER);
-    lv_obj_set_width(label, 190);
-    lv_obj_align(label, NULL, LV_ALIGN_IN_TOP_MID, 0, label_time_ready_y);
-
-    label_time = label;
-}
-
-static void line_sw_create(lv_obj_t * par)
-{
-    static lv_point_t line_points[] = {{0, 0}, {170, 0}};
-
-    lv_obj_t * line1 = lv_line_create(label_time, NULL);
-    lv_line_set_points(line1, line_points, ARRAY_SIZE(line_points));
-
-    lv_obj_set_style_local_line_color(
-        line1,
-        LV_LINE_PART_MAIN,
-        LV_STATE_DEFAULT,
-        LV_COLOR_MAKE(0x80, 0x80, 0x80));
-    lv_obj_set_style_local_line_width(line1, LV_LINE_PART_MAIN, LV_STATE_DEFAULT, 2);
-    lv_obj_align(line1, label_time, LV_ALIGN_IN_BOTTOM_MID, 0, -3);
-
-    lv_obj_t * line2 = lv_line_create(par, line1);
-    lv_obj_align(line2, NULL, LV_ALIGN_IN_TOP_MID, 0, 286);
-}
-
-static void list_history_create(lv_obj_t * par)
-{
-    lv_obj_t * list = lv_list_create(par, NULL);
-    lv_obj_set_style_default(list);
-    lv_obj_set_style_local_text_font(list, LV_LIST_PART_BG, LV_STATE_DEFAULT, &font_bahnschrift_20);
-    lv_obj_set_size(list, 170, 170);
-    lv_obj_align(list, NULL, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_set_auto_realign(list, true);
-    list_history = list;
-}
-
 static void btn_grp_create(lv_obj_t * par, btn_sw_t * btn_sw, int len)
 {
-    static lv_style_t style;
-    lv_style_init(&style);
-    lv_style_set_radius(&style, LV_STATE_DEFAULT, 5);
-    lv_style_set_border_color(&style, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-    lv_style_set_border_width(&style, LV_STATE_DEFAULT, 2);
-
-    lv_style_set_bg_color(&style, LV_STATE_PRESSED, LV_COLOR_GRAY);
-    lv_style_set_bg_color(&style, LV_STATE_DISABLED, LV_COLOR_GRAY);
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
 
     for(int i = 0; i < len; i++) {
-        lv_obj_t * btn = lv_btn_create(par, NULL);
+        lv_obj_t * btn = lv_btn_create(par);
         lv_obj_set_size(btn, BTN_WIDTH, BTN_HEIGHT);
 
         lv_coord_t x_ofs = BTN_WIDTH / 2 + 3;
-        lv_obj_align(btn, NULL, LV_ALIGN_IN_TOP_MID, i == 0 ? -x_ofs : x_ofs, 300);
-        lv_obj_add_style(btn, LV_BTN_PART_MAIN, &style);
-        lv_obj_set_event_cb(btn, btn_grp_event_handler);
-        lv_obj_set_style_local_bg_color(
+        lv_obj_align(btn, LV_ALIGN_TOP_MID, i == 0 ? -x_ofs : x_ofs, 300);
+        lv_obj_set_style_border_color(btn, lv_color_black(), LV_STATE_DEFAULT);
+        lv_obj_set_style_border_width(btn, 2, LV_STATE_DEFAULT);
+        lv_obj_set_style_bg_color(
             btn,
-            LV_BTN_PART_MAIN,
-            LV_STATE_DEFAULT,
-            LV_COLOR_MAKE(0x87, 0xFF, 0xCE));
-        lv_obj_set_style_local_radius(btn, LV_BTN_PART_MAIN, LV_STATE_DEFAULT, 10);
+            lv_palette_main(LV_PALETTE_GREY),
+            LV_STATE_PRESSED || LV_STATE_DISABLED);
+        lv_obj_set_style_bg_color(
+            btn,
+            lv_color_make(0x87, 0xFF, 0xCE),
+            LV_STATE_DEFAULT);
+        lv_obj_set_style_radius(btn, 10, LV_PART_MAIN);
+        lv_obj_add_event(btn, btn_grp_event_handler, LV_EVENT_ALL, ctx);
 
-        lv_obj_t * img = lv_img_create(btn, NULL);
-        lv_img_set_src(img, btn_sw[i].img_src);
-        lv_obj_align(img, btn, LV_ALIGN_CENTER, 0, 0);
+        lv_obj_t * img = lv_img_create(btn);
+        lv_img_set_src(img, resource_get_img(btn_sw[i].img_src));
+        lv_obj_align_to(img, btn, LV_ALIGN_CENTER, 0, 0);
 
         btn_sw[i].btn = btn;
         btn_sw[i].img = img;
     }
 }
 
-static void page_event_handler(lv_obj_t * obj, lv_event_t event)
+static void on_root_event(lv_event_t * e)
 {
-    if(event == LV_EVENT_GESTURE) {
-        lv_gesture_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-        if(dir == LV_GESTURE_DIR_RIGHT) {
-            lv_obj_send_event(obj, LV_EVENT_LEAVE, NULL);
+    lv_obj_t * root = lv_event_get_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    page_ctx_t * ctx = lv_obj_get_user_data(root);
+
+    if(code == LV_EVENT_GESTURE) {
+        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+        if(dir == LV_DIR_RIGHT) {
+            lv_obj_send_event(root, LV_EVENT_LEAVE, NULL);
         }
     }
-    else if(event == LV_EVENT_LEAVE) {
-        lv_timer_del(task_sw_update);
-        page_return_menu(false);
-    }
-    else if(event == LV_EVENT_DELETE) {
+    else if(code == LV_EVENT_LEAVE) {
+        page_pop(&ctx->base);
     }
 }
 
-lv_obj_t * page_stop_watch_create(void)
+static void on_page_construct(lv_fragment_t * self, void * args)
 {
-    AUTO_EVENT_CREATE(ae_grp);
+    LV_LOG_INFO("self: %p args: %p", self, args);
 
-    task_sw_update = lv_timer_create(
-                         sw_update,
-                         51,
-                         (sw_is_pause ? lv_timer_PRIO_OFF : lv_timer_PRIO_HIGH),
-                         NULL);
+    page_ctx_t * ctx = (page_ctx_t *)self;
 
-    if(screen != NULL) {
-        return screen;
+    btn_sw_t btn_grp[BTN_CNT] = {
+        {"icon_start"},
+        {"icon_reset"},
+    };
+
+    for(int i = 0; i < BTN_CNT; i++) {
+        ctx->btn_grp[i] = btn_grp[i];
     }
 
-    lv_obj_t * scr = page_screen_create();
-    screen = scr;
-    lv_obj_set_event_cb(scr, page_event_handler);
+    ctx->label_time_record_y = 18;
+    ctx->label_time_ready_y = 64;
 
-    list_history_create(scr);
-    label_time_create(scr);
-    btn_grp_create(scr, btn_grp, ARRAY_SIZE(btn_grp));
-    line_sw_create(scr);
+    ctx->sw_is_pause = true;
+    ctx->sw_current_time = 0;
+    ctx->sw_interval_time = 0;
+    ctx->sw_last_time = 0;
+    ctx->sw_history_record_cnt = 0;
 
-    return scr;
 }
 
-#endif
+static void on_page_destruct(lv_fragment_t * self)
+{
+    LV_LOG_INFO("self: %p", self);
+}
+
+static void on_page_attached(lv_fragment_t * self)
+{
+    LV_LOG_INFO("self: %p", self);
+}
+
+static void on_page_detached(lv_fragment_t * self)
+{
+    LV_LOG_INFO("self: %p", self);
+}
+
+static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
+{
+    LV_LOG_INFO("self: %p container: %p", self, container);
+
+    lv_obj_t * root = lv_obj_create(container);
+    lv_obj_remove_style_all(root);
+    lv_obj_add_style(root, resource_get_style("root_def"), 0);
+    lv_obj_add_event(root, on_root_event, LV_EVENT_ALL, NULL);
+    lv_obj_clear_flag(root, LV_OBJ_FLAG_GESTURE_BUBBLE);
+    lv_obj_clear_flag(root, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_user_data(root, self);
+    return root;
+}
+
+static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
+{
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+
+    page_ctx_t * ctx = (page_ctx_t *)self;
+
+    // auto_event = lv_auto_event_create(ae_grp, ARRAY_SIZE(ae_grp));
+
+    ctx->task_sw_update = lv_timer_create(sw_update, 51, ctx);
+    
+    list_history_create(obj);
+    label_time_create(obj);
+    btn_grp_create(obj, ctx->btn_grp, BTN_CNT);
+    line_sw_create(obj);
+
+    ctx->sw_is_pause ? lv_timer_pause(ctx->task_sw_update) : lv_timer_resume(ctx->task_sw_update);
+}
+
+static void on_page_will_delete(lv_fragment_t * self, lv_obj_t * obj)
+{
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+
+    page_ctx_t * ctx = (page_ctx_t *)self;
+
+    lv_timer_del(ctx->task_sw_update);
+    // lv_auto_event_del(auto_event);
+}
+
+static void on_page_deleted(lv_fragment_t * self, lv_obj_t * obj)
+{
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+}
+
+static bool on_page_event(lv_fragment_t * self, int code, void * user_data)
+{
+    LV_LOG_INFO("self: %p code: %d user_data: %p", self, code, user_data);
+    return false;
+}
+
+PAGE_CLASS_DEF(stop_watch);
