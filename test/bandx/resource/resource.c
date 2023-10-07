@@ -21,6 +21,7 @@
 #undef IMG_DEF
 
 #define FONT_BASE_PATH "/font/"
+#define IMG_BASE_PATH "/image/"
 
 /**********************
  *      TYPEDEFS
@@ -28,7 +29,7 @@
 
 typedef struct {
     const char * key;
-    const lv_img_dsc_t * img_src;
+    const char * img_src;
 } resource_img_t;
 
 typedef struct {
@@ -49,7 +50,7 @@ typedef struct {
  *  STATIC VARIABLES
  **********************/
 
-#define IMG_DEF(NAME) { #NAME, &img_src_##NAME },
+#define IMG_DEF(NAME) { #NAME, IMG_BASE_PATH #NAME ".png"},
 static const resource_img_t g_img_resource_map[] = {
 #include "image/img_src.inc"
 };
