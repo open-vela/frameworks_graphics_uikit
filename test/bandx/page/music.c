@@ -1,169 +1,180 @@
-/*
- * Copyright (C) 2020 Xiaomi Corporation
+/**
+ * @file music.c
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
  */
+
+/*********************
+ *      INCLUDES
+ *********************/
 #include "page.h"
 
-#if 0
+#include "../utils/lv_auto_event.h"
 
-static lv_obj_t * screen;
+#define MC_COLOR_GRAY lv_color_make(0x33, 0x33, 0x33)
+#define MC_COLOR_PINK lv_color_make(0xB9, 0x00, 0x5E)
+#define MC_COLOR_PINK_BG lv_color_make(0x17, 0x00, 0x0B)
 
-#define MC_COLOR_GRAY LV_COLOR_MAKE(0x33, 0x33, 0x33)
-#define MC_COLOR_PINK LV_COLOR_MAKE(0xB9, 0x00, 0x5E)
-#define MC_COLOR_PINK_BG LV_COLOR_MAKE(0x17, 0x00, 0x0B)
+#define MUSIC_TIME_TO_MS(min, sec) ((min)*60 * 1000 + (sec)*1000)
+#define MUSIC_INFO_CNT 3
 
-LV_IMG_DECLARE(img_src_icon_volume_add);
-LV_IMG_DECLARE(img_src_icon_volume_reduce);
-LV_IMG_DECLARE(img_src_icon_start);
-LV_IMG_DECLARE(img_src_icon_pause);
-LV_IMG_DECLARE(img_src_icon_next);
-LV_IMG_DECLARE(img_src_icon_prev);
+/**********************
+ *      TYPEDEFS
+ **********************/
 
 typedef struct {
     const char * name;
     uint32_t time_ms;
 } music_info_t;
 
-#define MUSIC_TIME_TO_MS(min, sec) ((min)*60 * 1000 + (sec)*1000)
+typedef struct {
+    lv_fragment_t base;
+    lv_style_t btn_style;
+    lv_style_t trans_style;
+    lv_obj_t * bar_volume;
+    lv_obj_t * arc_play;
+    lv_obj_t * obj_play;
+    lv_obj_t * label_music_info;
+    lv_obj_t * btn_volume_add;
+    lv_obj_t * btn_volume_reduce;
+    lv_obj_t * btn_music_ctrl_next;
+    lv_obj_t * btn_music_ctrl_prev;
+    lv_span_t * span_cur_time;
+    lv_span_t * span_end_time;
+    lv_timer_t * task_music_update;
+    uint32_t music_current_time;
+    uint32_t music_end_time;
+    uint16_t music_current_index;
+    bool music_is_playing;
+    music_info_t music_info_grp[MUSIC_INFO_CNT];
+} page_ctx_t;
 
-static music_info_t music_info_grp[] = {
-    {.name = "Wannabe (Instrumental)", MUSIC_TIME_TO_MS(3, 37)},
-    {.name = "River", MUSIC_TIME_TO_MS(3, 40)},
-    {.name = "I Feel Tired", MUSIC_TIME_TO_MS(3, 25)},
-};
+/**********************
+ *  STATIC PROTOTYPES
+ **********************/
 
-static lv_obj_t * bar_volume;
-static lv_obj_t * arc_play;
-static lv_obj_t * label_time;
-static lv_obj_t * label_music_info;
-static lv_obj_t * btn_volume_add;
-static lv_obj_t * btn_volume_reduce;
-static lv_obj_t * btn_music_ctrl_next;
-static lv_obj_t * btn_music_ctrl_prev;
-static lv_obj_t * obj_play;
-static lv_timer_t * task_music_update;
+/**********************
+ *  STATIC VARIABLES
+ **********************/
 
-static uint32_t music_current_time = 0;
-static uint32_t music_end_time = 0;
-static uint16_t music_current_index = 0;
-static const uint16_t music_current_index_max = ARRAY_SIZE(music_info_grp);
-static bool music_is_playing = false;
+/**********************
+ *      MACROS
+ **********************/
 
-static lv_auto_event_data_t ae_grp[] = {
-    {&obj_play, LV_EVENT_CLICKED, 1000},
-    {&btn_volume_add, LV_EVENT_CLICKED, 500},
-    {&btn_volume_add, LV_EVENT_CLICKED, 500},
-    {&btn_volume_reduce, LV_EVENT_CLICKED, 500},
-    {&btn_volume_reduce, LV_EVENT_CLICKED, 500},
-    {&btn_music_ctrl_next, LV_EVENT_CLICKED, 2000},
-    {&btn_music_ctrl_next, LV_EVENT_CLICKED, 2000},
-    {&obj_play, LV_EVENT_CLICKED, 1000},
-    {&screen, LV_EVENT_LEAVE, 1000},
-};
+/**********************
+ *   GLOBAL FUNCTIONS
+ **********************/
 
-static void bar_volume_set_value(int16_t value)
+/**********************
+ *   STATIC FUNCTIONS
+ **********************/
+
+static void on_root_event(lv_event_t * e)
+{
+    lv_obj_t * root = lv_event_get_target(e);
+    lv_event_code_t code = lv_event_get_code(e);
+    page_ctx_t * ctx = lv_obj_get_user_data(root);
+
+    if(code == LV_EVENT_GESTURE) {
+        lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
+        if(dir == LV_DIR_RIGHT) {
+            lv_obj_send_event(root, LV_EVENT_LEAVE, NULL);
+        }
+    }
+    else if(code == LV_EVENT_LEAVE) {
+        page_pop(&ctx->base);
+    }
+}
+
+static void bar_volume_set_value(int16_t value, lv_obj_t * bar_volume)
 {
     lv_bar_set_value(bar_volume, value, LV_ANIM_ON);
 }
 
 static void bar_volume_create(lv_obj_t * par)
 {
-    lv_obj_t * bar = lv_bar_create(par, NULL);
+    page_ctx_t * ctx = (page_ctx_t *)lv_obj_get_user_data(par);
+
+    lv_obj_t * bar = lv_bar_create(par);
     lv_obj_set_size(bar, 160, 3);
-    lv_obj_align(bar, NULL, LV_ALIGN_IN_TOP_MID, 0, 70);
-    lv_obj_set_style_local_bg_color(bar, LV_BAR_PART_INDIC, LV_STATE_DEFAULT, MC_COLOR_PINK);
-    lv_obj_set_style_local_bg_color(bar, LV_BAR_PART_BG, LV_STATE_DEFAULT, MC_COLOR_PINK_BG);
+    lv_obj_align(bar, LV_ALIGN_TOP_MID, 0, 70);
+    lv_obj_set_style_bg_color(bar, MC_COLOR_PINK, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(bar, MC_COLOR_PINK, LV_PART_INDICATOR);
 
-    bar_volume = bar;
+    ctx->bar_volume = bar;
 }
 
-static void btn_add_style(lv_obj_t * btn)
+static void btn_volume_event_handler(lv_event_t * event)
 {
-    static lv_style_t style = {NULL};
+    lv_obj_t * obj = lv_event_get_target(event);
+    lv_event_code_t code = lv_event_get_code(event);
+    page_ctx_t * ctx = (page_ctx_t *)lv_event_get_user_data(event);
 
-    if(style.map == NULL) {
-        lv_style_init(&style);
-        lv_style_set_bg_color(&style, LV_OBJ_PART_MAIN, MC_COLOR_GRAY);
-        lv_style_set_border_width(&style, LV_OBJ_PART_MAIN, 0);
-        lv_style_set_outline_width(&style, LV_OBJ_PART_MAIN, 0);
-        lv_style_set_radius(&style, LV_OBJ_PART_MAIN, 10);
+    if(code == LV_EVENT_CLICKED) {
+        lv_obj_t * img = lv_obj_get_child(obj, 0);
+        int16_t vol_value = lv_bar_get_value(ctx->bar_volume);
 
-        lv_style_set_bg_color(&style, LV_STATE_PRESSED, LV_COLOR_WHITE);
-
-        static lv_anim_path_t path_ease_in_out;
-        lv_anim_path_init(&path_ease_in_out);
-        lv_anim_path_set_cb(&path_ease_in_out, lv_anim_path_ease_in_out);
-
-        lv_style_set_transition_path(&style, LV_STATE_PRESSED, &path_ease_in_out);
-        lv_style_set_transition_time(&style, LV_STATE_DEFAULT, 50);
-        lv_style_set_transition_prop_1(&style, LV_STATE_DEFAULT, LV_STYLE_BG_COLOR);
-    }
-
-    lv_obj_add_style(btn, LV_OBJ_PART_MAIN, &style);
-}
-
-static void btn_volume_event_handler(lv_obj_t * obj, lv_event_t event)
-{
-    if(event == LV_EVENT_CLICKED) {
-        lv_obj_t * img = lv_obj_get_child(obj, NULL);
-        int16_t vol_value = lv_bar_get_value(bar_volume);
-
-        if(lv_img_get_src(img) == &img_src_icon_volume_add) {
-            bar_volume_set_value(vol_value + 10);
+        if(strcmp(lv_img_get_src(img), resource_get_img("icon_volume_add")) == 0) {
+            bar_volume_set_value(vol_value + 10, ctx->bar_volume);
         }
         else {
-            bar_volume_set_value(vol_value - 10);
+            bar_volume_set_value(vol_value - 10, ctx->bar_volume);
         }
     }
 }
 
 static void btn_volume_create(lv_obj_t * par)
 {
-    lv_obj_t * btn1 = lv_btn_create(par, NULL);
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+
+    lv_obj_t * btn1 = lv_btn_create(par);
     lv_obj_set_size(btn1, 85, 48);
-    btn_add_style(btn1);
-    lv_obj_align(btn1, NULL, LV_ALIGN_IN_TOP_MID, -lv_obj_get_width(btn1) / 2 - 3, 10);
-    lv_obj_set_event_cb(btn1, btn_volume_event_handler);
+    lv_obj_add_style(btn1, &ctx->btn_style, LV_PART_MAIN);
+    lv_obj_add_style(btn1, &ctx->trans_style, LV_STATE_DEFAULT);
+    lv_obj_add_style(btn1, &ctx->trans_style, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_color(btn1, lv_color_white(), LV_STATE_PRESSED);
+    lv_obj_align(btn1, LV_ALIGN_TOP_MID, -lv_obj_get_style_width(btn1, 0) / 2 - 3, 10);
+    lv_obj_add_event(btn1, btn_volume_event_handler, LV_EVENT_ALL, ctx);
 
-    lv_obj_t * btn2 = lv_btn_create(par, btn1);
-    lv_obj_align(btn2, NULL, LV_ALIGN_IN_TOP_MID, lv_obj_get_width(btn2) / 2 + 3, 10);
+    lv_obj_t * btn2 = lv_btn_create(par);
+    lv_obj_set_size(btn2, 85, 48);
+    lv_obj_add_style(btn2, &ctx->btn_style, LV_PART_MAIN);
+    lv_obj_add_style(btn2, &ctx->trans_style, LV_STATE_DEFAULT);
+    lv_obj_add_style(btn2, &ctx->trans_style, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_color(btn2, lv_color_white(), LV_STATE_PRESSED);
+    lv_obj_align(btn2, LV_ALIGN_TOP_MID, lv_obj_get_style_width(btn2, 0) / 2 + 3, 10);
+    lv_obj_add_event(btn2, btn_volume_event_handler, LV_EVENT_ALL, ctx);
 
-    lv_obj_t * img1 = lv_img_create(btn1, NULL);
-    lv_img_set_src(img1, &img_src_icon_volume_reduce);
-    lv_obj_set_style_local_image_recolor_opa(img1, LV_IMG_PART_MAIN, LV_STATE_DEFAULT, LV_OPA_COVER);
-    lv_obj_set_style_local_image_recolor(img1, LV_IMG_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_BLACK);
-    lv_obj_align(img1, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_t * img1 = lv_img_create(btn1);
+    lv_img_set_src(img1, resource_get_img("icon_volume_reduce"));
+    lv_obj_set_style_image_recolor_opa(img1, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_image_recolor(img1, lv_color_black(), LV_PART_MAIN);
+    lv_obj_align(img1, LV_ALIGN_CENTER, 0, 0);
 
-    lv_obj_t * img2 = lv_img_create(btn2, img1);
-    lv_img_set_src(img2, &img_src_icon_volume_add);
-    lv_obj_align(img2, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_t * img2 = lv_img_create(btn2);
+    lv_img_set_src(img2, resource_get_img("icon_volume_add"));
+    lv_obj_set_style_image_recolor_opa(img2, LV_OPA_COVER, LV_PART_MAIN);
+    lv_obj_set_style_image_recolor(img2, lv_color_black(), LV_PART_MAIN);
+    lv_obj_align(img2, LV_ALIGN_CENTER, 0, 0);
 
-    btn_volume_reduce = btn1;
-    btn_volume_add = btn2;
+    ctx->btn_volume_reduce = btn1;
+    ctx->btn_volume_add = btn2;
 }
 
 static void obj_play_anim_ready_callback(lv_anim_t * a_p)
 {
+    page_ctx_t * ctx = (page_ctx_t *)lv_anim_get_user_data(a_p);
+
     if(a_p->act_time == 0)
         return;
 
     lv_obj_t * img = (lv_obj_t *)a_p->var;
-    const lv_img_dsc_t * img_src_next;
-    img_src_next = (lv_img_get_src(img) == &img_src_icon_start) ? &img_src_icon_pause : &img_src_icon_start;
+    const char * img_src_next;
+    img_src_next = (strcmp(lv_img_get_src(img), resource_get_img("icon_start")) == 0) ?
+                   resource_get_img("icon_pause") :
+                   resource_get_img("icon_start");
     lv_img_set_src(img, img_src_next);
 
-    music_is_playing = (lv_img_get_src(img) == &img_src_icon_pause);
+    ctx->music_is_playing = (strcmp(lv_img_get_src(img), resource_get_img("icon_pause")) == 0);
 
     lv_anim_t a;
     lv_anim_init(&a);
@@ -172,76 +183,82 @@ static void obj_play_anim_ready_callback(lv_anim_t * a_p)
     lv_anim_set_values(&a, 1800, 3600);
     lv_anim_set_time(&a, 300);
 
-    lv_anim_path_t path;
-    lv_anim_path_init(&path);
-    lv_anim_path_set_cb(&path, lv_anim_path_ease_out);
-    lv_anim_set_path(&a, &path);
+    lv_anim_set_path_cb(&a, lv_anim_path_ease_out);
     lv_anim_start(&a);
 }
 
-static void obj_play_event_handler(lv_obj_t * obj, lv_event_t event)
+static void obj_play_event_handler(lv_event_t * event)
 {
-    if(event == LV_EVENT_CLICKED) {
-        lv_obj_t * img = lv_obj_get_child(obj, NULL);
+    lv_event_code_t code = lv_event_get_code(event);
+    lv_obj_t * obj = lv_event_get_target(event);
+    page_ctx_t * ctx = (page_ctx_t *)lv_event_get_user_data(event);
+
+    if(code == LV_EVENT_CLICKED) {
+        lv_obj_t * img = lv_obj_get_child(obj, 0);
 
         lv_anim_t a;
         lv_anim_init(&a);
         lv_anim_set_var(&a, img);
         lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t)lv_img_set_angle);
         lv_anim_set_ready_cb(&a, obj_play_anim_ready_callback);
+        lv_anim_set_user_data(&a, ctx);
         lv_anim_set_values(&a, 0, 1800);
         lv_anim_set_time(&a, 300);
-
-        lv_anim_path_t path;
-        lv_anim_path_init(&path);
-        lv_anim_path_set_cb(&path, lv_anim_path_ease_in);
-        lv_anim_set_path(&a, &path);
+        lv_anim_set_path_cb(&a, lv_anim_path_ease_in);
         lv_anim_start(&a);
     }
 }
 
 static void obj_play_create(lv_obj_t * par)
 {
-    lv_obj_t * obj = lv_obj_create(par, NULL);
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+
+    lv_obj_t * obj = lv_obj_create(ctx->arc_play);
     lv_obj_set_size(obj, 104, 104);
-    btn_add_style(obj);
-    lv_obj_set_event_cb(obj, obj_play_event_handler);
-    lv_obj_set_style_local_radius(obj, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, LV_RADIUS_CIRCLE);
-    lv_obj_set_style_local_bg_color(obj, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, MC_COLOR_GRAY);
-    lv_obj_set_style_local_border_width(obj, LV_OBJ_PART_MAIN, LV_STATE_DEFAULT, 0);
-    lv_obj_align(obj, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_add_style(obj, &ctx->btn_style, LV_PART_MAIN);
+    lv_obj_add_style(obj, &ctx->trans_style, LV_STATE_DEFAULT);
+    lv_obj_add_style(obj, &ctx->trans_style, LV_STATE_PRESSED);
+    lv_obj_set_style_bg_color(obj, lv_color_white(), LV_STATE_PRESSED);
+    lv_obj_add_event(obj, obj_play_event_handler, LV_EVENT_ALL, ctx);
+    lv_obj_set_style_radius(obj, LV_RADIUS_CIRCLE, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(obj, MC_COLOR_GRAY, LV_PART_MAIN);
+    lv_obj_set_style_border_width(obj, 0, LV_PART_MAIN);
+    lv_obj_align(obj, LV_ALIGN_CENTER, 0, 0);
 
-    lv_obj_t * img = lv_img_create(obj, NULL);
-    lv_img_set_src(img, &img_src_icon_start);
-    lv_obj_align(img, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_t * img = lv_img_create(obj);
+    lv_img_set_src(img, resource_get_img("icon_start"));
+    lv_obj_align(img, LV_ALIGN_CENTER, 0, 0);
 
-    obj_play = obj;
+    ctx->obj_play = obj;
 }
 
 static void arc_play_create(lv_obj_t * par)
 {
-    lv_obj_t * arc = lv_arc_create(par, NULL);
-    lv_obj_set_style_local_line_color(arc, LV_ARC_PART_INDIC, LV_STATE_DEFAULT, MC_COLOR_PINK);
-    lv_obj_set_style_local_line_width(arc, LV_ARC_PART_INDIC, LV_STATE_DEFAULT, 6);
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
 
-    lv_obj_set_style_local_line_color(arc, LV_ARC_PART_BG, LV_STATE_DEFAULT, MC_COLOR_PINK_BG);
-    lv_obj_set_style_local_line_width(arc, LV_ARC_PART_BG, LV_STATE_DEFAULT, 6);
+    lv_obj_t * arc = lv_arc_create(par);
+    lv_obj_set_style_arc_color(arc, MC_COLOR_PINK, LV_PART_INDICATOR);
+    lv_obj_set_style_arc_width(arc, 6, LV_PART_INDICATOR);
 
-    lv_obj_set_style_local_pad_all(arc, LV_ARC_PART_BG, LV_STATE_DEFAULT, 0);
-    lv_obj_set_style_local_bg_opa(arc, LV_ARC_PART_BG, LV_STATE_DEFAULT, LV_OPA_TRANSP);
-    lv_obj_set_style_local_border_width(arc, LV_ARC_PART_BG, LV_STATE_DEFAULT, 0);
+    lv_obj_set_style_bg_color(arc, MC_COLOR_PINK, LV_PART_KNOB); //设置 arc knob颜色
+    lv_obj_set_style_pad_all(arc, 0, LV_PART_KNOB); //设置arc knob size
+
+    lv_obj_set_style_arc_color(arc, MC_COLOR_PINK_BG, LV_PART_MAIN);
+    lv_obj_set_style_arc_width(arc, 6, LV_PART_MAIN);
+
+    lv_obj_set_style_border_width(arc, 0, LV_PART_MAIN);
     lv_obj_set_size(arc, 121, 121);
-    lv_obj_align(arc, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_align(arc, LV_ALIGN_CENTER, 0, 0);
 
     lv_arc_set_start_angle(arc, 270);
     lv_arc_set_bg_angles(arc, 0, 360);
     lv_arc_set_range(arc, 0, 1000);
     lv_arc_set_rotation(arc, 270);
 
-    arc_play = arc;
+    ctx->arc_play = arc;
 }
 
-static void label_time_update(uint32_t cur_ms, uint32_t end_ms)
+static void spangroup_time_update(page_ctx_t * ctx, uint32_t cur_ms, uint32_t end_ms)
 {
     uint32_t cur_min = cur_ms / 60 / 1000;
     uint32_t cur_sec = (cur_ms / 1000) % 60;
@@ -249,163 +266,271 @@ static void label_time_update(uint32_t cur_ms, uint32_t end_ms)
     uint32_t end_min = end_ms / 60 / 1000;
     uint32_t end_sec = (end_ms / 1000) % 60;
 
-    lv_label_set_text_fmt(
-        label_time,
-        "#B9005E %d:%02d# #666666 -- %d:%02d#",
-        cur_min,
-        cur_sec,
-        end_min,
-        end_sec);
+    char cur_buf[32];
+    char end_buf[32];
+
+    lv_snprintf(cur_buf, sizeof(cur_buf), "%d:%02d", cur_min, cur_sec);
+    lv_snprintf(end_buf, sizeof(end_buf), " -- %d:%02d", end_min, end_sec);
+    lv_span_set_text(ctx->span_cur_time, cur_buf);
+    lv_span_set_text(ctx->span_end_time, end_buf);
 }
 
-static void label_time_create(lv_obj_t * par)
+static void spangroup_time_create(lv_obj_t * par)
 {
-    lv_obj_t * label = lv_label_create(par, NULL);
-    lv_obj_set_style_local_text_font(label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &font_bahnschrift_20);
-    lv_label_set_recolor(label, true);
-    lv_label_set_text(label, "--");
-    lv_obj_align(label, NULL, LV_ALIGN_IN_TOP_MID, 0, 87);
-    lv_obj_set_auto_realign(label, true);
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
 
-    label_time = label;
+    lv_obj_t * label = lv_label_create(par);
+    lv_obj_set_style_text_font(label, resource_get_font("bahnschrift_20"), LV_PART_MAIN);
+    lv_label_set_text(label, "--");
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 87);
+
+    lv_obj_t * spangroup = lv_spangroup_create(par);
+    lv_obj_set_style_text_font(spangroup, resource_get_font("bahnschrift_20"), LV_PART_MAIN);
+
+    lv_span_t * cur_span = lv_spangroup_new_span(spangroup);
+    lv_style_set_text_color(&cur_span->style, lv_color_hex(0xB9005E));
+
+    lv_span_t * end_span = lv_spangroup_new_span(spangroup);
+    lv_style_set_text_color(&end_span->style, lv_color_hex(0x666666));
+    lv_span_set_text(end_span, "--");
+
+    lv_obj_align(spangroup, LV_ALIGN_TOP_MID, 0, 87);
+
+    ctx->span_cur_time = cur_span;
+    ctx->span_end_time = end_span;
 }
 
 static void label_music_info_create(lv_obj_t * par)
 {
-    lv_obj_t * label = lv_label_create(par, NULL);
-    lv_obj_set_style_local_text_font(label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, &font_bahnschrift_20);
-    lv_obj_set_style_local_text_color(label, LV_LABEL_PART_MAIN, LV_STATE_DEFAULT, LV_COLOR_WHITE);
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+
+    lv_obj_t * label = lv_label_create(par);
+    lv_obj_set_style_text_font(label, resource_get_font("bahnschrift_20"), LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
     lv_label_set_text(label, "");
-    lv_label_set_long_mode(label, LV_LABEL_LONG_SROLL);
-    lv_label_set_anim_speed(label, 20);
-    lv_label_set_align(label, LV_LABEL_ALIGN_CENTER);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR);
+    lv_obj_set_align(label, LV_ALIGN_CENTER);
     lv_obj_set_width(label, 166);
-    lv_obj_align(label, NULL, LV_ALIGN_IN_TOP_MID, 0, 259);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 259);
 
-    label_music_info = label;
+    ctx->label_music_info = label;
 }
 
-static void music_change_current(int index)
+static void music_change_current(page_ctx_t * ctx, int index)
 {
-    index %= ARRAY_SIZE(music_info_grp);
+    index %= MUSIC_INFO_CNT;
 
-    music_current_time = 0;
-    music_end_time = music_info_grp[index].time_ms;
+    ctx->music_current_time = 0;
+    ctx->music_end_time = ctx->music_info_grp[index].time_ms;
 
-    lv_label_set_text(label_music_info, music_info_grp[index].name);
-    label_time_update(music_current_time, music_end_time);
+    lv_label_set_text(ctx->label_music_info, ctx->music_info_grp[index].name);
+    spangroup_time_update(ctx, ctx->music_current_time, ctx->music_end_time);
 }
 
-static void music_change_next(bool next)
+static void music_change_next(page_ctx_t * ctx, bool next)
 {
     if(next) {
-        if(music_current_index >= music_current_index_max - 1) {
-            music_current_index = 0;
+        if(ctx->music_current_index >= MUSIC_INFO_CNT - 1) {
+            ctx->music_current_index = 0;
         }
         else {
-            music_current_index++;
+            ctx->music_current_index++;
         }
     }
     else {
-        if(music_current_index == 0) {
-            music_current_index = music_current_index_max;
+        if(ctx->music_current_index == 0) {
+            ctx->music_current_index = MUSIC_INFO_CNT;
         }
         else {
-            music_current_index--;
+            ctx->music_current_index--;
         }
     }
 
-    music_change_current(music_current_index);
+    music_change_current(ctx, ctx->music_current_index);
 }
 
-static void btn_music_event_handler(lv_obj_t * obj, lv_event_t event)
+static void btn_music_event_handler(lv_event_t * event)
 {
-    if(event == LV_EVENT_CLICKED) {
-        lv_obj_t * img = lv_obj_get_child(obj, NULL);
+    lv_obj_t * obj = lv_event_get_target(event);
+    lv_event_code_t code = lv_event_get_code(event);
+    page_ctx_t * ctx = (page_ctx_t *)lv_event_get_user_data(event);
 
-        bool is_next = (lv_img_get_src(img) == &img_src_icon_next);
-        music_change_next(is_next);
+    if(code == LV_EVENT_CLICKED) {
+        lv_obj_t * img = lv_obj_get_child(obj, 0);
+
+        bool is_next = (strcmp(lv_img_get_src(img), resource_get_img("icon_next")) == 0);
+        music_change_next(ctx, is_next);
     }
 }
 
 static void btn_music_ctrl_create(lv_obj_t * par)
 {
-    lv_obj_t * btn1 = lv_btn_create(par, NULL);
+    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+
+    lv_obj_t * btn1 = lv_btn_create(par);
     lv_obj_set_size(btn1, 85, 64);
-    btn_add_style(btn1);
-    lv_obj_align(btn1, NULL, LV_ALIGN_IN_BOTTOM_MID, -lv_obj_get_width(btn1) / 2 - 3, -10);
-    lv_obj_set_event_cb(btn1, btn_music_event_handler);
+    lv_obj_add_style(btn1, &ctx->btn_style, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn1, lv_color_white(), LV_STATE_PRESSED);
+    lv_obj_add_style(btn1, &ctx->trans_style, LV_STATE_DEFAULT);
+    lv_obj_add_style(btn1, &ctx->trans_style, LV_STATE_PRESSED);
+    lv_obj_align(btn1, LV_ALIGN_BOTTOM_MID, -lv_obj_get_style_width(btn1, 0) / 2 - 3, -10);
+    lv_obj_add_event(btn1, btn_music_event_handler, LV_EVENT_ALL, ctx);
 
-    lv_obj_t * btn2 = lv_btn_create(par, btn1);
-    lv_obj_align(btn2, NULL, LV_ALIGN_IN_BOTTOM_MID, lv_obj_get_width(btn2) / 2 + 3, -10);
+    lv_obj_t * btn2 = lv_btn_create(par);
+    lv_obj_set_size(btn2, 85, 64);
+    lv_obj_add_style(btn2, &ctx->btn_style, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(btn2, lv_color_white(), LV_STATE_PRESSED);
+    lv_obj_add_style(btn2, &ctx->trans_style, LV_STATE_DEFAULT);
+    lv_obj_add_style(btn2, &ctx->trans_style, LV_STATE_PRESSED);
+    lv_obj_add_event(btn2, btn_music_event_handler, LV_EVENT_ALL, ctx);
+    lv_obj_align(btn2, LV_ALIGN_BOTTOM_MID, lv_obj_get_style_width(btn2, 0) / 2 + 3, -10);
 
-    lv_obj_t * img1 = lv_img_create(btn1, NULL);
-    lv_img_set_src(img1, &img_src_icon_prev);
-    lv_obj_align(img1, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_t * img1 = lv_img_create(btn1);
+    lv_img_set_src(img1, resource_get_img("icon_prev"));
+    lv_obj_align(img1, LV_ALIGN_CENTER, 0, 0);
 
-    lv_obj_t * img2 = lv_img_create(btn2, NULL);
-    lv_img_set_src(img2, &img_src_icon_next);
-    lv_obj_align(img2, NULL, LV_ALIGN_CENTER, 0, 0);
+    lv_obj_t * img2 = lv_img_create(btn2);
+    lv_img_set_src(img2, resource_get_img("icon_next"));
+    lv_obj_align(img2, LV_ALIGN_CENTER, 0, 0);
 
-    btn_music_ctrl_prev = btn1;
-    btn_music_ctrl_next = btn2;
+    ctx->btn_music_ctrl_prev = btn1;
+    ctx->btn_music_ctrl_next = btn2;
 }
 
 static void music_update(lv_timer_t * task)
 {
-    if(!music_is_playing) {
+    page_ctx_t * ctx = (page_ctx_t *) task->user_data;
+
+    if(!ctx->music_is_playing) {
         return;
     }
-    music_current_time += task->period;
+    ctx->music_current_time += task->period;
 
-    if(music_current_time > music_end_time) {
-        music_change_next(true);
+    if(ctx->music_current_time > ctx->music_end_time) {
+        music_change_next(ctx, true);
     }
 
-    lv_arc_set_value(arc_play, music_current_time * 1000 / music_end_time);
-    label_time_update(music_current_time, music_end_time);
+    lv_arc_set_value(ctx->arc_play, ctx->music_current_time * 1000 / ctx->music_end_time);
+    spangroup_time_update(ctx, ctx->music_current_time, ctx->music_end_time);
 }
 
-static void page_event_handler(lv_obj_t * obj, lv_event_t event)
+static void on_page_construct(lv_fragment_t * self, void * args)
 {
-    if(event == LV_EVENT_GESTURE) {
-        lv_gesture_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-        if(dir == LV_GESTURE_DIR_RIGHT) {
-            lv_obj_send_event(obj, LV_EVENT_LEAVE, NULL);
-        }
+    LV_LOG_INFO("self: %p args: %p", self, args);
+
+    page_ctx_t * ctx = (page_ctx_t *)self;
+
+    lv_style_init(&ctx->btn_style);
+    lv_style_set_bg_color(&ctx->btn_style, MC_COLOR_GRAY);
+    lv_style_set_border_width(&ctx->btn_style, 0);
+    lv_style_set_outline_width(&ctx->btn_style, 0);
+    lv_style_set_radius(&ctx->btn_style, 10);
+
+    lv_style_init(&ctx->trans_style);
+    static lv_style_transition_dsc_t dsc;
+    static const lv_style_prop_t props[] = {
+        LV_STYLE_BG_COLOR,
+        LV_STYLE_TRANSFORM_WIDTH,
+        LV_STYLE_TRANSFORM_HEIGHT,
+        LV_STYLE_PROP_INV
+    };
+    lv_style_transition_dsc_init(
+        &dsc,
+        props,
+        lv_anim_path_ease_in_out,
+        50,
+        0,
+        NULL);
+    lv_style_set_transition(&ctx->trans_style, &dsc);
+
+    music_info_t music_info_grp[MUSIC_INFO_CNT] = {
+        {.name = "Wannabe (Instrumental)", MUSIC_TIME_TO_MS(3, 37)},
+        {.name = "River", MUSIC_TIME_TO_MS(3, 40)},
+        {.name = "I Feel Tired", MUSIC_TIME_TO_MS(3, 25)},
+    };
+
+    for(int i = 0; i < MUSIC_INFO_CNT; i++) {
+        ctx->music_info_grp[i] = music_info_grp[i];
     }
-    else if(event == LV_EVENT_LEAVE) {
-        page_return_menu(true);
-    }
-    else if(event == LV_EVENT_DELETE) {
-        lv_timer_del(task_music_update);
-    }
+
+    ctx->music_current_time = 0;
+    ctx->music_end_time = 0;
+    ctx->music_current_index = 0;
+    ctx->music_is_playing = false;
 }
 
-lv_obj_t * page_music_create(void)
+static void on_page_destruct(lv_fragment_t * self)
 {
-    AUTO_EVENT_CREATE(ae_grp);
+    LV_LOG_INFO("self: %p", self);
 
-    lv_obj_t * scr = page_screen_create();
-    screen = scr;
-    lv_obj_set_event_cb(scr, page_event_handler);
-
-    btn_volume_create(scr);
-    bar_volume_create(scr);
-    bar_volume_set_value(50);
-
-    arc_play_create(scr);
-    obj_play_create(arc_play);
-    label_time_create(scr);
-    label_music_info_create(scr);
-    btn_music_ctrl_create(scr);
-
-    music_is_playing = false;
-    music_change_current(music_current_index);
-
-    task_music_update = lv_timer_create(music_update, 100, lv_timer_PRIO_MID, NULL);
-
-    return scr;
+    page_ctx_t * ctx = (page_ctx_t *)self;
+    lv_style_reset(&ctx->btn_style);
+    lv_style_reset(&ctx->trans_style);
 }
 
-#endif
+static void on_page_attached(lv_fragment_t * self)
+{
+    LV_LOG_INFO("self: %p", self);
+}
+
+static void on_page_detached(lv_fragment_t * self)
+{
+    LV_LOG_INFO("self: %p", self);
+}
+
+static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
+{
+    LV_LOG_INFO("self: %p container: %p", self, container);
+
+    lv_obj_t * root = lv_obj_create(container);
+    lv_obj_remove_style_all(root);
+    lv_obj_add_style(root, resource_get_style("root_def"), 0);
+    lv_obj_add_event(root, on_root_event, LV_EVENT_ALL, NULL);
+    lv_obj_clear_flag(root, LV_OBJ_FLAG_GESTURE_BUBBLE);
+    lv_obj_set_user_data(root, self);
+    return root;
+}
+
+static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
+{
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+
+    page_ctx_t * ctx = (page_ctx_t *)self;
+
+    btn_volume_create(obj);
+    bar_volume_create(obj);
+    bar_volume_set_value(50, ctx->bar_volume);
+
+    arc_play_create(obj);
+    obj_play_create(obj);
+    spangroup_time_create(obj);
+    label_music_info_create(obj);
+    btn_music_ctrl_create(obj);
+
+    ctx->music_is_playing = false;
+    music_change_current(ctx, ctx->music_current_index);
+
+    ctx->task_music_update = lv_timer_create(music_update, 100, ctx);
+
+}
+
+static void on_page_will_delete(lv_fragment_t * self, lv_obj_t * obj)
+{
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+
+    page_ctx_t * ctx = (page_ctx_t *)self;
+    lv_timer_del(ctx->task_music_update);
+}
+
+static void on_page_deleted(lv_fragment_t * self, lv_obj_t * obj)
+{
+    LV_LOG_INFO("self: %p obj: %p", self, obj);
+}
+
+static bool on_page_event(lv_fragment_t * self, int code, void * user_data)
+{
+    LV_LOG_INFO("self: %p code: %d user_data: %p", self, code, user_data);
+    return false;
+}
+
+PAGE_CLASS_DEF(music);
