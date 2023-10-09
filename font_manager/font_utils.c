@@ -324,7 +324,7 @@ font_family_config_t* font_utils_json_get_font_family_config(font_utils_json_obj
             }
 
             font_family_fallback_t* fallback = &font_family->fallback_arr[fallback_index];
-            strncpy(fallback->font_name, fallback_item->valuestring, sizeof(fallback->font_name));
+            strncpy(fallback->font_name, fallback_item->valuestring, sizeof(fallback->font_name) - 1);
             fallback->font_name[sizeof(fallback->font_name) - 1] = '\0';
         }
     }
