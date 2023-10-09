@@ -13,8 +13,9 @@ extern "C" {
  *      INCLUDES
  *********************/
 
-#include <lvgl/lvgl.h>
 #include "font_config.h"
+#include "lv_ext_conf.h"
+#include <lvgl/lvgl.h>
 
 /*********************
  *      DEFINES
@@ -26,6 +27,7 @@ extern "C" {
 
 typedef struct _lv_freetype_info_t lv_freetype_info_t;
 typedef struct _font_manager_t font_manager_t;
+typedef struct _font_path_t font_path_t;
 
 /**********************
  * GLOBAL PROTOTYPES
@@ -45,11 +47,21 @@ font_manager_t* font_manager_create(void);
 bool font_manager_delete(font_manager_t* manager);
 
 /**
- * Set the font directory file path.
+ * Add the font file path.
  * @param manager pointer to main font manager.
- * @param base_path file path.
+ * @param name font name.
+ * @param path font file path.
+ * @return return path handle.
  */
-void font_manager_set_base_path(font_manager_t* manager, const char* base_path);
+font_path_t* font_manager_add_path(font_manager_t* manager, const char* name, const char* path);
+
+/**
+ * Remove the font file path.
+ * @param manager pointer to main font manager.
+ * @param name font name.
+ * @return return true if the remove was successful.
+ */
+bool font_manager_remove_path(font_manager_t* manager, font_path_t* handle);
 
 /**
  * Create font.
