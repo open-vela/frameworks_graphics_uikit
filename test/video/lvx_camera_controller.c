@@ -387,7 +387,7 @@ static int camera_scan(lv_img_dsc_t* img_dsc)
 
     if (img_dsc->header.cf == LV_IMG_CF_TRUE_COLOR_ALPHA) {
 
-        gray_buff = (uint8_t*)lv_mem_alloc(img_dsc->data_size / 4);
+        gray_buff = (uint8_t*)lv_mem_alloc(img_dsc->data_size / (LV_COLOR_DEPTH >> 3));
         if (!gray_buff) {
             LV_LOG_ERROR("malloc failed");
             goto ERR;
@@ -402,6 +402,16 @@ static int camera_scan(lv_img_dsc_t* img_dsc)
             goto ERR;
         }
         nv12_to_gray(img_dsc->data, img_dsc->header.w, img_dsc->header.h, gray_buff);
+
+    }  else if (img_dsc->header.cf == LV_IMG_CF_TRUE_COLOR) {
+
+        gray_buff = (uint8_t*)lv_mem_alloc(img_dsc->data_size / (LV_COLOR_DEPTH >> 3));
+
+        if (!gray_buff) {
+            LV_LOG_ERROR("malloc failed");
+            goto ERR;
+        }
+        rgb565_to_gray(img_dsc->data, img_dsc->header.w, img_dsc->header.h, gray_buff);
 
     } else {
         show_scan_result("Can not support this color format");
