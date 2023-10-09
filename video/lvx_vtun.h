@@ -8,6 +8,7 @@
 
 typedef enum {
     VTUN_FRAME_FORMAT_BGRA8888,
+    VTUN_FRAME_FORMAT_RGB565,
     VTUN_FRAME_FORMAT_YUV420SP,
     VTUN_FRAME_FORMAT_INVALID
 } lvx_vtun_frame_format;
