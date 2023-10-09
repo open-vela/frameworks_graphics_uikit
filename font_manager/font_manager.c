@@ -6,8 +6,7 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "lvx_font_manager.h"
-
+#include "font_manager.h"
 #include "font_cache.h"
 #include "font_emoji.h"
 #include "font_log.h"
@@ -44,7 +43,8 @@ typedef struct _font_rec_node_t {
 typedef struct _font_manager_t {
     lv_ll_t refer_ll; /* freetype font record list */
     lv_ll_t rec_ll; /* lvgl font record list */
-    char base_path[FONT_PATH_MAX];
+    lv_ll_t path_ll; /* font path record list */
+    char def_path[PATH_MAX];
 
 #if FONT_USE_FONT_FAMILY
     font_family_config_t* font_family_config;
@@ -59,10 +59,17 @@ typedef struct _font_manager_t {
 #endif /* FONT_CACHE_SIZE */
 } font_manager_t;
 
+struct _font_path_t {
+    char* name;
+    char* path;
+};
+
 /**********************
  *  STATIC PROTOTYPES
  **********************/
 
+static const char* font_manager_get_path(font_manager_t* manager, const char* name);
+static void font_manager_remove_path_all(font_manager_t* manager);
 static bool font_manager_check_resource(font_manager_t* manager);
 static font_refer_node_t* font_manager_request_font(font_manager_t* manager, const lv_freetype_info_t* ft_info);
 static bool font_manager_drop_font(font_manager_t* manager, font_refer_node_t* refer_node);
@@ -88,7 +95,7 @@ font_manager_t* font_manager_create(void)
 
     _lv_ll_init(&manager->refer_ll, sizeof(font_refer_node_t));
     _lv_ll_init(&manager->rec_ll, sizeof(font_rec_node_t));
-    manager->base_path[0] = '\0';
+    _lv_ll_init(&manager->path_ll, sizeof(font_path_t));
 
 #if FONT_USE_FONT_FAMILY
     /* Open the font configuration file */
@@ -140,22 +147,62 @@ bool font_manager_delete(font_manager_t* manager)
     font_cache_manager_delete(manager->cache_manager);
 #endif /* FONT_CACHE_SIZE */
 
+    font_manager_remove_path_all(manager);
+
     lv_mem_free(manager);
 
     FONT_LOG_INFO("success");
     return true;
 }
 
-void font_manager_set_base_path(font_manager_t* manager, const char* base_path)
+font_path_t* font_manager_add_path(font_manager_t* manager, const char* name, const char* path)
 {
     LV_ASSERT_NULL(manager);
-    LV_ASSERT_NULL(base_path);
+    LV_ASSERT_NULL(name);
+    LV_ASSERT_NULL(path);
 
-    size_t max_len = sizeof(manager->base_path);
-    strncpy(manager->base_path, base_path, max_len);
-    manager->base_path[max_len - 1] = '\0';
+    const char* old_path = font_manager_get_path(manager, name);
+    if (strcmp(path, old_path) == 0) {
+        LV_LOG_WARN("name: %s, path: %s already exists", name, old_path);
+        return NULL;
+    }
 
-    FONT_LOG_INFO("path: %s", manager->base_path);
+    font_path_t* font_path = _lv_ll_ins_tail(&manager->path_ll);
+    LV_ASSERT_MALLOC(font_path);
+
+    uint32_t name_len = strlen(name) + 1;
+    font_path->name = lv_mem_alloc(name_len);
+    LV_ASSERT_MALLOC(font_path->name);
+    lv_memcpy(font_path->name, name, name_len);
+
+    uint32_t path_len = strlen(path) + 1;
+    font_path->path = lv_mem_alloc(path_len);
+    LV_ASSERT_MALLOC(font_path->path);
+    lv_memcpy(font_path->path, path, path_len);
+
+    LV_LOG_USER("name: %s, path: %s add success", name, path);
+    return font_path;
+}
+
+bool font_manager_remove_path(font_manager_t* manager, font_path_t* handle)
+{
+    LV_ASSERT_NULL(manager);
+
+    font_path_t* font_path;
+    _LV_LL_READ(&manager->path_ll, font_path)
+    {
+        if (font_path == handle) {
+            _lv_ll_remove(&manager->path_ll, font_path);
+            LV_LOG_USER("remove name: %s, path: %s", font_path->name, font_path->path);
+            lv_mem_free(font_path->name);
+            lv_mem_free(font_path->path);
+            lv_mem_free(font_path);
+            return true;
+        }
+    }
+
+    LV_LOG_WARN("handle %p is invalid", handle);
+    return false;
 }
 
 lv_font_t* font_manager_create_font(font_manager_t* manager, const lv_freetype_info_t* ft_info)
@@ -287,17 +334,39 @@ void font_manager_delete_font_family(font_manager_t* manager, lv_font_t* font)
  *   STATIC FUNCTIONS
  **********************/
 
-static void font_manager_generate_font_file_path(
-    font_manager_t* manager,
-    const char* name,
-    char* buf,
-    size_t buf_size)
+static const char* font_manager_generate_def_path(font_manager_t* manager, const char* name)
 {
-    LV_ASSERT_NULL(manager);
-    LV_ASSERT_NULL(name);
-    LV_ASSERT_NULL(buf);
+    lv_snprintf(manager->def_path,
+        sizeof(manager->def_path),
+        FONT_LIB_PATH "font/%s." FONT_EXT_NAME,
+        name);
+    return manager->def_path;
+}
 
-    lv_snprintf(buf, buf_size, "%s/%s." FONT_EXT_NAME, manager->base_path, name);
+static const char* font_manager_get_path(font_manager_t* manager, const char* name)
+{
+    font_path_t* font_path;
+    _LV_LL_READ(&manager->path_ll, font_path)
+    {
+        if (strcmp(name, font_path->name) == 0) {
+            return font_path->path;
+        }
+    }
+
+    return font_manager_generate_def_path(manager, name);
+}
+
+static void font_manager_remove_path_all(font_manager_t* manager)
+{
+    font_path_t* font_path;
+    _LV_LL_READ(&manager->path_ll, font_path)
+    {
+        LV_LOG_USER("remove %s", font_path->name);
+        lv_mem_free(font_path->name);
+        lv_mem_free(font_path->path);
+    }
+
+    _lv_ll_clear(&manager->path_ll);
 }
 
 static bool font_manager_check_font_file(font_manager_t* manager, const char* name)
@@ -305,17 +374,16 @@ static bool font_manager_check_font_file(font_manager_t* manager, const char* na
     LV_ASSERT_NULL(manager);
     LV_ASSERT_NULL(name);
 
-    char path_buf[PATH_MAX];
-    font_manager_generate_font_file_path(manager, name, path_buf, sizeof(path_buf));
+    const char* path = font_manager_get_path(manager, name);
 
     /* Check if font file exists */
-    int ret = access(path_buf, F_OK);
+    int ret = access(path, F_OK);
     if (ret != 0) {
-        FONT_LOG_WARN("Can't access font file: %s", path_buf);
+        FONT_LOG_WARN("Can't access font file: %s", path);
         return false;
     }
 
-    FONT_LOG_INFO("font: %s access OK", path_buf);
+    FONT_LOG_INFO("font: %s access OK", path);
     return true;
 }
 
@@ -432,10 +500,9 @@ static lv_font_t* font_manager_create_font_warpper(font_manager_t* manager, cons
     }
 
     /* generate full file path */
-    char path_buf[PATH_MAX];
-    font_manager_generate_font_file_path(manager, ft_info->name, path_buf, sizeof(path_buf));
+    const char* path = font_manager_get_path(manager, ft_info->name);
 
-    font = lv_freetype_font_create(path_buf, ft_info->size, ft_info->style);
+    font = lv_freetype_font_create(path, ft_info->size, ft_info->style);
 
     if (!font) {
         FONT_LOG_ERROR("Freetype font init failed, name: %s, weight: %d, style: %d",

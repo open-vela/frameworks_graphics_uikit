@@ -54,23 +54,8 @@ void lvx_font_init(void)
         return;
     }
 
-    /* Prepare the font base directory path */
-#ifdef __NuttX__
-    const char* exepath = FONT_LIB_PATH;
-#else
-    char exepath[PATH_MAX];
-    size_t max_size = sizeof(exepath);
-    uv_exepath(exepath, &max_size);
-#endif /* __NuttX__ */
-
-    char base_path[PATH_MAX];
-    lv_snprintf(base_path, sizeof(base_path), "%s/font", exepath);
-
     /* Create font manager */
     g_font_manager = font_manager_create();
-
-    /* Set font base path */
-    font_manager_set_base_path(g_font_manager, base_path);
 }
 
 void lvx_font_deinit(void)
@@ -83,10 +68,14 @@ void lvx_font_deinit(void)
     }
 }
 
-void lvx_font_set_base_path(const char* path)
+lvx_font_path_handle_t lvx_font_add_path(const char* name, const char* path)
 {
-    LV_ASSERT_NULL(path);
-    font_manager_set_base_path(g_font_manager, path);
+    return font_manager_add_path(g_font_manager, name, path);
+}
+
+bool lvx_font_remove_path(lvx_font_path_handle_t handle)
+{
+    return font_manager_remove_path(g_font_manager, handle);
 }
 
 lv_font_t* lvx_font_create(const char* name, uint16_t size, uint16_t style)

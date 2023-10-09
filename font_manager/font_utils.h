@@ -34,7 +34,7 @@ typedef struct _font_utils_json_obj_t font_utils_json_obj_t;
 typedef struct {
     char font_name[FONT_NAME_MAX];
     char ext[FONT_EXT_MAX];
-    char path[FONT_PATH_MAX];
+    char path[PATH_MAX];
 
     uint16_t path_len;
     uint16_t ext_len;

@@ -28,6 +28,8 @@ extern "C" {
  *      TYPEDEFS
  **********************/
 
+typedef void* lvx_font_path_handle_t;
+
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
@@ -59,9 +61,18 @@ void lvx_font_destroy(lv_font_t* delfont);
 
 /**
  * set font find path.
- * @param path font find path.eg:"./xxx/".note:must have '/' in end.
+ * @param name font name.eg:"simhei".
+ * @param path font file path.eg:"/data/simhei.ttf".
+ * @return font path handle.
  */
-void lvx_font_set_base_path(const char* path);
+lvx_font_path_handle_t lvx_font_add_path(const char* name, const char* path);
+
+/**
+ * remove font find path.
+ * @param handle font path handle.
+ * @return true if success.
+ */
+bool lvx_font_remove_path(lvx_font_path_handle_t handle);
 
 /**********************
  *      MACROS

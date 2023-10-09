@@ -29,13 +29,7 @@ extern "C" {
 #if defined(CONFIG_FONT_LIB_PATH)
 #  define FONT_LIB_PATH CONFIG_FONT_LIB_PATH
 #else
-#  define FONT_LIB_PATH "./"
-#endif
-
-#if defined(CONFIG_FONT_PATH_MAX)
-#  define FONT_PATH_MAX CONFIG_FONT_PATH_MAX
-#else
-#  define FONT_PATH_MAX 128
+#  define FONT_LIB_PATH "/"
 #endif
 
 /* FONT_NAME */
