@@ -28,10 +28,6 @@ config FONT_LIB_PATH
 		/data/	, /data/font/xxxxxL
 		Note: '/' is required at the end of the string.
 
-config FONT_PATH_MAX
-	int "Font path max length"
-	default 128
-
 config FONT_NAME_MAX
 	int "Font name max length"
 	default 32
