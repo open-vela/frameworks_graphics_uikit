@@ -97,7 +97,12 @@ struct lvx_video_adapter_ctx_s {
  ****************************************************************************/
 
 static const struct lvx_video_format_s g_video_format_map[] = {
+#if LV_COLOR_DEPTH == 32
     { LV_IMG_CF_TRUE_COLOR_ALPHA, VTUN_FRAME_FORMAT_BGRA8888 },
+#endif
+#if LV_COLOR_DEPTH == 16
+    { LV_IMG_CF_TRUE_COLOR, VTUN_FRAME_FORMAT_RGB565 },
+#endif
     { LV_IMG_CF_RESERVED_17, VTUN_FRAME_FORMAT_YUV420SP },
 };
 
@@ -280,6 +285,7 @@ static lv_img_cf_t lvx_video_format_converter(lvx_vtun_frame_format format)
         }
     }
 
+    LV_LOG_WARN("unsupported color format : %d!",format);
     return cf;
 }
 
