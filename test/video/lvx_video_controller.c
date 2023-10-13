@@ -146,7 +146,7 @@ static void video_event_cb(lv_event_t* e)
     lvx_video_t* video = (lvx_video_t*)lv_event_get_target(e);
     lvx_video_controller_t* video_controller = (lvx_video_controller_t*)lv_event_get_user_data(e);
 
-    snprintf(dur_str, sizeof(dur_str), "%02d:%02d/%02d:%02d", video->cur_time / 60, video->cur_time % 60,
+    snprintf(dur_str, sizeof(dur_str), "%02u:%02u/%02u:%02u", video->cur_time / 60, video->cur_time % 60,
         video->duration / 60, video->duration % 60);
 
     lv_label_set_text(video_controller->dur_label, dur_str);

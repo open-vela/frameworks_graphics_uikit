@@ -43,8 +43,8 @@ typedef struct {
     lv_img_t img;
     lv_timer_t* timer;
     lv_img_dsc_t img_dsc;
-    int32_t duration;
-    int32_t cur_time;
+    unsigned duration;
+    unsigned cur_time;
     lv_area_t crop_coords;
     void* video_ctx;
     lvx_video_vtable_t* vtable;
