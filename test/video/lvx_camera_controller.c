@@ -190,6 +190,7 @@ static void take_picture_event_callback(void* cookie, int event, int ret, const 
         break;
     }
     LV_LOG_INFO("event %s, event %d, ret %d\n", str, event, ret);
+    LV_UNUSED(str);
 }
 
 static void camera_take_picture_event_cb(lv_event_t* e)
