@@ -150,55 +150,12 @@ static inline lv_obj_t* camera_create_btn(lv_obj_t* parent, char* label_text,
     return btn;
 }
 
-static void take_picture_event_callback(void* cookie, int event, int ret, const char* data)
-{
-    char* str;
-
-    switch (event) {
-    case MEDIA_EVENT_STARTED:
-        str = "MEDIA_EVENT_STARTED";
-        break;
-    case MEDIA_EVENT_STOPPED:
-        str = "MEDIA_EVENT_STOPPED";
-        break;
-    case MEDIA_EVENT_COMPLETED:
-        str = "MEDIA_EVENT_COMPLETED";
-        break;
-    case MEDIA_EVENT_PREPARED:
-        str = "MEDIA_EVENT_PREPARED";
-        break;
-    case MEDIA_EVENT_PAUSED:
-        str = "MEDIA_EVENT_PAUSED";
-        break;
-    case MEDIA_EVENT_PREVED:
-        str = "MEDIA_EVENT_PREVED";
-        break;
-    case MEDIA_EVENT_NEXTED:
-        str = "MEDIA_EVENT_NEXTED";
-        break;
-    case MEDIA_EVENT_START:
-        str = "MEDIA_EVENT_START";
-        break;
-    case MEDIA_EVENT_PAUSE:
-        str = "MEDIA_EVENT_PAUSE";
-        break;
-    case MEDIA_EVENT_STOP:
-        str = "MEDIA_EVENT_STOP";
-        break;
-    default:
-        str = "NORMAL EVENT";
-        break;
-    }
-    LV_LOG_INFO("event %s, event %d, ret %d\n", str, event, ret);
-    LV_UNUSED(str);
-}
-
 static void camera_take_picture_event_cb(lv_event_t* e)
 {
     count++;
     char src[64];
     snprintf(src, sizeof(src), "/gallery/pic_%d.jpg", count);
-    media_recorder_take_picture(PICSINK, src, 1, take_picture_event_callback, e);
+    media_recorder_take_picture(PICSINK, src, 1, NULL, e);
 }
 
 static void camera_picture_start_event_cb(lv_event_t* e)
