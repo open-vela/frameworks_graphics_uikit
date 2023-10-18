@@ -44,6 +44,7 @@ typedef struct _font_manager_t {
     lv_ll_t refer_ll; /* freetype font record list */
     lv_ll_t rec_ll; /* lvgl font record list */
     lv_ll_t path_ll; /* font path record list */
+    char base_path[PATH_MAX]; /* font base path */
     char def_path[PATH_MAX];
 
 #if FONT_USE_FONT_FAMILY
@@ -153,6 +154,16 @@ bool font_manager_delete(font_manager_t* manager)
 
     FONT_LOG_INFO("success");
     return true;
+}
+
+void font_manager_set_base_path(font_manager_t* manager, const char* base_path)
+{
+    LV_ASSERT_NULL(manager);
+    LV_ASSERT_NULL(base_path);
+    size_t max_len = sizeof(manager->base_path);
+    strncpy(manager->base_path, base_path, max_len);
+    manager->base_path[max_len - 1] = '\0';
+    LV_LOG_USER("%s", manager->base_path);
 }
 
 font_path_t* font_manager_add_path(font_manager_t* manager, const char* name, const char* path)
@@ -336,10 +347,17 @@ void font_manager_delete_font_family(font_manager_t* manager, lv_font_t* font)
 
 static const char* font_manager_generate_def_path(font_manager_t* manager, const char* name)
 {
-    lv_snprintf(manager->def_path,
+    int len = lv_snprintf(
+        manager->def_path,
         sizeof(manager->def_path),
-        FONT_LIB_PATH "font/%s." FONT_EXT_NAME,
+        "%s/%s." FONT_EXT_NAME,
+        manager->base_path,
         name);
+
+    if (len >= sizeof(manager->def_path)) {
+        FONT_LOG_WARN("path truncation detected, len = %d", len);
+    }
+
     return manager->def_path;
 }
 
