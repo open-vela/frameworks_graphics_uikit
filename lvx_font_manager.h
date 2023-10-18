@@ -60,6 +60,12 @@ lv_font_t* lvx_font_create(const char* name, uint16_t size, uint16_t style);
 void lvx_font_destroy(lv_font_t* delfont);
 
 /**
+ * set font default path.
+ * @param path font find path.eg:"./xxx/".note:must have '/' in end.
+ */
+void lvx_font_set_base_path(const char* path);
+
+/**
  * set font find path.
  * @param name font name.eg:"simhei".
  * @param path font file path.eg:"/data/simhei.ttf".

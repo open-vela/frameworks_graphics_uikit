@@ -47,6 +47,13 @@ font_manager_t* font_manager_create(void);
 bool font_manager_delete(font_manager_t* manager);
 
 /**
+ * Set the font directory file path.
+ * @param manager pointer to main font manager.
+ * @param base_path file path.
+ */
+void font_manager_set_base_path(font_manager_t* manager, const char* base_path);
+
+/**
  * Add the font file path.
  * @param manager pointer to main font manager.
  * @param name font name.
