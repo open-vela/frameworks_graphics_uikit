@@ -58,7 +58,7 @@ void lvx_font_init(void)
     g_font_manager = font_manager_create();
 
     /* Set font base path */
-    font_manager_set_base_path(g_font_manager, FONT_LIB_PATH "font");
+    font_manager_set_base_path(g_font_manager, FONT_LIB_PATH "/font");
 }
 
 void lvx_font_deinit(void)
