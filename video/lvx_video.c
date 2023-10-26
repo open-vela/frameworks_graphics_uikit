@@ -9,12 +9,14 @@
 #include "lvx_video.h"
 
 #ifdef CONFIG_LVX_USE_VIDEO_ADAPTER
+#include "lv_ext.h"
 
 /*********************
  *      DEFINES
  *********************/
 #define MY_CLASS &lvx_video_class
 #define LVX_VIDEO_DEFAULT_PERIOD (30)
+#define g_video_default_vtable LV_EXT_GLOBAL()->video_vtable
 
 /**********************
  *      TYPEDEFS
@@ -39,7 +41,6 @@ const lv_obj_class_t lvx_video_class = {
     .base_class = &lv_image_class
 };
 
-static lvx_video_vtable_t* g_video_default_vtable = NULL;
 /**********************
  *      MACROS
  **********************/

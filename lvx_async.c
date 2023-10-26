@@ -7,16 +7,21 @@
  *      INCLUDES
  *********************/
 #include "lvx_async.h"
+#include "lv_ext.h"
 #include "lvgl/src/lvgl_private.h"
 /*********************
  *      DEFINES
  *********************/
 
+#define async_inited LV_EXT_GLOBAL()->async_info.inited
+#define async_refr_start_ll LV_EXT_GLOBAL()->async_info.refr_start_ll
+#define async_refr_finish_ll LV_EXT_GLOBAL()->async_info.refr_finish_ll
+
 /**********************
  *      TYPEDEFS
  **********************/
 
-typedef void (*refr_event_cb_t)(lv_display_t * disp_drv);
+typedef void (*refr_event_cb_t)(lv_display_t* disp_drv);
 
 typedef struct {
     lv_async_cb_t cb;
@@ -29,16 +34,12 @@ typedef struct {
  **********************/
 
 static void lvx_async_refr_init(void);
-static lv_result_t lvx_async_refr_call(lv_ll_t * ll_p, lv_async_cb_t async_xcb, void * user_data);
-static lv_result_t lvx_async_refr_call_cancel(lv_ll_t * ll_p, lv_async_cb_t async_xcb, void * user_data);
+static lv_result_t lvx_async_refr_call(lv_ll_t* ll_p, lv_async_cb_t async_xcb, void* user_data);
+static lv_result_t lvx_async_refr_call_cancel(lv_ll_t* ll_p, lv_async_cb_t async_xcb, void* user_data);
 
 /**********************
  *  STATIC VARIABLES
  **********************/
-
-static bool async_inited = false;
-static lv_ll_t async_refr_start_ll = { 0 };
-static lv_ll_t async_refr_finish_ll = { 0 };
 
 /**********************
  *      MACROS
@@ -48,22 +49,22 @@ static lv_ll_t async_refr_finish_ll = { 0 };
  *   GLOBAL FUNCTIONS
  **********************/
 
-lv_result_t lvx_async_before_refr_call(lv_async_cb_t async_xcb, void * user_data)
+lv_result_t lvx_async_before_refr_call(lv_async_cb_t async_xcb, void* user_data)
 {
     return lvx_async_refr_call(&async_refr_start_ll, async_xcb, user_data);
 }
 
-lv_result_t lvx_async_before_refr_call_cancel(lv_async_cb_t async_xcb, void * user_data)
+lv_result_t lvx_async_before_refr_call_cancel(lv_async_cb_t async_xcb, void* user_data)
 {
     return lvx_async_refr_call_cancel(&async_refr_start_ll, async_xcb, user_data);
 }
 
-lv_result_t lvx_async_after_refr_call(lv_async_cb_t async_xcb, void * user_data)
+lv_result_t lvx_async_after_refr_call(lv_async_cb_t async_xcb, void* user_data)
 {
     return lvx_async_refr_call(&async_refr_finish_ll, async_xcb, user_data);
 }
 
-lv_result_t lvx_async_after_refr_call_cancel(lv_async_cb_t async_xcb, void * user_data)
+lv_result_t lvx_async_after_refr_call_cancel(lv_async_cb_t async_xcb, void* user_data)
 {
     return lvx_async_refr_call_cancel(&async_refr_finish_ll, async_xcb, user_data);
 }
@@ -72,16 +73,16 @@ lv_result_t lvx_async_after_refr_call_cancel(lv_async_cb_t async_xcb, void * use
  *   STATIC FUNCTIONS
  **********************/
 
-static lv_result_t lvx_async_refr_call(lv_ll_t * ll_p, lv_async_cb_t async_xcb, void * user_data)
+static lv_result_t lvx_async_refr_call(lv_ll_t* ll_p, lv_async_cb_t async_xcb, void* user_data)
 {
-    if(!async_inited) {
+    if (!async_inited) {
         lvx_async_refr_init();
     }
 
-    async_refr_info_t * info = _lv_ll_ins_tail(ll_p);
+    async_refr_info_t* info = _lv_ll_ins_tail(ll_p);
     LV_ASSERT_MALLOC(info);
 
-    if(info == NULL) {
+    if (info == NULL) {
         return LV_RESULT_INVALID;
     }
 
@@ -91,9 +92,9 @@ static lv_result_t lvx_async_refr_call(lv_ll_t * ll_p, lv_async_cb_t async_xcb, 
     return LV_RESULT_OK;
 }
 
-static lv_result_t lvx_async_refr_call_cancel(lv_ll_t * ll_p, lv_async_cb_t async_xcb, void * user_data)
+static lv_result_t lvx_async_refr_call_cancel(lv_ll_t* ll_p, lv_async_cb_t async_xcb, void* user_data)
 {
-    if(!async_inited) {
+    if (!async_inited) {
         return LV_RESULT_INVALID;
     }
 
@@ -110,10 +111,10 @@ static lv_result_t lvx_async_refr_call_cancel(lv_ll_t * ll_p, lv_async_cb_t asyn
     return res;
 }
 
-static void on_refr_event(lv_event_t * e)
+static void on_refr_event(lv_event_t* e)
 {
-    lv_ll_t * ll_p = lv_event_get_user_data(e);
-    if(_lv_ll_is_empty(ll_p)) {
+    lv_ll_t* ll_p = lv_event_get_user_data(e);
+    if (_lv_ll_is_empty(ll_p)) {
         return;
     }
 
@@ -130,8 +131,8 @@ static void on_refr_event(lv_event_t * e)
 
 static void lvx_async_refr_init(void)
 {
-    lv_display_t * disp = lv_display_get_default();
-    if(!disp) {
+    lv_display_t* disp = lv_display_get_default();
+    if (!disp) {
         LV_LOG_WARN("disp is NULL");
         return;
     }

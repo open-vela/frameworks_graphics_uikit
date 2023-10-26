@@ -14,6 +14,8 @@
 #include "font_manager/font_manager.h"
 #include "font_manager/font_utils.h"
 
+#include "lv_ext.h"
+
 #ifndef __NuttX__
 #include <uv.h>
 #endif /* __NuttX__ */
@@ -21,6 +23,7 @@
 /*********************
  *      DEFINES
  *********************/
+#define g_font_manager LV_EXT_GLOBAL()->font_manager
 
 /**********************
  *      TYPEDEFS
@@ -35,8 +38,6 @@ static lv_font_t* lvx_font_create_core(lv_freetype_info_t* newfont);
 /**********************
  *  STATIC VARIABLES
  **********************/
-
-static font_manager_t* g_font_manager = NULL;
 
 /**********************
  *      MACROS

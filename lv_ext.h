@@ -21,15 +21,32 @@ extern "C" {
 /**********************
  *      TYPEDEFS
  **********************/
+struct _font_manager_t;
+
+typedef struct _lv_ext_global_t {
+    lv_async_t async_info;
+#if (LVX_USE_FONT_MANAGER != 0)
+    struct _font_manager_t* font_manager;
+#endif
+#ifdef CONFIG_LVX_USE_VIDEO_ADAPTER
+    lvx_video_vtable_t* video_vtable;
+#endif
+} lv_ext_global_t;
 
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
+static inline lv_ext_global_t* LV_EXT_GLOBAL(void)
+{
+    return (lv_ext_global_t*)(LV_GLOBAL_DEFAULT()->user_data);
+}
 
 /**
  * Lvgl extern init.
  */
 void lv_ext_init(void);
+
+void lv_ext_deinit(void);
 
 /**********************
  *      MACROS
