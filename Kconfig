@@ -111,4 +111,9 @@ config LVX_ANIM_DEFAULT_PERIOD
 
 endif # LVX_USE_ANIMENGINE_ADAPTER
 
+config LVX_USE_QRSCAN
+	bool "QR scan library"
+	depends on LIB_QUIRC
+	default n
+
 endif # LVGL_EXTENSION

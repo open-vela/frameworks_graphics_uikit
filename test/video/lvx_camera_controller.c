@@ -8,8 +8,8 @@
  *********************/
 #include "lvx_camera_controller.h"
 #include "media_recorder.h"
-#ifdef CONFIG_LV_USE_QRSCAN
-#include "lv_qrscan.h"
+#ifdef CONFIG_LVX_USE_QRSCAN
+#include <ext/qrscan/lv_qrscan.h>
 #endif
 
 #include <ext/video/lvx_video.h>
@@ -51,7 +51,7 @@ static void camera_stop(void);
 static void disable_buttons_exclude(camera_button_e button_mode, lv_obj_t* obj);
 static void enable_buttons_exclude(camera_button_e button_mode, lv_obj_t* obj);
 static void show_scan_result(char* msg_buff);
-#ifdef CONFIG_LV_USE_QRSCAN
+#ifdef CONFIG_LVX_USE_QRSCAN
 static int camera_scan(lv_image_dsc_t* img_dsc);
 #endif
 
@@ -203,7 +203,7 @@ static void camera_recorder_event_cb(lv_event_t* e)
 static void camera_scan_event_cb(lv_event_t* e)
 {
     lv_obj_t* obj = e->user_data;
-#ifdef CONFIG_LV_USE_QRSCAN
+#ifdef CONFIG_LVX_USE_QRSCAN
     lvx_camera_controller_t* camera_controller = (lvx_camera_controller_t*)obj;
 
     lv_image_dsc_t* img_dsc;
@@ -222,7 +222,7 @@ static void camera_scan_event_cb(lv_event_t* e)
 #else
     disable_buttons_exclude(CAMERA_SCAN, obj);
 
-    show_scan_result("Please Config LV_USE_QRSCAN.");
+    show_scan_result("Please Config LVX_USE_QRSCAN.");
 
     enable_buttons_exclude(CAMERA_SCAN, obj);
 #endif
@@ -368,7 +368,7 @@ void show_scan_result(char* msg_buff)
     }
 }
 
-#ifdef CONFIG_LV_USE_QRSCAN
+#ifdef CONFIG_LVX_USE_QRSCAN
 static int camera_scan(lv_image_dsc_t* img_dsc)
 {
 
