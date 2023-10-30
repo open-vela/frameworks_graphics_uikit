@@ -103,9 +103,7 @@ static const struct lvx_video_format_s g_video_format_map[] = {
 #if LV_COLOR_DEPTH == 16
     { LV_COLOR_FORMAT_NATIVE, VTUN_FRAME_FORMAT_RGB565 },
 #endif
-    { LV_COLOR_FORMAT_NATIVE_REVERSED, VTUN_FRAME_FORMAT_YUV420SP },
-    { LV_COLOR_FORMAT_NATIVE_WITH_ALPHA, VTUN_FRAME_FORMAT_BGRA8888 },
-    { 0, VTUN_FRAME_FORMAT_YUV420SP},
+    { LV_COLOR_FORMAT_NATIVE_REVERSED, VTUN_FRAME_FORMAT_YUV420SP }
 };
 
 /****************************************************************************
