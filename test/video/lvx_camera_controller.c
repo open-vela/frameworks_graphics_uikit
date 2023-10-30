@@ -387,25 +387,25 @@ static int camera_scan(lv_image_dsc_t* img_dsc)
 
     if (img_dsc->header.cf == LV_COLOR_FORMAT_NATIVE_WITH_ALPHA) {
 
-        gray_buff = (uint8_t*)lv_mem_alloc(img_dsc->data_size / (LV_COLOR_DEPTH >> 3));
+        gray_buff = (uint8_t*)lv_malloc(img_dsc->data_size / (LV_COLOR_DEPTH >> 3));
         if (!gray_buff) {
             LV_LOG_ERROR("malloc failed");
             goto ERR;
         }
         bgra8888_to_gray(img_dsc->data, img_dsc->header.w * 4, img_dsc->header.w, img_dsc->header.h, gray_buff, img_dsc->header.w);
 
-    } else if (img_dsc->header.cf == LV_IMG_CF_RESERVED_17) {
+    } else if (img_dsc->header.cf == LV_COLOR_FORMAT_NATIVE_REVERSED) {
 
-        gray_buff = (uint8_t*)lv_mem_alloc(img_dsc->data_size);
+        gray_buff = (uint8_t*)lv_malloc(img_dsc->data_size);
         if (!gray_buff) {
             LV_LOG_ERROR("malloc failed");
             goto ERR;
         }
         nv12_to_gray(img_dsc->data, img_dsc->header.w, img_dsc->header.h, gray_buff);
 
-    }  else if (img_dsc->header.cf == LV_IMG_CF_TRUE_COLOR) {
+    }  else if (img_dsc->header.cf == LV_COLOR_FORMAT_NATIVE) {
 
-        gray_buff = (uint8_t*)lv_mem_alloc(img_dsc->data_size / (LV_COLOR_DEPTH >> 3));
+        gray_buff = (uint8_t*)lv_malloc(img_dsc->data_size / (LV_COLOR_DEPTH >> 3));
 
         if (!gray_buff) {
             LV_LOG_ERROR("malloc failed");
@@ -423,12 +423,12 @@ static int camera_scan(lv_image_dsc_t* img_dsc)
     show_scan_result(msg_buff);
 
     if (msg_buff) {
-        lv_mem_free(msg_buff);
+        lv_free(msg_buff);
         msg_buff = NULL;
     }
 
     if (gray_buff) {
-        lv_mem_free(gray_buff);
+        lv_free(gray_buff);
         gray_buff = NULL;
     }
 

@@ -308,7 +308,7 @@ static void video_frame_task_cb(lv_timer_t* t)
     if (first_frame) {
         lv_image_set_src(&video_obj->img.obj, &video_obj->img_dsc);
         lvx_video_set_crop(video_obj);
-        lv_event_send(&((lv_obj_t*)video_obj)->spec_attr->event_list, &(lv_event_t){ .current_target = (lv_obj_t*)video_obj, .original_target = (lv_obj_t*)video_obj, .code = LV_EVENT_VALUE_CHANGED, .param = NULL }, NULL);
+        lv_obj_send_event(obj, video_obj->custom_event_id, NULL);
     } else {
         lv_cache_lock();
         lv_cache_invalidate(lv_cache_find(&video_obj->img_dsc, LV_CACHE_SRC_TYPE_PTR, 0, 0));
@@ -317,7 +317,7 @@ static void video_frame_task_cb(lv_timer_t* t)
     }
 
     if (video_obj->cur_time != last_frame_time) {
-        lv_event_send(&((lv_obj_t*)video_obj)->spec_attr->event_list, &(lv_event_t){ .current_target = (lv_obj_t*)video_obj, .original_target = (lv_obj_t*)video_obj, .code = LV_EVENT_VALUE_CHANGED, .param = NULL }, false);
+        lv_obj_send_event((lv_obj_t*)video_obj, LV_EVENT_VALUE_CHANGED, NULL);
     }
 }
 
