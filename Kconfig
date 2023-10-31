@@ -76,13 +76,6 @@ config FONT_EMOJI_HEADER
 
 endif # LVX_USE_FONT_MANAGER
 
-config LVX_USE_RLE
-	bool "RLE binary file compression support"
-	default y
-	---help---
-		Enable decoder to file .rle. When enabled, rle file decoder is
-		registered to lvgl.
-
 config LVX_USE_VIDEO_ADAPTER
 	bool "Enable video adapter based on media server"
 	depends on MEDIA_SERVER && NETUTILS_CJSON
