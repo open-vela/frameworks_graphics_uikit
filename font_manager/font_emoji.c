@@ -13,7 +13,6 @@
 
 #if FONT_USE_EMOJI
 
-#include "font_log.h"
 #include <stdlib.h>
 
 /*********************
@@ -57,7 +56,7 @@ font_emoji_manager_create(font_utils_json_obj_t* json_obj)
 
     font_emoji_config_t* config = font_utils_json_get_emoji_config(json_obj);
     if (!config) {
-        FONT_LOG_WARN("emoji config parse failed");
+        LV_LOG_WARN("emoji config parse failed");
         return NULL;
     }
 
@@ -65,13 +64,13 @@ font_emoji_manager_create(font_utils_json_obj_t* json_obj)
     LV_ASSERT_MALLOC(manager);
     if (!manager) {
         font_utils_json_emoji_config_free(config);
-        FONT_LOG_ERROR("malloc failed for font_emoji_manager_t");
+        LV_LOG_ERROR("malloc failed for font_emoji_manager_t");
         return NULL;
     }
     lv_memzero(manager, sizeof(font_emoji_manager_t));
     manager->config = config;
 
-    FONT_LOG_INFO("success");
+    LV_LOG_INFO("success");
     return manager;
 }
 
@@ -99,18 +98,18 @@ lv_font_t* font_emoji_manager_create_font(font_emoji_manager_t* manager,
             lv_font_t* imgfont = lv_imgfont_create(height, get_imgfont_path, NULL);
             LV_ASSERT_NULL(imgfont);
             if (!imgfont) {
-                FONT_LOG_ERROR("emoji create failed");
+                LV_LOG_ERROR("emoji create failed");
                 return NULL;
             }
 
             imgfont->user_data = emoji;
 
-            FONT_LOG_INFO("emoji: %s(%d) create OK", name, height);
+            LV_LOG_INFO("emoji: %s(%d) create OK", name, height);
 
             return imgfont;
         }
     }
-    FONT_LOG_INFO("No emoji match: %s(%d)", name, height);
+    LV_LOG_INFO("No emoji match: %s(%d)", name, height);
 
     return NULL;
 }
@@ -138,8 +137,8 @@ static bool generate_path(font_emoji_t* emoji, uint32_t unicode, char* path,
     /* int32_t range: -2147483648~2147483647 */
     const int max_size = emoji->path_len + emoji->ext_len + 16;
     if (len < max_size) {
-        FONT_LOG_ERROR("buf len(%d) < max_size(%d), "
-                       "not enough buffers to generate path string",
+        LV_LOG_ERROR("buf len(%d) < max_size(%d), "
+                     "not enough buffers to generate path string",
             len, max_size);
         return false;
     }

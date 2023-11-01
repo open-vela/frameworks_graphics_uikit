@@ -8,7 +8,6 @@
  *********************/
 
 #include "font_cache.h"
-#include "font_log.h"
 #include "font_utils.h"
 
 /*********************
@@ -54,7 +53,7 @@ font_cache_manager_t* font_cache_manager_create(uint32_t max_size)
     font_cache_manager_t* manager = lv_malloc(sizeof(font_cache_manager_t));
     LV_ASSERT_MALLOC(manager);
     if (!manager) {
-        FONT_LOG_ERROR("malloc failed for font_cache_manager_t");
+        LV_LOG_ERROR("malloc failed for font_cache_manager_t");
         return NULL;
     }
     lv_memzero(manager, sizeof(font_cache_manager_t));
@@ -62,7 +61,7 @@ font_cache_manager_t* font_cache_manager_create(uint32_t max_size)
     _lv_ll_init(&manager->cache_ll, sizeof(font_cache_t));
     manager->max_size = max_size;
 
-    FONT_LOG_INFO("success");
+    LV_LOG_INFO("success");
     return manager;
 }
 
@@ -83,7 +82,7 @@ void font_cache_manager_delete(font_cache_manager_t* manager)
 
     lv_free(manager);
 
-    FONT_LOG_INFO("success");
+    LV_LOG_INFO("success");
 }
 
 lv_font_t* font_cache_manager_get_reuse(font_cache_manager_t* manager, const lv_freetype_info_t* ft_info)
@@ -93,7 +92,7 @@ lv_font_t* font_cache_manager_get_reuse(font_cache_manager_t* manager, const lv_
 
     lv_ll_t* cache_ll = &manager->cache_ll;
 
-    FONT_LOG_INFO("font: %s(%d) searching...", ft_info->name, ft_info->size);
+    LV_LOG_INFO("font: %s(%d) searching...", ft_info->name, ft_info->size);
 
     font_cache_t* cache;
     _LV_LL_READ(cache_ll, cache)
@@ -101,7 +100,7 @@ lv_font_t* font_cache_manager_get_reuse(font_cache_manager_t* manager, const lv_
         /* match font */
         if (font_utils_ft_info_is_equal(ft_info, &cache->ft_info)) {
             lv_font_t* font = cache->font;
-            FONT_LOG_INFO("cache hit");
+            LV_LOG_INFO("cache hit");
 
             /* remove reused cache */
             _lv_ll_remove(cache_ll, cache);
@@ -110,7 +109,7 @@ lv_font_t* font_cache_manager_get_reuse(font_cache_manager_t* manager, const lv_
         }
     }
 
-    FONT_LOG_INFO("cache miss");
+    LV_LOG_INFO("cache miss");
 
     return NULL;
 }
@@ -124,7 +123,7 @@ void font_cache_manager_set_reuse(font_cache_manager_t* manager, lv_font_t* font
 
     /* check cached size */
     if (_lv_ll_get_len(cache_ll) >= manager->max_size) {
-        FONT_LOG_INFO("cache full, remove tail cache...");
+        LV_LOG_INFO("cache full, remove tail cache...");
         font_cache_manager_remove_tail(manager);
     }
 
@@ -140,7 +139,7 @@ void font_cache_manager_set_reuse(font_cache_manager_t* manager, lv_font_t* font
     cache->ft_info = *ft_info;
     cache->ft_info.name = cache->name;
 
-    FONT_LOG_INFO("insert font: %s(%d) to reuse list", ft_info->name, ft_info->size);
+    LV_LOG_INFO("insert font: %s(%d) to reuse list", ft_info->name, ft_info->size);
 }
 
 /**********************
@@ -152,7 +151,7 @@ static void font_cache_close(font_cache_manager_t* manager, font_cache_t* cache)
     LV_ASSERT_NULL(manager);
     LV_ASSERT_NULL(cache);
 
-    FONT_LOG_INFO("font: %s(%d) close", cache->ft_info.name, cache->ft_info.size);
+    LV_LOG_INFO("font: %s(%d) close", cache->ft_info.name, cache->ft_info.size);
     lv_freetype_font_delete(cache->font);
 
     _lv_ll_remove(&manager->cache_ll, cache);
