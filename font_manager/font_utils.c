@@ -7,7 +7,6 @@
  *      INCLUDES
  *********************/
 #include "font_utils.h"
-#include "font_log.h"
 #include <cJSON.h>
 #include <lvgl/lvgl.h>
 #include <string.h>
@@ -20,21 +19,21 @@
     do {                                                            \
         cJSON* it = cJSON_GetObjectItem((cjson_obj), name);         \
         if (!it) {                                                  \
-            FONT_LOG_WARN("can't get valuestring item: " name);     \
+            LV_LOG_WARN("can't get valuestring item: " name);       \
             goto failed;                                            \
         }                                                           \
         strncpy((value_dest), it->valuestring, sizeof(value_dest)); \
         (value_dest)[sizeof(value_dest) - 1] = '\0';                \
     } while (0)
 
-#define JSON_GET_VALUE_INT(cjson_obj, value_dest, name)      \
-    do {                                                     \
-        cJSON* it = cJSON_GetObjectItem((cjson_obj), name);  \
-        if (!it) {                                           \
-            FONT_LOG_WARN("can't get valueint item: " name); \
-            goto failed;                                     \
-        }                                                    \
-        (value_dest) = it->valueint;                         \
+#define JSON_GET_VALUE_INT(cjson_obj, value_dest, name)     \
+    do {                                                    \
+        cJSON* it = cJSON_GetObjectItem((cjson_obj), name); \
+        if (!it) {                                          \
+            LV_LOG_WARN("can't get valueint item: " name);  \
+            goto failed;                                    \
+        }                                                   \
+        (value_dest) = it->valueint;                        \
     } while (0)
 
 /* JSON item string define */
@@ -88,7 +87,7 @@ font_utils_json_obj_t* font_utils_json_obj_create(const char* file_path)
     /* open json file */
     lv_fs_res_t res = lv_fs_open(&file, file_path, LV_FS_MODE_RD);
     if (res != LV_FS_RES_OK) {
-        FONT_LOG_ERROR("faild to open file: %s", file_path);
+        LV_LOG_ERROR("faild to open file: %s", file_path);
         return NULL;
     }
 
@@ -97,7 +96,7 @@ font_utils_json_obj_t* font_utils_json_obj_create(const char* file_path)
     uint32_t size;
     res = lv_fs_tell(&file, &size);
     if (res != LV_FS_RES_OK) {
-        FONT_LOG_ERROR("can't get file size");
+        LV_LOG_ERROR("can't get file size");
         goto failed;
     }
     lv_fs_seek(&file, 0, LV_FS_SEEK_SET);
@@ -106,7 +105,7 @@ font_utils_json_obj_t* font_utils_json_obj_create(const char* file_path)
     json_buf = lv_malloc(size + 1);
     LV_ASSERT_MALLOC(json_buf);
     if (!json_buf) {
-        FONT_LOG_ERROR("malloc failed for json_buf");
+        LV_LOG_ERROR("malloc failed for json_buf");
         goto failed;
     }
 
@@ -115,7 +114,7 @@ font_utils_json_obj_t* font_utils_json_obj_create(const char* file_path)
     res = lv_fs_read(&file, json_buf, size, &br);
     lv_fs_close(&file);
     if (res != LV_FS_RES_OK || br != size) {
-        FONT_LOG_ERROR("read file failed");
+        LV_LOG_ERROR("read file failed");
         goto failed;
     }
     json_buf[size] = '\0';
@@ -123,7 +122,7 @@ font_utils_json_obj_t* font_utils_json_obj_create(const char* file_path)
     /* create json parser */
     cjson = cJSON_Parse(json_buf);
     if (!cjson) {
-        FONT_LOG_ERROR("cJSON_Parse failed");
+        LV_LOG_ERROR("cJSON_Parse failed");
         goto failed;
     }
 
@@ -131,7 +130,7 @@ font_utils_json_obj_t* font_utils_json_obj_create(const char* file_path)
     json_obj = lv_malloc(sizeof(font_utils_json_obj_t));
     LV_ASSERT_MALLOC(json_obj);
     if (!json_obj) {
-        FONT_LOG_ERROR("malloc failed for font_utils_json_obj_t");
+        LV_LOG_ERROR("malloc failed for font_utils_json_obj_t");
         goto failed;
     }
     lv_memzero(json_obj, sizeof(font_utils_json_obj_t));
@@ -186,7 +185,7 @@ font_emoji_config_t* font_utils_json_get_emoji_config(font_utils_json_obj_t* jso
 
     /* check array */
     if (!emoji_list_arr_size) {
-        FONT_LOG_WARN(JSON_ITEM_STR_EMOJI_LIST " is empty");
+        LV_LOG_WARN(JSON_ITEM_STR_EMOJI_LIST " is empty");
         return NULL;
     }
 
@@ -194,7 +193,7 @@ font_emoji_config_t* font_utils_json_get_emoji_config(font_utils_json_obj_t* jso
     font_emoji_config_t* config = lv_malloc(sizeof(font_emoji_config_t));
     LV_ASSERT_MALLOC(config);
     if (!config) {
-        FONT_LOG_ERROR("malloc failed for font_emoji_config_t");
+        LV_LOG_ERROR("malloc failed for font_emoji_config_t");
         return NULL;
     }
     lv_memzero(config, sizeof(font_emoji_config_t));
@@ -203,7 +202,7 @@ font_emoji_config_t* font_utils_json_get_emoji_config(font_utils_json_obj_t* jso
     config->emoji_arr = lv_malloc(sizeof(font_emoji_t) * emoji_list_arr_size);
     LV_ASSERT_MALLOC(config->emoji_arr);
     if (!config->emoji_arr) {
-        FONT_LOG_ERROR("malloc failed for config->emoji_arr");
+        LV_LOG_ERROR("malloc failed for config->emoji_arr");
         goto failed;
     }
     lv_memzero(config->emoji_arr, sizeof(font_emoji_t) * emoji_list_arr_size);
@@ -228,7 +227,7 @@ font_emoji_config_t* font_utils_json_get_emoji_config(font_utils_json_obj_t* jso
 
         /* check match_size */
         if (emoji->match_size.min > emoji->match_size.max) {
-            FONT_LOG_WARN("match_size.min(%d) > match_size.max(%d)",
+            LV_LOG_WARN("match_size.min(%d) > match_size.max(%d)",
                 emoji->match_size.min, emoji->match_size.max);
         }
 
@@ -238,7 +237,7 @@ font_emoji_config_t* font_utils_json_get_emoji_config(font_utils_json_obj_t* jso
 
         /* check unicode_range */
         if (emoji->unicode_range.begin > emoji->unicode_range.end) {
-            FONT_LOG_WARN("unicode_range.begin(%" LV_PRIu32 ") > unicode_range.end(%" LV_PRIu32 ")",
+            LV_LOG_WARN("unicode_range.begin(%" LV_PRIu32 ") > unicode_range.end(%" LV_PRIu32 ")",
                 emoji->unicode_range.begin, emoji->unicode_range.end);
         }
     }
@@ -262,7 +261,7 @@ font_family_config_t* font_utils_json_get_font_family_config(font_utils_json_obj
 
     /* check array */
     if (!font_family_arr_size) {
-        FONT_LOG_WARN("font-family is empty");
+        LV_LOG_WARN("font-family is empty");
         return NULL;
     }
 
@@ -270,7 +269,7 @@ font_family_config_t* font_utils_json_get_font_family_config(font_utils_json_obj
     font_family_config_t* config = lv_malloc(sizeof(font_family_config_t));
     LV_ASSERT_MALLOC(config);
     if (!config) {
-        FONT_LOG_ERROR("malloc failed for font_family_config_t");
+        LV_LOG_ERROR("malloc failed for font_family_config_t");
         return NULL;
     }
     lv_memzero(config, sizeof(font_family_config_t));
@@ -279,7 +278,7 @@ font_family_config_t* font_utils_json_get_font_family_config(font_utils_json_obj
     config->font_family_arr = lv_malloc(sizeof(font_family_t) * font_family_arr_size);
     LV_ASSERT_MALLOC(config->font_family_arr);
     if (!config->font_family_arr) {
-        FONT_LOG_ERROR("malloc failed for config->font_family_arr");
+        LV_LOG_ERROR("malloc failed for config->font_family_arr");
         goto failed;
     }
     lv_memzero(config->font_family_arr, sizeof(font_family_t) * font_family_arr_size);
@@ -289,7 +288,7 @@ font_family_config_t* font_utils_json_get_font_family_config(font_utils_json_obj
     for (int font_index = 0; font_index < font_family_arr_size; font_index++) {
         cJSON* item = cJSON_GetArrayItem(font_family_arr, font_index);
         if (!item) {
-            FONT_LOG_ERROR("can't get font_family_arr item[%d]", font_index);
+            LV_LOG_ERROR("can't get font_family_arr item[%d]", font_index);
             goto failed;
         }
         font_family_t* font_family = &config->font_family_arr[font_index];
@@ -301,7 +300,7 @@ font_family_config_t* font_utils_json_get_font_family_config(font_utils_json_obj
 
         /* check fallback array */
         if (!fallback_arr_size) {
-            FONT_LOG_ERROR(JSON_ITEM_STR_FALLBACK " is empty");
+            LV_LOG_ERROR(JSON_ITEM_STR_FALLBACK " is empty");
             goto failed;
         }
 
@@ -309,7 +308,7 @@ font_family_config_t* font_utils_json_get_font_family_config(font_utils_json_obj
         font_family->fallback_arr = lv_malloc(sizeof(font_family_fallback_t) * fallback_arr_size);
         LV_ASSERT_MALLOC(font_family->fallback_arr);
         if (!font_family->fallback_arr) {
-            FONT_LOG_ERROR("malloc failed for font_family->fallback_arr");
+            LV_LOG_ERROR("malloc failed for font_family->fallback_arr");
             goto failed;
         }
         lv_memzero(font_family->fallback_arr, sizeof(font_family_fallback_t) * fallback_arr_size);
@@ -319,7 +318,7 @@ font_family_config_t* font_utils_json_get_font_family_config(font_utils_json_obj
         for (int fallback_index = 0; fallback_index < fallback_arr_size; fallback_index++) {
             cJSON* fallback_item = cJSON_GetArrayItem(fallback_arr, fallback_index);
             if (!fallback_item) {
-                FONT_LOG_ERROR("can't get fallback_item [%d]", fallback_index);
+                LV_LOG_ERROR("can't get fallback_item [%d]", fallback_index);
                 goto failed;
             }
 
