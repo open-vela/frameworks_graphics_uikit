@@ -33,7 +33,7 @@ typedef struct _lvx_video_vtable_t lvx_video_vtable_t;
 
 typedef struct {
     lv_image_t img;
-    lv_timer_t* timer;
+    lv_display_t* disp;
     lv_image_dsc_t img_dsc;
     unsigned duration;
     unsigned cur_time;
@@ -85,7 +85,6 @@ lv_obj_t* lvx_video_create(lv_obj_t* parent);
 void lvx_video_set_src(lv_obj_t* obj, const char* src);
 void lvx_video_set_src_opt(lv_obj_t* obj, const char* src, const char* option);
 int lvx_video_set_event_callback(lv_obj_t* obj, void* cookie, media_event_callback event_callback);
-void lvx_video_set_timer_period(lv_obj_t* obj, uint32_t peroid);
 void lvx_video_set_vtable(lv_obj_t* obj, lvx_video_vtable_t* vtable);
 int lvx_video_start(lv_obj_t* obj);
 int lvx_video_stop(lv_obj_t* obj);

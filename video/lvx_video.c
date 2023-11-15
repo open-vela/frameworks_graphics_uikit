@@ -7,6 +7,7 @@
  *      INCLUDES
  *********************/
 #include "lvx_video.h"
+#include <lvgl/src/dev/nuttx/lv_nuttx_libuv.h>
 
 #ifdef CONFIG_LVX_USE_VIDEO_ADAPTER
 #include "lv_ext.h"
@@ -28,7 +29,7 @@
 static void lvx_video_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj);
 static void lvx_video_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj);
 static void lvx_video_event(const lv_obj_class_t* class_p, lv_event_t* e);
-static void video_frame_task_cb(lv_timer_t* t);
+static void video_frame_task_cb(lv_event_t* e);
 
 /**********************
  *  STATIC VARIABLES
@@ -93,15 +94,6 @@ int lvx_video_set_event_callback(lv_obj_t* obj, void* cookie, media_event_callba
     return video_obj->vtable->video_adapter_set_event_callback(video_obj->vtable, video_obj->video_ctx, cookie, event_callback);
 }
 
-void lvx_video_set_timer_period(lv_obj_t* obj, uint32_t peroid)
-{
-    LV_ASSERT_OBJ(obj, MY_CLASS);
-
-    lvx_video_t* video_obj = (lvx_video_t*)obj;
-
-    lv_timer_set_period(video_obj->timer, peroid);
-}
-
 void lvx_video_set_vtable(lv_obj_t* obj, lvx_video_vtable_t* vtable)
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
@@ -121,8 +113,7 @@ int lvx_video_start(lv_obj_t* obj)
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
     if ((ret = video_obj->vtable->video_adapter_start(video_obj->vtable, video_obj->video_ctx)) == 0) {
-        lv_timer_resume(video_obj->timer);
-        lv_timer_reset(video_obj->timer);
+        lv_display_add_event(video_obj->disp, video_frame_task_cb, LV_EVENT_VSYNC, obj);
     }
 
     return ret;
@@ -141,7 +132,7 @@ int lvx_video_stop(lv_obj_t* obj)
     lv_cache_unlock();
 
     if ((ret = video_obj->vtable->video_adapter_stop(video_obj->vtable, video_obj->video_ctx)) == 0) {
-        lv_timer_pause(video_obj->timer);
+        lv_display_remove_event_cb_with_user_data(video_obj->disp, video_frame_task_cb, obj);
     }
 
     return ret;
@@ -165,7 +156,7 @@ int lvx_video_pause(lv_obj_t* obj)
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
     if ((ret = video_obj->vtable->video_adapter_pause(video_obj->vtable, video_obj->video_ctx)) == 0) {
-        lv_timer_pause(video_obj->timer);
+        lv_display_remove_event_cb_with_user_data(video_obj->disp, video_frame_task_cb, obj);
     }
 
     return ret;
@@ -180,7 +171,7 @@ int lvx_video_resume(lv_obj_t* obj)
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
     if ((ret = video_obj->vtable->video_adapter_resume(video_obj->vtable, video_obj->video_ctx)) == 0) {
-        lv_timer_resume(video_obj->timer);
+        lv_display_add_event(video_obj->disp, video_frame_task_cb, LV_EVENT_VSYNC, obj);
     }
 
     return ret;
@@ -265,9 +256,7 @@ static void lvx_video_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 
     LV_ASSERT_NULL(video_obj->vtable);
 
-    video_obj->timer = lv_timer_create(video_frame_task_cb, LVX_VIDEO_DEFAULT_PERIOD, obj);
-    lv_timer_pause(video_obj->timer);
-
+    video_obj->disp = lv_display_get_default();
     video_obj->custom_event_id = lv_event_register_id();
 }
 
@@ -283,7 +272,7 @@ static void lvx_video_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 
     video_obj->vtable->video_adapter_close(video_obj->vtable, video_obj->video_ctx);
 
-    lv_timer_del(video_obj->timer);
+    lv_display_remove_event_cb_with_user_data(video_obj->disp, video_frame_task_cb, obj);
 }
 
 static void lvx_video_set_crop(lvx_video_t* video_obj)
@@ -295,9 +284,9 @@ static void lvx_video_set_crop(lvx_video_t* video_obj)
     lv_img_set_offset_y(&video_obj->img.obj, -video_obj->crop_coords.y1);
 }
 
-static void video_frame_task_cb(lv_timer_t* t)
+static void video_frame_task_cb(lv_event_t* e)
 {
-    lv_obj_t* obj = t->user_data;
+    lv_obj_t* obj = lv_event_get_user_data(e);
     lvx_video_t* video_obj = (lvx_video_t*)obj;
     int32_t last_frame_time = video_obj->cur_time;
     bool first_frame = video_obj->img_dsc.data == NULL ? true : false;
