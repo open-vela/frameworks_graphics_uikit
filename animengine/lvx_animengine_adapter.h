@@ -53,12 +53,23 @@ extern "C" {
  *
  * Description:
  *   animation engine adapter init.
- *
- * Param:
- *      user_data lvgl save global variable pointer
+ * return:
+ *      animation engine handle
  ****************************************************************************/
 
 anim_engine_handle_t lvx_anim_adapter_init(void);
+
+/****************************************************************************
+ * Name: lvx_anim_adapter_uninit
+ *
+ * Description:
+ *   animation engine adapter uninit.
+ *
+ * Param:
+ *      animation engine handle
+ ****************************************************************************/
+
+void lvx_anim_adapter_uninit(anim_engine_handle_t handle);
 
 #ifdef __cplusplus
 }
