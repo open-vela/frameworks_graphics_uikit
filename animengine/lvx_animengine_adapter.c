@@ -384,4 +384,9 @@ anim_engine_handle_t lvx_anim_adapter_init(void)
     return anim_ctx->engine_handle;
 }
 
+void lvx_anim_adapter_uninit(anim_engine_handle_t handle)
+{
+    anim_engine_destroy(handle);
+}
+
 #endif /*LVX_USE_ANIMENGINE_ADAPTER*/
