@@ -31,6 +31,7 @@ typedef struct _lv_ext_global_t {
 #ifdef CONFIG_LVX_USE_VIDEO_ADAPTER
     lvx_video_vtable_t* video_vtable;
 #endif
+    void* user_data;
 } lv_ext_global_t;
 
 /**********************
@@ -40,6 +41,10 @@ static inline lv_ext_global_t* LV_EXT_GLOBAL(void)
 {
     return (lv_ext_global_t*)(LV_GLOBAL_DEFAULT()->user_data);
 }
+
+void* lv_ext_get_user_data(void);
+
+void lv_ext_set_user_data(void* data);
 
 /**
  * Lvgl extern init.
