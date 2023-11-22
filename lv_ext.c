@@ -83,6 +83,16 @@ void lv_ext_deinit(void)
     lv_free(data);
 }
 
+void* lv_ext_get_user_data(void)
+{
+    return LV_EXT_GLOBAL()->user_data;
+}
+
+void lv_ext_set_user_data(void* data)
+{
+    LV_EXT_GLOBAL()->user_data = data;
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
