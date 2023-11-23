@@ -22,5 +22,5 @@ ifneq ($(CONFIG_LVGL_EXTENSION),)
 
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/graphics/lvgl/ext
 CXXFLAGS += ${INCDIR_PREFIX}$(APPDIR)/graphics/lvgl/ext
-
+include $(APPDIR)/graphics/lvgl/ext/test/Make.defs
 endif
