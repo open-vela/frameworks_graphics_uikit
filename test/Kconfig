@@ -1,0 +1,32 @@
+
+menuconfig EXAMPLES_LVEXTDEMO
+	tristate "LVGL Ext Demo"
+	default n
+	depends on GRAPHICS_LVGL
+	---help---
+		Enable build the Light and Versatile Graphics Library Demo programs
+
+if EXAMPLES_LVEXTDEMO
+
+config EXAMPLES_LVEXTDEMO_PRIORITY
+	int "lvextdemo task priority"
+	default 100
+
+config EXAMPLES_LVEXTDEMO_STACKSIZE
+	int "lvextdemo stack size"
+	default 32768
+
+config LVX_USE_VIDEO_EXAMPLE
+	bool "Enable video example"
+	depends on LVX_USE_VIDEO_ADAPTER
+	default n
+
+if LVX_USE_VIDEO_EXAMPLE
+
+config LVX_DEFAULT_VIDEO_PATH
+	string "Defailt video path in video example"
+	default "/data/h264_aac_240p.mp4"
+
+endif # LVX_USE_VIDEO_EXAMPLE
+
+endif # EXAMPLES_LVEXTDEMO

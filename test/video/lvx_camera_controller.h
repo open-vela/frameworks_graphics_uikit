@@ -40,6 +40,8 @@ extern const lv_obj_class_t lvx_camera_controller_class;
  **********************/
 lv_obj_t* lvx_camera_controller_create(lv_obj_t* parent);
 
+void lvx_camera_controller_set_url(lv_obj_t* obj, const char* url);
+
 /**********************
  *      MACROS
  **********************/
