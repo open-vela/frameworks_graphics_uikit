@@ -85,19 +85,6 @@ config LVX_VIDEO_CONFIG_FILE_PATH
 
 endif # LVX_USE_VIDEO_ADAPTER
 
-config LVX_USE_VIDEO_EXAMPLE
-	bool "Enable video example"
-	depends on LVX_USE_VIDEO_ADAPTER
-	default n
-
-if LVX_USE_VIDEO_EXAMPLE
-
-config LVX_DEFAULT_VIDEO_PATH
-	string "Defailt video path in video example"
-	default "/data/h264_aac_240p.mp4"
-
-endif # LVX_USE_VIDEO_EXAMPLE
-
 config LVX_USE_ANIMENGINE_ADAPTER
 	bool "Enable animation engine adapter"
 	depends on ANIMATION_ENGINE
@@ -115,5 +102,7 @@ config LVX_USE_QRSCAN
 	bool "QR scan library"
 	depends on LIB_QUIRC
 	default n
+
+source "$APPSDIR/graphics/lvgl/ext/test/Kconfig"
 
 endif # LVGL_EXTENSION

@@ -65,6 +65,7 @@ const lv_obj_class_t lvx_camera_controller_class = {
     .base_class = &lv_obj_class
 };
 
+const char* saved_path;
 static void* handle;
 static bool is_started = false;
 static lv_timer_t* timer_anim;
@@ -114,7 +115,16 @@ lv_obj_t* lvx_camera_controller_create(lv_obj_t* parent)
     camera_controller->scan_btn = camera_create_btn(obj, "Scan Mode", LV_ALIGN_BOTTOM_RIGHT,
         0, camera_scan_event_cb, false);
 
+    saved_path = "/gallery";
+
     return obj;
+}
+
+void lvx_camera_controller_set_url(lv_obj_t* obj, const char* url)
+{
+    if (saved_path != url) {
+        saved_path = url;
+    }
 }
 
 /**********************
@@ -196,16 +206,18 @@ static void take_picture_event_callback(void* cookie, int event, int ret, const 
 static void camera_take_picture_event_cb(lv_event_t* e)
 {
     count++;
-    char src[64];
-    snprintf(src, sizeof(src), "/gallery/pic_%d.jpg", count);
+    char src[128];
+    snprintf(src, sizeof(src), "%s/pic_%d.jpg", saved_path, count);
     media_recorder_take_picture(PICSINK, src, 1, take_picture_event_callback, e);
 }
 
 static void camera_picture_start_event_cb(lv_event_t* e)
 {
+    char src[128];
     lv_obj_t* obj = e->user_data;
     if (!is_started) {
-        camera_start(PICSINK, "/gallery/img_%d.jpg");
+        snprintf(src, sizeof(src), "%s/img_%%d.jpg", saved_path);
+        camera_start(PICSINK, src);
         is_started = true;
         disable_buttons_exclude(CAMERA_BURST, obj);
     } else {
@@ -217,6 +229,7 @@ static void camera_picture_start_event_cb(lv_event_t* e)
 
 static void camera_recorder_event_cb(lv_event_t* e)
 {
+    char src[128];
     lv_obj_t* obj = e->user_data;
 
     if (!is_started) {
@@ -227,7 +240,8 @@ static void camera_recorder_event_cb(lv_event_t* e)
         lv_timer_set_repeat_count(timer_anim, -1);
         lv_timer_resume(timer_anim);
 
-        camera_start(VIDEOSINK, "/gallery/video.mp4");
+        snprintf(src, sizeof(src), "%s/video.mp4", saved_path);
+        camera_start(VIDEOSINK, src);
         is_started = true;
         disable_buttons_exclude(CAMERA_VIDEO, obj);
     } else {
@@ -446,7 +460,7 @@ static int camera_scan(lv_image_dsc_t* img_dsc)
         }
         nv12_to_gray(img_dsc->data, img_dsc->header.w, img_dsc->header.h, gray_buff);
 
-    }  else if (img_dsc->header.cf == LV_COLOR_FORMAT_NATIVE) {
+    } else if (img_dsc->header.cf == LV_COLOR_FORMAT_NATIVE) {
 
         gray_buff = (uint8_t*)lv_malloc(img_dsc->data_size / (LV_COLOR_DEPTH >> 3));
 

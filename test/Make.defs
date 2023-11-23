@@ -1,0 +1,3 @@
+ifneq ($(CONFIG_EXAMPLES_LVEXTDEMO),)
+CONFIGURED_APPS += $(APPDIR)/graphics/lvgl/ext/test
+endif
