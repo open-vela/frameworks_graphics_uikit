@@ -144,3 +144,12 @@ static void lvx_async_refr_init(void)
     _lv_ll_init(&async_refr_finish_ll, sizeof(async_refr_info_t));
     async_inited = true;
 }
+
+void lvx_async_refr_deinit(void)
+{
+    if (async_inited) {
+        async_inited = false;
+        _lv_ll_clear(&async_refr_start_ll);
+        _lv_ll_clear(&async_refr_finish_ll);
+    }
+}
