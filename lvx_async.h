@@ -31,6 +31,10 @@ typedef struct _lv_async_t {
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
+/**
+ * Deinit asynchronous refresh module.
+ */
+void lvx_async_refr_deinit(void);
 
 /**
  * Call an asynchronous function before next refresh.

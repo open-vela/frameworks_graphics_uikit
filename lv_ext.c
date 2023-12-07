@@ -71,6 +71,8 @@ void lv_ext_deinit(void)
         return;
     }
 
+    lvx_async_refr_deinit();
+
 #if (LVX_USE_FONT_MANAGER != 0)
     lvx_font_deinit();
 #endif
