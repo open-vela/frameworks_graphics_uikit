@@ -19,7 +19,7 @@ extern "C" {
 
 #if defined(CONFIG_LVX_USE_VIDEO_ADAPTER)
 
-#include "media_event.h"
+#include "media_defs.h"
 
 /*********************
  *      DEFINES
