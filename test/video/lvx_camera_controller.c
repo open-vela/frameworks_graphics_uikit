@@ -161,17 +161,12 @@ static inline lv_obj_t* camera_create_btn(lv_obj_t* parent, char* label_text,
     return btn;
 }
 
-static void take_picture_event_callback(void* cookie, int event, int ret, const char* data)
-{
-    LV_LOG_INFO("event %s, event %d, ret %d\n", media_event_get_name(event), event, ret);
-}
-
 static void camera_take_picture_event_cb(lv_event_t* e)
 {
     count++;
     char src[128];
     snprintf(src, sizeof(src), "%s/pic_%d.jpg", saved_path, count);
-    media_recorder_take_picture(PICSINK, src, 1, take_picture_event_callback, e);
+    media_recorder_take_picture(PICSINK, src, 1);
 }
 
 static void camera_picture_start_event_cb(lv_event_t* e)
