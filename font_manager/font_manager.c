@@ -456,7 +456,7 @@ static font_rec_node_t* font_manager_search_rec_node(font_manager_t* manager, lv
     _LV_LL_READ(&manager->rec_ll, rec_node)
     {
         if (font == &rec_node->font) {
-            LV_LOG_INFO("font: %p(%d) matched", font, font->line_height);
+            LV_LOG_INFO("font: %p(%" LV_PRId32 ") matched", font, font->line_height);
             return rec_node;
         }
     }
