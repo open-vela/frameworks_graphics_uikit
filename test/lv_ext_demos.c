@@ -17,6 +17,14 @@
 #include "../lv_ext.h"
 #include "lv_ext_demos.h"
 
+#ifdef CONFIG_ANIM_ENGINE_API_DEMO
+#include <api_demo/api_demo.h>
+#endif
+
+#ifdef CONFIG_ANIM_ENGINE_LVGL_IMAGE_DEMO
+#include <lvgl_test/ui_test.h>
+#endif
+
 /*********************
  *      DEFINES
  *********************/
@@ -54,6 +62,13 @@ static const demo_entry_info_t demos_entry_info[] = {
     { "camera", .entry_cb = lvx_example_camera },
     { "video_call", .entry_cb = lvx_example_video_call },
     { "video_ctl", .entry_cb = lvx_example_video_controller },
+#endif
+#ifdef CONFIG_ANIM_ENGINE_API_DEMO
+    { "animengine", .entry_cb = anim_api_demo },
+#endif
+
+#ifdef CONFIG_ANIM_ENGINE_LVGL_IMAGE_DEMO
+    { "anim_image", .entry_cb = lvgl_anim_test },
 #endif
 
     { "", .entry_cb = NULL }
