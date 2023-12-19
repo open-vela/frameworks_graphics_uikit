@@ -289,6 +289,52 @@ static inline void anim_destroy(void* context)
     lv_timer_del(ctx->timer_handle);
 }
 
+static inline void on_obj_delete_cb(lv_event_t* e)
+{
+    void* user_data = lv_event_get_user_data(e);
+    anim_target_delete(user_data);
+}
+
+static inline bool lvx_find_event(lv_obj_t* obj, lv_event_cb_t event_cb, void* user_data, uint32_t* index)
+{
+    uint32_t event_cnt = lv_obj_get_event_count(obj);
+    uint32_t i;
+    for (i = 0; i < event_cnt; i++) {
+        lv_event_dsc_t* dsc = lv_obj_get_event_dsc(obj, i);
+        if (dsc->cb == event_cb && dsc->user_data == user_data && dsc->filter == LV_EVENT_DELETE) {
+            *index = i;
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static inline void anim_set_event(anim_layer_t* layer_obj, void* user_data, anim_event_type_t filter_event)
+{
+    if (!layer_obj || !(layer_obj->layer_object)) {
+        return;
+    }
+
+    lv_obj_t* obj = (lv_obj_t*)(layer_obj->layer_object);
+    uint32_t index = 0;
+    LV_UNUSED(index);
+    switch (filter_event) {
+    case ANIM_EVENT_TARGET_DELETE:
+        if (!lvx_find_event(obj, on_obj_delete_cb, user_data, &index)) {
+            lv_obj_add_event(obj, on_obj_delete_cb, LV_EVENT_DELETE, user_data);
+        }
+        break;
+    case ANIM_EVENT_ANIM_DELETE:
+        if (lvx_find_event(obj, on_obj_delete_cb, user_data, &index)) {
+            lv_obj_remove_event(obj, index);
+        }
+        break;
+    default:
+        break;
+    }
+}
+
 _DEFINE_ANIM_PROPERTY_CB_SELECTOR_(
     style,
     img_opa,
@@ -379,6 +425,7 @@ anim_engine_handle_t lvx_anim_adapter_init(void)
     anim_ctx->get_tick_cb = lv_tick_get;
     anim_ctx->destroy_cb = anim_destroy;
     anim_ctx->frame_period = LVX_ANIM_DEFAULT_PERIOD;
+    anim_ctx->set_event = anim_set_event;
     lv_timer_t* anim_timer = lv_timer_create(anim_timer_cb, LVX_ANIM_DEFAULT_PERIOD, anim_ctx->engine_handle);
     anim_ctx->timer_handle = anim_timer;
     return anim_ctx->engine_handle;
