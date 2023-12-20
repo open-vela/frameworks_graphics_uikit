@@ -48,7 +48,9 @@ typedef struct {
 
 static bool lv_ext_demos(char* info[], int size);
 #ifdef CONFIG_LV_USE_NUTTX_LIBUV
-static void lv_nuttx_uv_loop(uv_loop_t* loop, lv_disp_t* disp, lv_indev_t* indev);
+static void* lv_nuttx_uv_loop_init(uv_loop_t* loop, lv_disp_t* disp,
+    lv_indev_t* indev);
+static void lv_nuttx_uv_loop_run(uv_loop_t* loop, void* data);
 #endif
 
 /**********************
@@ -101,6 +103,11 @@ int main(int argc, FAR char* argv[])
 
     lv_ext_init();
 
+#ifdef CONFIG_LV_USE_NUTTX_LIBUV
+    void* data = lv_nuttx_uv_loop_init(&ui_loop, result.disp, result.indev);
+    lv_ext_uv_init(&ui_loop);
+#endif
+
     if (result.disp == NULL) {
         LV_LOG_ERROR("lv_demos initialization failure!");
         return 1;
@@ -114,7 +121,7 @@ int main(int argc, FAR char* argv[])
     }
 
 #ifdef CONFIG_LV_USE_NUTTX_LIBUV
-    lv_nuttx_uv_loop(&ui_loop, result.disp, result.indev);
+    lv_nuttx_uv_loop_run(&ui_loop, data);
 #else
     while (1) {
         lv_timer_handler();
@@ -123,6 +130,7 @@ int main(int argc, FAR char* argv[])
 #endif
 
 demo_end:
+    lv_ext_uv_deinit();
     lv_disp_remove(result.disp);
     lv_ext_deinit();
     lv_deinit();
@@ -135,20 +143,22 @@ demo_end:
  **********************/
 
 #ifdef CONFIG_LV_USE_NUTTX_LIBUV
-static void lv_nuttx_uv_loop(uv_loop_t* loop, lv_disp_t* disp,
+static void* lv_nuttx_uv_loop_init(uv_loop_t* loop, lv_disp_t* disp,
     lv_indev_t* indev)
 {
     lv_nuttx_uv_t uv_info;
-    void* data;
+    lv_memset(&uv_info, 0, sizeof(uv_info));
 
     uv_loop_init(loop);
-
-    lv_memset(&uv_info, 0, sizeof(uv_info));
     uv_info.loop = loop;
     uv_info.disp = disp;
     uv_info.indev = indev;
 
-    data = lv_nuttx_uv_init(&uv_info);
+    return lv_nuttx_uv_init(&uv_info);
+}
+
+static void lv_nuttx_uv_loop_run(uv_loop_t* loop, void* data)
+{
     uv_run(loop, UV_RUN_DEFAULT);
     lv_nuttx_uv_deinit(&data);
 }

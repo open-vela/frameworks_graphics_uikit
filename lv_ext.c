@@ -95,6 +95,20 @@ void lv_ext_set_user_data(void* data)
     LV_EXT_GLOBAL()->user_data = data;
 }
 
+void lv_ext_uv_deinit(void)
+{
+#ifdef CONFIG_LVX_USE_VIDEO_ADAPTER
+    lvx_video_adapter_loop_deinit();
+#endif
+}
+
+void lv_ext_uv_init(void* loop)
+{
+#ifdef CONFIG_LVX_USE_VIDEO_ADAPTER
+    lvx_video_adapter_loop_init(loop);
+#endif
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/

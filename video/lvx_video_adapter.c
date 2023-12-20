@@ -76,6 +76,12 @@ struct lvx_video_ctx_s {
     int fd;
     void* handle;
     struct lvx_video_ctx_config_s cfg;
+    void* ui_obj;
+    void (*started_cb)(void* obj);
+    void (*prepared_cb)(void* obj);
+    void (*paused_cb)(void* obj);
+    void (*stopped_cb)(void* obj);
+    void (*completed_cb)(void* obj);
 };
 
 struct lvx_video_ctx_map_s {
@@ -86,6 +92,7 @@ struct lvx_video_ctx_map_s {
 struct lvx_video_adapter_ctx_s {
     lvx_video_vtable_t vtable;
     struct lvx_video_ctx_map_s map;
+    void* ui_uv_loop;
 };
 
 /****************************************************************************
@@ -285,7 +292,7 @@ static lv_color_format_t lvx_video_format_converter(lvx_vtun_frame_format format
         }
     }
 
-    LV_LOG_WARN("unsupported color format : %d!",format);
+    LV_LOG_WARN("unsupported color format : %d!", format);
     return cf;
 }
 
@@ -378,6 +385,50 @@ static int lvx_connect_to_server(const char* vtun_name)
 }
 
 /****************************************************************************
+ * Name: video_event_cb
+ ****************************************************************************/
+
+static void video_event_cb(void* cookie, int event, int ret,
+    const char* extra)
+{
+    LV_UNUSED(ret);
+    LV_UNUSED(extra);
+
+    struct lvx_video_ctx_s* ctx = (struct lvx_video_ctx_s*)cookie;
+    switch (event) {
+    case MEDIA_EVENT_STARTED:
+        if (ctx->started_cb)
+            ctx->started_cb(ctx->ui_obj);
+        break;
+    case MEDIA_EVENT_PREPARED:
+        if (ctx->prepared_cb)
+            ctx->prepared_cb(ctx->ui_obj);
+        break;
+    case MEDIA_EVENT_PAUSED:
+        if (ctx->paused_cb)
+            ctx->paused_cb(ctx->ui_obj);
+        break;
+    case MEDIA_EVENT_STOPPED:
+        if (ctx->stopped_cb)
+            ctx->stopped_cb(ctx->ui_obj);
+        break;
+    case MEDIA_EVENT_COMPLETED:
+        if (ctx->completed_cb) {
+            ctx->completed_cb(ctx->ui_obj);
+        }
+        ctx->ui_obj = NULL;
+        ctx->started_cb = NULL;
+        ctx->prepared_cb = NULL;
+        ctx->paused_cb = NULL;
+        ctx->stopped_cb = NULL;
+        ctx->completed_cb = NULL;
+        break;
+    default:
+        break;
+    }
+}
+
+/****************************************************************************
  * Name: video_adapter_open
  ****************************************************************************/
 
@@ -405,14 +456,19 @@ static void* video_adapter_open(struct _lvx_video_vtable_t* vtable,
         const char* url = NULL;
         strstart(ctx->cfg.vtun_name, VTUN_HEADER, &url);
 
-        ctx->handle = media_player_open(url);
+        ctx->handle = media_uv_player_open(adapter_ctx->ui_uv_loop, url, NULL, ctx);
 
         if (!ctx->handle) {
             LV_LOG_ERROR("media open : %s failed!", url);
             goto fail;
         }
 
-        if (media_player_prepare(ctx->handle, src, option) < 0) {
+        if ((media_uv_player_listen(ctx->handle, video_event_cb)) < 0) {
+            LV_LOG_ERROR("media player set event callback failed!");
+            goto fail;
+        }
+
+        if (media_uv_player_prepare(ctx->handle, src, option, NULL, NULL, NULL) < 0) {
             LV_LOG_ERROR("media prepare:%s %s failed!", src, option);
             goto fail;
         }
@@ -426,7 +482,7 @@ fail:
     }
 
     if (ctx->handle) {
-        media_player_close(ctx->handle, 0);
+        media_uv_player_close(ctx->handle, 0, NULL);
         ctx->handle = NULL;
     }
 
@@ -434,28 +490,37 @@ fail:
 }
 
 /****************************************************************************
- * Name: video_adapter_set_event_callback
+ * Name: video_adapter_set_callback
  ****************************************************************************/
-static int video_adapter_set_event_callback(struct _lvx_video_vtable_t* vtable,
-    void* ctx, void* cookie, media_event_callback event_callback)
+static int video_adapter_set_callback(struct _lvx_video_vtable_t* vtable,
+    void* ctx, int event, void* obj, video_event_callback callback)
 {
-    int ret;
     if (!ctx) {
         return -EPERM;
     }
-
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
-    if (!video_ctx->handle) {
-        return -EINVAL;
+    switch (event) {
+    case MEDIA_EVENT_STARTED:
+        video_ctx->started_cb = callback;
+        break;
+    case MEDIA_EVENT_PREPARED:
+        video_ctx->prepared_cb = callback;
+        break;
+    case MEDIA_EVENT_PAUSED:
+        video_ctx->paused_cb = callback;
+        break;
+    case MEDIA_EVENT_STOPPED:
+        video_ctx->stopped_cb = callback;
+        break;
+    case MEDIA_EVENT_COMPLETED:
+        video_ctx->completed_cb = callback;
+        break;
+    default:
+        break;
     }
-
-    if ((ret = media_player_set_event_callback(video_ctx->handle, cookie, event_callback)) < 0) {
-        LV_LOG_ERROR("media player set event callback failed!");
-        return ret;
-    }
-
-    return 0;
+    video_ctx->ui_obj = obj;
+    return OK;
 }
 
 /****************************************************************************
@@ -521,9 +586,8 @@ static int video_adapter_get_frame(struct _lvx_video_vtable_t* vtable,
  ****************************************************************************/
 
 static int video_adapter_get_dur(struct _lvx_video_vtable_t* vtable,
-    void* ctx)
+    void* ctx, media_uv_unsigned_callback callback, void* cookie)
 {
-    unsigned int duration = 0;
     if (!ctx) {
         return -EPERM;
     }
@@ -534,11 +598,11 @@ static int video_adapter_get_dur(struct _lvx_video_vtable_t* vtable,
         return -EINVAL;
     }
 
-    if (media_player_get_duration(video_ctx->handle, &duration) < 0) {
+    if (media_uv_player_get_duration(video_ctx->handle, callback, cookie) < 0) {
         LV_LOG_ERROR("media player get duration failed!");
     }
 
-    return duration / 1000;
+    return OK;
 }
 
 /****************************************************************************
@@ -555,7 +619,7 @@ static int video_adapter_start(struct _lvx_video_vtable_t* vtable,
 
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
     if (video_ctx->handle) {
-        if ((ret = media_player_start(video_ctx->handle)) < 0) {
+        if ((ret = media_uv_player_start(video_ctx->handle, NULL, NULL)) < 0) {
             LV_LOG_ERROR("media player start failed!");
             return ret;
         }
@@ -588,7 +652,7 @@ static int video_adapter_seek(struct _lvx_video_vtable_t* vtable,
         return -EINVAL;
     }
 
-    if ((ret = media_player_seek(video_ctx->handle, pos * 1000)) < 0) {
+    if ((ret = media_uv_player_seek(video_ctx->handle, pos * 1000, NULL, NULL)) < 0) {
         LV_LOG_ERROR("media player seek to (%d) failed!", pos);
         return ret;
     }
@@ -614,7 +678,7 @@ static int video_adapter_pause(struct _lvx_video_vtable_t* vtable,
         return -EINVAL;
     }
 
-    if ((ret = media_player_pause(video_ctx->handle)) < 0) {
+    if ((ret = media_uv_player_pause(video_ctx->handle, NULL, NULL)) < 0) {
         LV_LOG_ERROR("media player pause failed!");
         return ret;
     }
@@ -640,7 +704,7 @@ static int video_adapter_resume(struct _lvx_video_vtable_t* vtable,
         return -EINVAL;
     }
 
-    if ((ret = media_player_start(video_ctx->handle)) < 0) {
+    if ((ret = media_uv_player_start(video_ctx->handle, NULL, NULL)) < 0) {
         LV_LOG_ERROR("media player resume failed!");
         return ret;
     }
@@ -663,7 +727,7 @@ static int video_adapter_stop(struct _lvx_video_vtable_t* vtable,
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
     if (video_ctx->handle) {
-        if ((ret = media_player_stop(video_ctx->handle)) < 0) {
+        if ((ret = media_uv_player_stop(video_ctx->handle, NULL, NULL)) < 0) {
             LV_LOG_ERROR("media player stop failed!");
             return ret;
         }
@@ -698,7 +762,7 @@ static int video_adapter_close(struct _lvx_video_vtable_t* vtable,
     }
 
     if (video_ctx->handle) {
-        if ((ret = media_player_close(video_ctx->handle, 0)) < 0) {
+        if ((ret = media_uv_player_close(video_ctx->handle, 0, NULL)) < 0) {
             LV_LOG_ERROR("media player close failed!");
             return ret;
         }
@@ -744,7 +808,7 @@ static int video_adapter_loop(struct _lvx_video_vtable_t* vtable,
 
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
-    if (media_player_set_looping(video_ctx->handle, loop) < 0) {
+    if (media_uv_player_set_looping(video_ctx->handle, loop, NULL, NULL) < 0) {
         LV_LOG_ERROR("media player set loop failed!");
         return -1;
     }
@@ -753,10 +817,10 @@ static int video_adapter_loop(struct _lvx_video_vtable_t* vtable,
 }
 
 /****************************************************************************
- * Name: video_adapter_play_state
+ * Name: video_adapter_get_playing
  ****************************************************************************/
-static int video_adapter_get_player_state(struct _lvx_video_vtable_t* vtable,
-    void* ctx)
+static int video_adapter_get_playing(struct _lvx_video_vtable_t* vtable,
+    void* ctx, media_uv_int_callback cb, void* cookie)
 {
     if (!ctx) {
         return -EPERM;
@@ -764,27 +828,7 @@ static int video_adapter_get_player_state(struct _lvx_video_vtable_t* vtable,
 
     struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
 
-    return media_player_is_playing(video_ctx->handle);
-}
-
-/****************************************************************************
- * Name: video_adapter_write_data
- ****************************************************************************/
-static int video_adapter_write_data(struct _lvx_video_vtable_t* vtable,
-    void* ctx, void* data, size_t len)
-{
-    if (!ctx) {
-        return -EPERM;
-    }
-
-    struct lvx_video_ctx_s* video_ctx = (struct lvx_video_ctx_s*)ctx;
-
-    if (media_player_write_data(video_ctx->handle, data, len) < 0) {
-        LV_LOG_ERROR("media player write data failed!");
-        return -1;
-    }
-
-    return 0;
+    return media_uv_player_get_playing(video_ctx->handle, cb, cookie);
 }
 
 /****************************************************************************
@@ -814,7 +858,6 @@ void lvx_video_adapter_init(void)
     }
 
     adapter_ctx->vtable.video_adapter_open = video_adapter_open;
-    adapter_ctx->vtable.video_adapter_set_event_callback = video_adapter_set_event_callback;
     adapter_ctx->vtable.video_adapter_get_frame = video_adapter_get_frame;
     adapter_ctx->vtable.video_adapter_get_dur = video_adapter_get_dur;
     adapter_ctx->vtable.video_adapter_start = video_adapter_start;
@@ -824,8 +867,8 @@ void lvx_video_adapter_init(void)
     adapter_ctx->vtable.video_adapter_stop = video_adapter_stop;
     adapter_ctx->vtable.video_adapter_close = video_adapter_close;
     adapter_ctx->vtable.video_adapter_loop = video_adapter_loop;
-    adapter_ctx->vtable.video_adapter_get_player_state = video_adapter_get_player_state;
-    adapter_ctx->vtable.video_adapter_write_data = video_adapter_write_data;
+    adapter_ctx->vtable.video_adapter_get_playing = video_adapter_get_playing;
+    adapter_ctx->vtable.video_adapter_set_callback = video_adapter_set_callback;
 
     lvx_video_vtable_set_default(&(adapter_ctx->vtable));
 }
@@ -842,6 +885,40 @@ void lvx_video_adapter_uninit(void)
 {
     struct lvx_video_adapter_ctx_s* adapter_ctx = (struct lvx_video_adapter_ctx_s*)lvx_video_vtable_get_default();
     video_adapter_destroy(adapter_ctx);
+}
+
+/****************************************************************************
+ * Name: lvx_video_adapter_loop_init
+ *
+ * Description:
+ *   Video adapter init ui uv loop.
+ *
+ ****************************************************************************/
+
+void lvx_video_adapter_loop_init(void* loop)
+{
+    struct lvx_video_adapter_ctx_s* adapter_ctx = (struct lvx_video_adapter_ctx_s*)lvx_video_vtable_get_default();
+
+    if (loop == NULL) {
+        LV_LOG_ERROR("video adapter loop init failed for nullptr loop.");
+        return;
+    }
+
+    adapter_ctx->ui_uv_loop = loop;
+}
+
+/****************************************************************************
+ * Name: lvx_video_adapter_loop_deinit
+ *
+ * Description:
+ *   Video adapter deinit ui uv loop.
+ *
+ ****************************************************************************/
+
+void lvx_video_adapter_loop_deinit(void)
+{
+    struct lvx_video_adapter_ctx_s* adapter_ctx = (struct lvx_video_adapter_ctx_s*)lvx_video_vtable_get_default();
+    adapter_ctx->ui_uv_loop = NULL;
 }
 
 #endif /* CONFIG_LVX_USE_VIDEO_ADAPTER */
