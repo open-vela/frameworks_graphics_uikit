@@ -80,18 +80,7 @@ void lvx_video_set_src_opt(lv_obj_t* obj, const char* src, const char* option)
 
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
-    if ((video_obj->video_ctx = video_obj->vtable->video_adapter_open(video_obj->vtable, src, option)) != NULL) {
-        video_obj->duration = video_obj->vtable->video_adapter_get_dur(video_obj->vtable, video_obj->video_ctx);
-    }
-}
-
-int lvx_video_set_event_callback(lv_obj_t* obj, void* cookie, media_event_callback event_callback)
-{
-    LV_ASSERT_OBJ(obj, MY_CLASS);
-
-    lvx_video_t* video_obj = (lvx_video_t*)obj;
-
-    return video_obj->vtable->video_adapter_set_event_callback(video_obj->vtable, video_obj->video_ctx, cookie, event_callback);
+    video_obj->video_ctx = video_obj->vtable->video_adapter_open(video_obj->vtable, src, option);
 }
 
 void lvx_video_set_vtable(lv_obj_t* obj, lvx_video_vtable_t* vtable)
@@ -177,13 +166,13 @@ int lvx_video_resume(lv_obj_t* obj)
     return ret;
 }
 
-int lvx_video_get_dur(lv_obj_t* obj)
+int lvx_video_get_dur(lv_obj_t* obj, media_uv_unsigned_callback callback, void* cookie)
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
 
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
-    return video_obj->vtable->video_adapter_get_dur(video_obj->vtable, video_obj->video_ctx);
+    return video_obj->vtable->video_adapter_get_dur(video_obj->vtable, video_obj->video_ctx, callback, cookie);
 }
 
 int lvx_video_set_loop(lv_obj_t* obj, int loop)
@@ -195,6 +184,16 @@ int lvx_video_set_loop(lv_obj_t* obj, int loop)
     return video_obj->vtable->video_adapter_loop(video_obj->vtable, video_obj->video_ctx, loop);
 }
 
+int lvx_video_set_callback(lv_obj_t* obj, int event, void* ctx_obj, video_event_callback callback)
+{
+
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+
+    lvx_video_t* video_obj = (lvx_video_t*)obj;
+
+    return video_obj->vtable->video_adapter_set_callback(video_obj->vtable, video_obj->video_ctx, event, ctx_obj, callback);
+}
+
 void lvx_video_set_poster(lv_obj_t* obj, const char* poster_path)
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
@@ -204,24 +203,13 @@ void lvx_video_set_poster(lv_obj_t* obj, const char* poster_path)
     lv_image_set_src(&video_obj->img.obj, poster_path);
 }
 
-bool lvx_video_is_playing(lv_obj_t* obj)
+int lvx_video_get_playing(lv_obj_t* obj, media_uv_int_callback cb, void* cookie)
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
 
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
-    int pos = video_obj->vtable->video_adapter_get_player_state(video_obj->vtable, video_obj->video_ctx);
-
-    return pos ? true : false;
-}
-
-int lvx_video_write_data(lv_obj_t* obj, void* data, size_t len)
-{
-    LV_ASSERT_OBJ(obj, MY_CLASS);
-
-    lvx_video_t* video_obj = (lvx_video_t*)obj;
-
-    return video_obj->vtable->video_adapter_write_data(video_obj->vtable, video_obj->video_ctx, data, len);
+    return video_obj->vtable->video_adapter_get_playing(video_obj->vtable, video_obj->video_ctx, cb, cookie);
 }
 
 lv_image_dsc_t* lvx_video_get_img_dsc(lv_obj_t* obj)
