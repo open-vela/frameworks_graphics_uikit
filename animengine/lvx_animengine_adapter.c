@@ -376,7 +376,7 @@ _DEFINE_ANIM_PROPERTY_CB_(
     lv_coord_t,
     1);
 
-static inline bool lvx_anim_register_property(void)
+static inline bool lvx_anim_register_property(anim_engine_handle_t handle)
 {
     anim_property_callback_t property_cb;
 
@@ -384,7 +384,7 @@ static inline bool lvx_anim_register_property(void)
     property_cb.get_property_cb = _##module##_get_##style_name##_;         \
     property_cb.set_property_cb = _##module##_set_##style_name##_;         \
     property_cb.check_legality_cb = check_value_cb;                        \
-    anim_register_property(#style_name, property_cb)
+    anim_register_property(handle, #style_name, property_cb)
 
     _REGISTER_ANIM_PROPERTY_ENTRY_(style, img_opa, checkOpacityLegality);
     _REGISTER_ANIM_PROPERTY_ENTRY_(image, img_angle, checkRotateLegality);
@@ -397,10 +397,10 @@ static inline bool lvx_anim_register_property(void)
     return true;
 }
 
-void lvx_anim_unregister_property(void)
+void lvx_anim_unregister_property(anim_engine_handle_t handle)
 {
 #define _UNREGISTER_ANIM_PROPERTY_ENTRY_(module, style_name) \
-    anim_unregister_property(#style_name)
+    anim_unregister_property(handle, #style_name)
 
     _UNREGISTER_ANIM_PROPERTY_ENTRY_(style, img_opa);
     _UNREGISTER_ANIM_PROPERTY_ENTRY_(image, img_angle);
@@ -417,7 +417,6 @@ void lvx_anim_unregister_property(void)
  ****************************************************************************/
 anim_engine_handle_t lvx_anim_adapter_init(void)
 {
-    lvx_anim_register_property();
 
     anim_context_t* anim_ctx = anim_engine_init();
     anim_ctx->get_property_cb = anim_get_property;
@@ -428,6 +427,9 @@ anim_engine_handle_t lvx_anim_adapter_init(void)
     anim_ctx->set_event = anim_set_event;
     lv_timer_t* anim_timer = lv_timer_create(anim_timer_cb, LVX_ANIM_DEFAULT_PERIOD, anim_ctx->engine_handle);
     anim_ctx->timer_handle = anim_timer;
+
+    lvx_anim_register_property(anim_ctx->engine_handle);
+
     return anim_ctx->engine_handle;
 }
 
