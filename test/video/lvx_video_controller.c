@@ -7,6 +7,7 @@
  *      INCLUDES
  *********************/
 #include "lvx_video_controller.h"
+#include "media_defs.h"
 #include <ext/video/lvx_video.h>
 #include <stdio.h>
 
@@ -27,6 +28,8 @@ static void lvx_video_controller_destructor(const lv_obj_class_t* class_p, lv_ob
 static void video_event_cb(lv_event_t* e);
 static void play_pause_event_cb(lv_event_t* e);
 static void progress_slider_event_cb(lv_event_t* e);
+static void duration_received_cb(void* obj, int ret, unsigned duration);
+static void prepared_cb(void* obj);
 
 /**********************
  *  STATIC VARIABLES
@@ -120,10 +123,9 @@ void lvx_video_controller_set_imgbtn(lv_obj_t* obj, const void* play_img, const 
 void lvx_video_controller_set_src(lv_obj_t* obj, const char* src)
 {
     lvx_video_controller_t* video_controller = (lvx_video_controller_t*)obj;
-    lvx_video_t* video = (lvx_video_t*)video_controller->video;
     lvx_video_set_src(video_controller->video, src);
 
-    lv_slider_set_range(video_controller->progress_slider, 0, video->duration);
+    lvx_video_set_callback(video_controller->video, MEDIA_EVENT_PREPARED, video_controller, prepared_cb);
 }
 
 /**********************
@@ -172,4 +174,21 @@ static void progress_slider_event_cb(lv_event_t* e)
     int32_t pos = lv_slider_get_value(slider);
 
     lvx_video_seek(video, pos);
+}
+
+static void duration_received_cb(void* obj, int ret, unsigned duration)
+{
+    LV_UNUSED(ret);
+
+    lvx_video_controller_t* video_controller = (lvx_video_controller_t*)obj;
+    lvx_video_t* video = (lvx_video_t*)video_controller->video;
+
+    video->duration = duration / 1000;
+    lv_slider_set_range(video_controller->progress_slider, 0, video->duration);
+}
+
+static void prepared_cb(void* obj)
+{
+    lvx_video_controller_t* video_controller = (lvx_video_controller_t*)obj;
+    lvx_video_get_dur(video_controller->video, duration_received_cb, video_controller);
 }

@@ -72,6 +72,26 @@ void lvx_video_adapter_init(void);
 
 void lvx_video_adapter_uninit(void);
 
+/****************************************************************************
+ * Name: lvx_video_adapter_loop_init
+ *
+ * Description:
+ *   Video adapter init ui uv loop.
+ *
+ ****************************************************************************/
+
+void lvx_video_adapter_loop_init(void* loop);
+
+/****************************************************************************
+ * Name: lvx_video_adapter_loop_deinit
+ *
+ * Description:
+ *   Video adapter deinit ui uv loop.
+ *
+ ****************************************************************************/
+
+void lvx_video_adapter_loop_deinit(void);
+
 #endif /* CONFIG_LVX_USE_VIDEO_ADAPTER */
 
 #undef EXTERN
