@@ -53,6 +53,17 @@ void lv_ext_init(void);
 
 void lv_ext_deinit(void);
 
+/**
+ * Lvgl extern uv init.
+ * @param loop          pointer to a uv loop from application layer
+ */
+void lv_ext_uv_init(void* loop);
+
+/**
+ * Lvgl extern uv deinit.
+ */
+void lv_ext_uv_deinit(void);
+
 /**********************
  *      MACROS
  **********************/
