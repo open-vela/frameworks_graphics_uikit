@@ -116,9 +116,7 @@ int lvx_video_stop(lv_obj_t* obj)
 
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
-    lv_cache_lock();
-    lv_cache_invalidate(lv_cache_find(&video_obj->img_dsc, LV_CACHE_SRC_TYPE_PTR, 0, 0));
-    lv_cache_unlock();
+    lv_image_cache_drop(&video_obj->img_dsc);
 
     if ((ret = video_obj->vtable->video_adapter_stop(video_obj->vtable, video_obj->video_ctx)) == 0) {
 
@@ -259,9 +257,7 @@ static void lvx_video_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
-    lv_cache_lock();
-    lv_cache_invalidate(lv_cache_find(&video_obj->img_dsc, LV_CACHE_SRC_TYPE_PTR, 0, 0));
-    lv_cache_unlock();
+    lv_image_cache_drop(&video_obj->img_dsc);
 
     video_obj->vtable->video_adapter_close(video_obj->vtable, video_obj->video_ctx);
 
@@ -331,9 +327,7 @@ static void video_frame_task_cb(lv_event_t* e)
         lvx_video_frame_scale(video_obj);
         lv_obj_send_event(obj, video_obj->custom_event_id, NULL);
     } else {
-        lv_cache_lock();
-        lv_cache_invalidate(lv_cache_find(&video_obj->img_dsc, LV_CACHE_SRC_TYPE_PTR, 0, 0));
-        lv_cache_unlock();
+        lv_image_cache_drop(&video_obj->img_dsc);
         lv_obj_invalidate(obj);
     }
 

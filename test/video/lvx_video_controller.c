@@ -82,7 +82,7 @@ lv_obj_t* lvx_video_controller_create(lv_obj_t* parent)
     lv_obj_clear_flag(controller_obj, LV_OBJ_FLAG_SCROLLABLE);
 
     /* init play btn */
-    video_controller->play_imgbtn = lv_imgbtn_create(controller_obj);
+    video_controller->play_imgbtn = lv_imagebutton_create(controller_obj);
     lv_obj_set_size(video_controller->play_imgbtn, LV_PCT(12), LV_PCT(100));
 
     /* init click event callback for play button */
@@ -113,8 +113,8 @@ void lvx_video_controller_set_imgbtn(lv_obj_t* obj, const void* play_img, const 
 
     lv_obj_t* play_imgbtn = video_controller->play_imgbtn;
 
-    lv_imgbtn_set_src(play_imgbtn, LV_IMGBTN_STATE_RELEASED, NULL, play_img, NULL);
-    lv_imgbtn_set_src(play_imgbtn, LV_IMGBTN_STATE_CHECKED_RELEASED, NULL, pause_img, NULL);
+    lv_imagebutton_set_src(play_imgbtn, LV_IMAGEBUTTON_STATE_RELEASED, NULL, play_img, NULL);
+    lv_imagebutton_set_src(play_imgbtn, LV_IMAGEBUTTON_STATE_CHECKED_RELEASED, NULL, pause_img, NULL);
 
     lv_image_header_t header;
     lv_image_decoder_get_info(play_img, &header);

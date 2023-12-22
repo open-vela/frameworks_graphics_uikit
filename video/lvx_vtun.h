@@ -6,10 +6,12 @@
 #ifndef LVX_VTUN_H
 #define LVX_VTUN_H
 
+#define VTUN_FRAME_PLANE_NUM 3
+
 typedef enum {
     VTUN_FRAME_FORMAT_BGRA8888,
     VTUN_FRAME_FORMAT_RGB565,
-    VTUN_FRAME_FORMAT_YUV420SP,
+    VTUN_FRAME_FORMAT_NV12,
     VTUN_FRAME_FORMAT_INVALID
 } lvx_vtun_frame_format;
 
@@ -28,12 +30,14 @@ typedef struct {
 } lvx_vtun_crop_info;
 
 typedef struct {
+    void * addr;
+    int stride;
+} lvx_vtun_plane_info;
+typedef struct {
     lvx_vtun_frame_format format;
     lvx_vtun_crop_info crop_info;
+    lvx_vtun_plane_info plane[VTUN_FRAME_PLANE_NUM];
     unsigned current_ms;
-    size_t size;
-    int stride;
-    void* addr;
     int w;
     int h;
 } lvx_vtun_frame;

@@ -75,6 +75,7 @@ struct lvx_video_ctx_config_s {
 struct lvx_video_ctx_s {
     int fd;
     void* handle;
+    lv_yuv_buf_t yuv;
     struct lvx_video_ctx_config_s cfg;
     void* ui_obj;
     void (*started_cb)(void* obj);
@@ -110,7 +111,7 @@ static const struct lvx_video_format_s g_video_format_map[] = {
 #if LV_COLOR_DEPTH == 16
     { LV_COLOR_FORMAT_NATIVE, VTUN_FRAME_FORMAT_RGB565 },
 #endif
-    { LV_COLOR_FORMAT_NATIVE_REVERSED, VTUN_FRAME_FORMAT_YUV420SP }
+    { LV_COLOR_FORMAT_NV12, VTUN_FRAME_FORMAT_NV12 }
 };
 
 /****************************************************************************
@@ -473,6 +474,7 @@ static void* video_adapter_open(struct _lvx_video_vtable_t* vtable,
             goto fail;
         }
     }
+
     return ctx;
 
 fail:
@@ -560,17 +562,26 @@ static int video_adapter_get_frame(struct _lvx_video_vtable_t* vtable,
         return -errno;
     }
 
-    if (img_dsc->data == frame_p->addr) {
+    if (frame_p == NULL) {
         return -ENOENT;
     }
 
-    img_dsc->header.always_zero = 0;
+    img_dsc->header.magic = LV_IMAGE_HEADER_MAGIC;
     img_dsc->header.w = frame_p->w;
     img_dsc->header.h = frame_p->h;
     img_dsc->header.cf = lvx_video_format_converter(frame_p->format);
-    img_dsc->header.stride = frame_p->stride;
-    img_dsc->data_size = frame_p->size;
-    img_dsc->data = frame_p->addr;
+    img_dsc->header.stride = frame_p->plane[0].stride;
+    img_dsc->data_size = img_dsc->header.stride * frame_p->h;
+
+    if (img_dsc->header.cf == LV_COLOR_FORMAT_NV12) {
+        video_ctx->yuv.semi_planar.y.buf = frame_p->plane[0].addr;
+        video_ctx->yuv.semi_planar.y.stride = frame_p->plane[0].stride;
+        video_ctx->yuv.semi_planar.uv.buf = frame_p->plane[1].addr;
+        video_ctx->yuv.semi_planar.uv.stride = frame_p->plane[1].stride;
+        img_dsc->data = (const uint8_t *)&video_ctx->yuv;
+    } else {
+        img_dsc->data = frame_p->plane[0].addr;
+    }
 
     video->crop_coords.x1 = frame_p->crop_info.x1;
     video->crop_coords.x2 = frame_p->crop_info.x2;
@@ -760,6 +771,8 @@ static int video_adapter_close(struct _lvx_video_vtable_t* vtable,
         close(video_ctx->fd);
         video_ctx->fd = 0;
     }
+
+    lv_memset(&video_ctx->yuv, 0 ,sizeof(lv_yuv_buf_t));
 
     if (video_ctx->handle) {
         if ((ret = media_uv_player_close(video_ctx->handle, 0, NULL)) < 0) {
