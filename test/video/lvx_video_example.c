@@ -72,7 +72,7 @@ void lvx_example_video_controller(char* info[], int size)
 
     lv_obj_t* obj = lvx_video_controller_create(lv_scr_act());
 
-    lv_obj_set_size(obj, LV_PCT(100), LV_PCT(100));
+    lv_obj_set_size(obj, LV_PCT(70), LV_PCT(70));
     lvx_video_controller_set_src(obj, src);
 
     LV_IMG_DECLARE(img_play);
@@ -124,9 +124,20 @@ void lvx_example_camera(char* info[], int size)
 {
     lv_obj_t* obj = lvx_camera_controller_create(lv_scr_act());
     if (size > 0 && info) {
-        lvx_camera_controller_set_url(obj, info[0]);
+        if (strcmp(info[0], "-option") == 0) {
+            if (size > 1) {
+                lvx_camera_controller_set_url_with_option(obj, NULL, info[1]);
+            }
+        } else if (strcmp(info[1], "-option") == 0) {
+            if (size > 2) {
+                lvx_camera_controller_set_url_with_option(obj, info[0], info[2]);
+            }
+        } else {
+            lvx_camera_controller_set_url_with_option(obj, info[0], NULL);
+        }
     }
-    lv_obj_set_size(obj, LV_PCT(100), LV_PCT(100));
+
+    lv_obj_set_size(obj, LV_PCT(70), LV_PCT(70));
     lv_obj_align(obj, LV_ALIGN_CENTER, 0, 0);
 }
 
