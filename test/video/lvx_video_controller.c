@@ -30,6 +30,7 @@ static void play_pause_event_cb(lv_event_t* e);
 static void progress_slider_event_cb(lv_event_t* e);
 static void duration_received_cb(void* obj, int ret, unsigned duration);
 static void prepared_cb(void* obj);
+static void completed_cb(void* obj);
 
 /**********************
  *  STATIC VARIABLES
@@ -88,7 +89,7 @@ lv_obj_t* lvx_video_controller_create(lv_obj_t* parent)
 
     /* init progress slider */
     video_controller->progress_slider = lv_slider_create(controller_obj);
-    lv_obj_set_size(video_controller->progress_slider, LV_PCT(76), 3);
+    lv_obj_set_size(video_controller->progress_slider, LV_PCT(73), 3);
     lv_obj_align_to(video_controller->progress_slider, video_controller->play_imgbtn, LV_ALIGN_OUT_RIGHT_MID, 2, 0);
     lv_obj_add_event(video_controller->progress_slider, progress_slider_event_cb, LV_EVENT_RELEASED,
         video_controller->video);
@@ -126,6 +127,7 @@ void lvx_video_controller_set_src(lv_obj_t* obj, const char* src)
     lvx_video_set_src(video_controller->video, src);
 
     lvx_video_set_callback(video_controller->video, MEDIA_EVENT_PREPARED, video_controller, prepared_cb);
+    lvx_video_set_callback(video_controller->video, MEDIA_EVENT_COMPLETED, video_controller, completed_cb);
 }
 
 /**********************
@@ -191,4 +193,20 @@ static void prepared_cb(void* obj)
 {
     lvx_video_controller_t* video_controller = (lvx_video_controller_t*)obj;
     lvx_video_get_dur(video_controller->video, duration_received_cb, video_controller);
+}
+
+static void completed_cb(void* obj)
+{
+    char dur_str[32];
+    lvx_video_controller_t* video_controller = (lvx_video_controller_t*)obj;
+    lvx_video_t* video = (lvx_video_t*)video_controller->video;
+
+    snprintf(dur_str, sizeof(dur_str), "%02u:%02u/%02u:%02u", video->duration / 60, video->duration % 60,
+        video->duration / 60, video->duration % 60);
+    lv_label_set_text(video_controller->dur_label, dur_str);
+    lv_slider_set_value(video_controller->progress_slider, video->duration, LV_ANIM_OFF);
+
+    lv_imgbtn_set_state(video_controller->play_imgbtn, LV_IMGBTN_STATE_RELEASED);
+    lvx_video_pause(video_controller->video);
+    lvx_video_seek(video_controller->video, 0);
 }
