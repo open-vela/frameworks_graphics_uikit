@@ -66,7 +66,8 @@ const lv_obj_class_t lvx_camera_controller_class = {
     .base_class = &lv_obj_class
 };
 
-const char* saved_path;
+const char* saved_path = "/gallery";
+const char* option = NULL;
 static void* handle;
 static bool is_started = false;
 static lv_timer_t* timer_anim;
@@ -104,27 +105,28 @@ lv_obj_t* lvx_camera_controller_create(lv_obj_t* parent)
     lv_obj_set_size(camera_controller->video, LV_PCT(100), LV_PCT(100));
     lv_obj_align(camera_controller->video, LV_ALIGN_CENTER, 0, 0);
 
-    camera_controller->photo_btn = camera_create_btn(obj, "Photo Mode", LV_ALIGN_BOTTOM_LEFT,
+    camera_controller->photo_btn = camera_create_btn(obj, "Photo", LV_ALIGN_BOTTOM_LEFT,
         0, camera_take_picture_event_cb, false);
 
-    camera_controller->burst_btn = camera_create_btn(obj, "Burst Mode", LV_ALIGN_BOTTOM_LEFT,
+    camera_controller->burst_btn = camera_create_btn(obj, "Burst", LV_ALIGN_BOTTOM_LEFT,
         LV_PCT(28), camera_picture_start_event_cb, true);
 
-    camera_controller->record_btn = camera_create_btn(obj, "Video Mode", LV_ALIGN_BOTTOM_LEFT,
+    camera_controller->record_btn = camera_create_btn(obj, "Video", LV_ALIGN_BOTTOM_LEFT,
         LV_PCT(54), camera_recorder_event_cb, true);
 
-    camera_controller->scan_btn = camera_create_btn(obj, "Scan Mode", LV_ALIGN_BOTTOM_RIGHT,
+    camera_controller->scan_btn = camera_create_btn(obj, "Scan", LV_ALIGN_BOTTOM_RIGHT,
         0, camera_scan_event_cb, false);
-
-    saved_path = "/gallery";
 
     return obj;
 }
 
-void lvx_camera_controller_set_url(lv_obj_t* obj, const char* url)
+void lvx_camera_controller_set_url_with_option(lv_obj_t* obj, const char* url, const char* opt)
 {
-    if (saved_path != url) {
+    if (saved_path != url && url != NULL) {
         saved_path = url;
+    }
+    if (option != opt) {
+        option = opt;
     }
 }
 
@@ -322,7 +324,7 @@ static void camera_start(const char* params, const char* src)
         return;
     }
 
-    if (media_recorder_prepare(handle, src, NULL) < 0) {
+    if (media_recorder_prepare(handle, src, option) < 0) {
         LV_LOG_ERROR("media recorder prepare failed!");
         return;
     }
@@ -361,7 +363,7 @@ void show_scan_result(char* msg_buff)
     lv_obj_align(msg_obj, LV_ALIGN_CENTER, 0, 0);
 
     lv_obj_t* msg_btn = lv_button_create(msg_obj);
-    lv_obj_align_to(msg_btn, msg_obj, LV_ALIGN_TOP_LEFT, LV_PCT(90), 0);
+    lv_obj_align(msg_btn, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_t* cancel_label = lv_label_create(msg_btn);
     lv_label_set_text(cancel_label, "Quit");
     lv_obj_center(cancel_label);
@@ -374,10 +376,10 @@ void show_scan_result(char* msg_buff)
     lv_label_set_text(title_label, "RESULT");
 
     lv_obj_t* msg_label = lv_label_create(msg_obj);
-    lv_obj_align_to(msg_label, msg_obj, LV_ALIGN_TOP_LEFT, 0, LV_PCT(10));
+    lv_obj_align_to(msg_label, msg_obj, LV_ALIGN_TOP_LEFT, LV_PCT(10), LV_PCT(10));
 
     if (msg_buff == NULL) {
-        lv_label_set_text(msg_label, "[null]");
+        lv_label_set_text(msg_label, "Please put the QR code towards the camera.");
     } else {
         lv_label_set_text(msg_label, msg_buff);
     }
