@@ -80,8 +80,8 @@ struct lvx_video_ctx_s {
     void (*started_cb)(void* obj);
     void (*prepared_cb)(void* obj);
     void (*paused_cb)(void* obj);
-    void (*stopped_cb)(void* obj);
     void (*completed_cb)(void* obj);
+    void (*stopped_cb)(void* obj);
 };
 
 struct lvx_video_ctx_map_s {
@@ -408,20 +408,20 @@ static void video_event_cb(void* cookie, int event, int ret,
         if (ctx->paused_cb)
             ctx->paused_cb(ctx->ui_obj);
         break;
-    case MEDIA_EVENT_STOPPED:
-        if (ctx->stopped_cb)
-            ctx->stopped_cb(ctx->ui_obj);
-        break;
     case MEDIA_EVENT_COMPLETED:
-        if (ctx->completed_cb) {
+        if (ctx->completed_cb)
             ctx->completed_cb(ctx->ui_obj);
+        break;
+    case MEDIA_EVENT_STOPPED:
+        if (ctx->stopped_cb) {
+            ctx->stopped_cb(ctx->ui_obj);
         }
         ctx->ui_obj = NULL;
         ctx->started_cb = NULL;
         ctx->prepared_cb = NULL;
         ctx->paused_cb = NULL;
-        ctx->stopped_cb = NULL;
         ctx->completed_cb = NULL;
+        ctx->stopped_cb = NULL;
         break;
     default:
         break;
