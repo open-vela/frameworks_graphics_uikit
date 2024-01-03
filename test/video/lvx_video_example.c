@@ -28,7 +28,9 @@
  **********************/
 static void video_obj_free_cb(lv_timer_t* t);
 
-static void* video_parse_cmd(char* info[], int size);
+static void video_parse_cmd(char* info[], int size, char** url);
+
+static void camera_parse_cmd(char* info[], int size, char** url, char** option);
 
 /**********************
  *  STATIC VARIABLES
@@ -48,7 +50,8 @@ static void* video_parse_cmd(char* info[], int size);
 
 void lvx_example_video(char* info[], int size)
 {
-    char* src = video_parse_cmd(info, size);
+    char* src = NULL;
+    video_parse_cmd(info, size, &src);
 
     lv_obj_t* video = lvx_video_create(lv_scr_act());
     lv_timer_t* timer = lv_timer_create(video_obj_free_cb, DURATION, video);
@@ -68,7 +71,8 @@ void lvx_example_video(char* info[], int size)
 
 void lvx_example_video_controller(char* info[], int size)
 {
-    char* src = video_parse_cmd(info, size);
+    char* src = NULL;
+    video_parse_cmd(info, size, &src);
 
     lv_obj_t* obj = lvx_video_controller_create(lv_scr_act());
 
@@ -88,7 +92,9 @@ void lvx_example_video_controller(char* info[], int size)
 
 void lvx_example_video_call(char* info[], int size)
 {
-    char* src = video_parse_cmd(info, size);
+    char* src = NULL;
+    video_parse_cmd(info, size, &src);
+
     lv_obj_t* camera_obj = lvx_video_create(lv_scr_act());
     lvx_video_set_src(camera_obj, "Camera:");
     lv_obj_set_size(camera_obj, LV_PCT(100), LV_PCT(100));
@@ -123,19 +129,10 @@ void lvx_example_video_call(char* info[], int size)
 void lvx_example_camera(char* info[], int size)
 {
     lv_obj_t* obj = lvx_camera_controller_create(lv_scr_act());
-    if (size > 0 && info) {
-        if (strcmp(info[0], "-option") == 0) {
-            if (size > 1) {
-                lvx_camera_controller_set_url_with_option(obj, NULL, info[1]);
-            }
-        } else if (strcmp(info[1], "-option") == 0) {
-            if (size > 2) {
-                lvx_camera_controller_set_url_with_option(obj, info[0], info[2]);
-            }
-        } else {
-            lvx_camera_controller_set_url_with_option(obj, info[0], NULL);
-        }
-    }
+    char* url = NULL;
+    char* option = NULL;
+    camera_parse_cmd(info, size, &url, &option);
+    lvx_camera_controller_set_url_with_option(obj, url, option);
 
     lv_obj_set_size(obj, LV_PCT(70), LV_PCT(70));
     lv_obj_align(obj, LV_ALIGN_CENTER, 0, 0);
@@ -152,11 +149,35 @@ static void video_obj_free_cb(lv_timer_t* t)
     lv_obj_del(obj);
 }
 
-static void* video_parse_cmd(char* info[], int size)
+static inline void video_parse_cmd(char* info[], int size, char** url)
 {
     if (size > 0 && info) {
-        return info[0];
+        *url = info[0];
     } else {
-        return CONFIG_LVX_DEFAULT_VIDEO_PATH;
+        *url = CONFIG_LVX_DEFAULT_VIDEO_PATH;
+    }
+}
+
+static inline void camera_parse_cmd(char* info[], int size, char** url, char** option)
+{
+    if (size > 0 && info) {
+        switch (size) {
+        case 1:
+            *url = info[0];
+            break;
+        case 2:
+            if (strncmp(info[0], "-option", 7) == 0) {
+                *option = info[1];
+            }
+            break;
+        case 3:
+            if (strncmp(info[1], "-option", 7) == 0) {
+                *url = info[0];
+                *option = info[2];
+            }
+            break;
+        default:
+            break;
+        }
     }
 }
