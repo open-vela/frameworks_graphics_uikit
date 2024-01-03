@@ -51,6 +51,7 @@ static void camera_start(const char* params, const char* src);
 static void camera_stop(void);
 static void disable_buttons_exclude(camera_button_e button_mode, lv_obj_t* obj);
 static void enable_buttons_exclude(camera_button_e button_mode, lv_obj_t* obj);
+static void take_picture_completed_cb(void* cookie, int ret);
 static void show_scan_result(char* msg_buff);
 #ifdef CONFIG_LVX_USE_QRSCAN
 static int camera_scan(lv_image_dsc_t* img_dsc);
@@ -68,6 +69,7 @@ const lv_obj_class_t lvx_camera_controller_class = {
 
 const char* saved_path = "/gallery";
 const char* option = NULL;
+static void* g_loop = NULL;
 static void* handle;
 static bool is_started = false;
 static lv_timer_t* timer_anim;
@@ -116,6 +118,8 @@ lv_obj_t* lvx_camera_controller_create(lv_obj_t* parent)
 
     camera_controller->scan_btn = camera_create_btn(obj, "Scan", LV_ALIGN_BOTTOM_RIGHT,
         0, camera_scan_event_cb, false);
+
+    g_loop = lvx_video_get_uv_loop(camera_controller->video);
 
     return obj;
 }
@@ -167,8 +171,16 @@ static void camera_take_picture_event_cb(lv_event_t* e)
 {
     count++;
     char src[128];
+    lv_obj_t* obj = e->user_data;
+    if (g_loop == NULL) {
+        LV_LOG_ERROR("uv loop is null pointer!");
+        return;
+    }
+
+    disable_buttons_exclude(CAMERA_PHOTO, obj);
     snprintf(src, sizeof(src), "%s/pic_%d.jpg", saved_path, count);
-    media_recorder_take_picture(PICSINK, src, 1);
+    media_uv_recorder_take_picture(g_loop, PICSINK, src, 1,
+        take_picture_completed_cb, obj);
 }
 
 static void camera_picture_start_event_cb(lv_event_t* e)
@@ -259,6 +271,13 @@ static void disable_buttons_exclude(camera_button_e button_mode, lv_obj_t* obj)
     lvx_camera_controller_t* camera_controller = (lvx_camera_controller_t*)obj;
 
     switch (button_mode) {
+    case CAMERA_PHOTO:
+        lv_obj_clear_flag(camera_controller->photo_btn, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_clear_flag(camera_controller->burst_btn, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_clear_flag(camera_controller->record_btn, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_clear_flag(camera_controller->scan_btn, LV_OBJ_FLAG_CLICKABLE);
+        break;
+
     case CAMERA_BURST:
         lv_obj_clear_flag(camera_controller->photo_btn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_clear_flag(camera_controller->record_btn, LV_OBJ_FLAG_CLICKABLE);
@@ -287,6 +306,13 @@ static void enable_buttons_exclude(camera_button_e button_mode, lv_obj_t* obj)
     lvx_camera_controller_t* camera_controller = (lvx_camera_controller_t*)obj;
 
     switch (button_mode) {
+    case CAMERA_PHOTO:
+        lv_obj_add_flag(camera_controller->photo_btn, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_flag(camera_controller->burst_btn, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_flag(camera_controller->record_btn, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_add_flag(camera_controller->scan_btn, LV_OBJ_FLAG_CLICKABLE);
+        break;
+
     case CAMERA_BURST:
         lv_obj_add_flag(camera_controller->photo_btn, LV_OBJ_FLAG_CLICKABLE);
         lv_obj_add_flag(camera_controller->record_btn, LV_OBJ_FLAG_CLICKABLE);
@@ -310,6 +336,14 @@ static void enable_buttons_exclude(camera_button_e button_mode, lv_obj_t* obj)
     }
 }
 
+static void take_picture_completed_cb(void* cookie, int ret)
+{
+    enable_buttons_exclude(CAMERA_PHOTO, (lv_obj_t*)cookie);
+    if (ret < 0) {
+        LV_LOG_ERROR("take_picture error:%d", ret);
+    }
+}
+
 static void camera_start(const char* params, const char* src)
 {
     if (handle) {
@@ -317,19 +351,24 @@ static void camera_start(const char* params, const char* src)
         return;
     }
 
-    handle = media_recorder_open(params);
+    if (g_loop == NULL) {
+        LV_LOG_ERROR("uv loop is null pointer!");
+        return;
+    }
+
+    handle = media_uv_recorder_open(g_loop, params, NULL, NULL);
 
     if (!handle) {
         LV_LOG_ERROR("media recorder open failed!");
         return;
     }
 
-    if (media_recorder_prepare(handle, src, option) < 0) {
+    if (media_uv_recorder_prepare(handle, src, option, NULL, NULL, NULL) < 0) {
         LV_LOG_ERROR("media recorder prepare failed!");
         return;
     }
 
-    if (media_recorder_start(handle) < 0) {
+    if (media_uv_recorder_start(handle, NULL, NULL) < 0) {
         LV_LOG_ERROR("media recorder start failed!");
         return;
     }
@@ -339,11 +378,11 @@ static void camera_stop(void)
 {
     if (!handle)
         return;
-    if (media_recorder_stop(handle) < 0) {
+    if (media_uv_recorder_stop(handle, NULL, NULL) < 0) {
         LV_LOG_ERROR("media recorder stop failed!");
         return;
     }
-    if (media_recorder_close(handle) < 0) {
+    if (media_uv_recorder_close(handle, NULL) < 0) {
         LV_LOG_ERROR("media recorder close failed!");
         return;
     }
