@@ -16,6 +16,7 @@ extern "C" {
 #include <lvgl/lvgl.h>
 
 #ifdef CONFIG_LVX_USE_VIDEO_EXAMPLE
+#include "video/lvx_camera_example.h"
 #include "video/lvx_video_example.h"
 #endif
 
@@ -30,7 +31,6 @@ extern "C" {
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
-
 
 /**********************
  *      MACROS

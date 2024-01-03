@@ -39,7 +39,7 @@
  *      TYPEDEFS
  **********************/
 
-typedef void (*demo_method_cb)(char* info[], int size);
+typedef void (*demo_method_cb)(char* info[], int size, void* param);
 
 typedef struct {
     const char* name;
@@ -50,7 +50,7 @@ typedef struct {
  *  STATIC PROTOTYPES
  **********************/
 
-static bool lv_ext_demos(char* info[], int size);
+static bool lv_ext_demos(char* info[], int size, void* param);
 #ifdef CONFIG_LV_USE_NUTTX_LIBUV
 static void* lv_nuttx_uv_loop_init(uv_loop_t* loop, lv_disp_t* disp,
     lv_indev_t* indev);
@@ -96,6 +96,7 @@ int main(int argc, FAR char* argv[])
 {
     lv_nuttx_dsc_t info;
     lv_nuttx_result_t result;
+    void* param = NULL;
 
 #ifdef CONFIG_LV_USE_NUTTX_LIBUV
     uv_loop_t ui_loop;
@@ -114,6 +115,7 @@ int main(int argc, FAR char* argv[])
 #ifdef CONFIG_LV_USE_NUTTX_LIBUV
     void* data = lv_nuttx_uv_loop_init(&ui_loop, result.disp, result.indev);
     lv_ext_uv_init(&ui_loop);
+    param = &ui_loop;
 #endif
 
     if (result.disp == NULL) {
@@ -121,7 +123,7 @@ int main(int argc, FAR char* argv[])
         return 1;
     }
 
-    if (!lv_ext_demos(&argv[1], argc - 1)) {
+    if (!lv_ext_demos(&argv[1], argc - 1, param)) {
 
         /* we can add custom demos here */
 
@@ -172,7 +174,7 @@ static void lv_nuttx_uv_loop_run(uv_loop_t* loop, void* data)
 }
 #endif
 
-static bool lv_ext_demos(char* info[], int size)
+static bool lv_ext_demos(char* info[], int size, void* param)
 {
     const int demos_count = LV_EXT_DEMOS_COUNT;
 
@@ -198,7 +200,7 @@ static bool lv_ext_demos(char* info[], int size)
     }
 
     if (entry_info->entry_cb) {
-        entry_info->entry_cb(&info[1], size - 1);
+        entry_info->entry_cb(&info[1], size - 1, param);
         return true;
     }
 
