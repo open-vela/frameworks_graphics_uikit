@@ -8,7 +8,6 @@
  *********************/
 
 #include "lvx_video_example.h"
-#include "lvx_camera_controller.h"
 #include "lvx_video_controller.h"
 #include <ext/video/lvx_video.h>
 #include <stdio.h>
@@ -32,8 +31,6 @@ static void video_obj_free_cb(lv_timer_t* t);
 
 static void video_parse_cmd(char* info[], int size, char** url);
 
-static void camera_parse_cmd(char* info[], int size, char** url, char** option);
-
 /**********************
  *  STATIC VARIABLES
  **********************/
@@ -50,8 +47,10 @@ static void camera_parse_cmd(char* info[], int size, char** url, char** option);
  * lvx_example_video
  ****************************************************************************/
 
-void lvx_example_video(char* info[], int size)
+void lvx_example_video(char* info[], int size, void* param)
 {
+    LV_UNUSED(param);
+
     char* src = NULL;
     video_parse_cmd(info, size, &src);
 
@@ -73,8 +72,10 @@ void lvx_example_video(char* info[], int size)
  * lvx_example_video_controller
  ****************************************************************************/
 
-void lvx_example_video_controller(char* info[], int size)
+void lvx_example_video_controller(char* info[], int size, void* param)
 {
+    LV_UNUSED(param);
+
     char* src = NULL;
     video_parse_cmd(info, size, &src);
 
@@ -96,8 +97,10 @@ void lvx_example_video_controller(char* info[], int size)
  * lvx_example_video_call
  ****************************************************************************/
 
-void lvx_example_video_call(char* info[], int size)
+void lvx_example_video_call(char* info[], int size, void* param)
 {
+    LV_UNUSED(param);
+
     char* src = NULL;
     video_parse_cmd(info, size, &src);
 
@@ -131,23 +134,6 @@ void lvx_example_video_call(char* info[], int size)
     lv_timer_resume(timer1);
 }
 
-/****************************************************************************
- * lvx_example_camera
- ****************************************************************************/
-void lvx_example_camera(char* info[], int size)
-{
-    set_screen_active_style();
-
-    lv_obj_t* obj = lvx_camera_controller_create(lv_scr_act());
-    char* url = NULL;
-    char* option = NULL;
-    camera_parse_cmd(info, size, &url, &option);
-    lvx_camera_controller_set_url_with_option(obj, url, option);
-
-    lv_obj_set_size(obj, LV_PCT(70), LV_PCT(70));
-    lv_obj_align(obj, LV_ALIGN_CENTER, 0, 0);
-}
-
 /**********************
  *   STATIC FUNCTIONS
  **********************/
@@ -174,29 +160,5 @@ static inline void video_parse_cmd(char* info[], int size, char** url)
         *url = info[0];
     } else {
         *url = CONFIG_LVX_DEFAULT_VIDEO_PATH;
-    }
-}
-
-static inline void camera_parse_cmd(char* info[], int size, char** url, char** option)
-{
-    if (size > 0 && info) {
-        switch (size) {
-        case 1:
-            *url = info[0];
-            break;
-        case 2:
-            if (strncmp(info[0], "-option", 7) == 0) {
-                *option = info[1];
-            }
-            break;
-        case 3:
-            if (strncmp(info[1], "-option", 7) == 0) {
-                *url = info[0];
-                *option = info[2];
-            }
-            break;
-        default:
-            break;
-        }
     }
 }
