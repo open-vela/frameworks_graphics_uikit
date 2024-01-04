@@ -7,7 +7,6 @@
  *      INCLUDES
  *********************/
 #include "lvx_video.h"
-#include <lvgl/src/dev/nuttx/lv_nuttx_libuv.h>
 
 #ifdef CONFIG_LVX_USE_VIDEO_ADAPTER
 #include "lv_ext.h"
@@ -102,7 +101,7 @@ int lvx_video_start(lv_obj_t* obj)
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
     if ((ret = video_obj->vtable->video_adapter_start(video_obj->vtable, video_obj->video_ctx)) == 0) {
-        lv_display_add_event(video_obj->disp, video_frame_task_cb, LV_EVENT_VSYNC, obj);
+        lv_display_add_event_cb(video_obj->disp, video_frame_task_cb, LV_EVENT_VSYNC, obj);
     }
 
     return ret;
@@ -163,7 +162,7 @@ int lvx_video_resume(lv_obj_t* obj)
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
     if ((ret = video_obj->vtable->video_adapter_resume(video_obj->vtable, video_obj->video_ctx)) == 0) {
-        lv_display_add_event(video_obj->disp, video_frame_task_cb, LV_EVENT_VSYNC, obj);
+        lv_display_add_event_cb(video_obj->disp, video_frame_task_cb, LV_EVENT_VSYNC, obj);
     }
 
     return ret;

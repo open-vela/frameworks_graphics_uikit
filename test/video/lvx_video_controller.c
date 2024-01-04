@@ -188,7 +188,7 @@ static void play_pause_event_cb(lv_event_t* e)
             lvx_video_stop(video_controller->video);
             video_controller->is_stop = true;
         } else {
-            lv_imgbtn_set_state(video_controller->play_imgbtn, LV_IMGBTN_STATE_CHECKED_RELEASED);
+            lv_imagebutton_set_state(video_controller->play_imgbtn, LV_IMAGEBUTTON_STATE_CHECKED_RELEASED);
         }
     }
 }
@@ -231,7 +231,7 @@ static void completed_cb(void* obj)
     lv_label_set_text(video_controller->dur_label, dur_str);
     lv_slider_set_value(video_controller->progress_slider, video->duration, LV_ANIM_OFF);
 
-    lv_imgbtn_set_state(video_controller->play_imgbtn, LV_IMGBTN_STATE_RELEASED);
+    lv_imagebutton_set_state(video_controller->play_imgbtn, LV_IMAGEBUTTON_STATE_RELEASED);
     lvx_video_pause(video_controller->video);
     lvx_video_seek(video_controller->video, 0);
 }
@@ -242,5 +242,5 @@ static void stopped_cb(void* obj)
 
     lv_label_set_text(video_controller->dur_label, "00:00/00:00");
     lv_slider_set_value(video_controller->progress_slider, 0, LV_ANIM_OFF);
-    lv_imgbtn_set_state(video_controller->play_imgbtn, LV_IMGBTN_STATE_CHECKED_RELEASED);
+    lv_imagebutton_set_state(video_controller->play_imgbtn, LV_IMAGEBUTTON_STATE_CHECKED_RELEASED);
 }
