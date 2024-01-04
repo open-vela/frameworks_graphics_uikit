@@ -138,7 +138,7 @@ static void lvx_async_refr_init(void)
     }
 
     lv_event_add(&disp->event_list, on_refr_event, LV_EVENT_REFR_START, &async_refr_start_ll);
-    lv_event_add(&disp->event_list, on_refr_event, LV_EVENT_REFR_FINISH, &async_refr_finish_ll);
+    lv_event_add(&disp->event_list, on_refr_event, LV_EVENT_REFR_READY, &async_refr_finish_ll);
 
     _lv_ll_init(&async_refr_start_ll, sizeof(async_refr_info_t));
     _lv_ll_init(&async_refr_finish_ll, sizeof(async_refr_info_t));
