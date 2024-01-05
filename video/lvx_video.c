@@ -121,7 +121,12 @@ int lvx_video_stop(lv_obj_t* obj)
     lv_cache_unlock();
 
     if ((ret = video_obj->vtable->video_adapter_stop(video_obj->vtable, video_obj->video_ctx)) == 0) {
+
+        video_obj->vtable->video_adapter_close(video_obj->vtable, video_obj->video_ctx);
+
         lv_display_remove_event_cb_with_user_data(video_obj->disp, video_frame_task_cb, obj);
+
+        lv_memset(&video_obj->img_dsc, 0, sizeof(video_obj->img_dsc));
     }
 
     return ret;
