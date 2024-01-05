@@ -26,6 +26,8 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
+static void set_screen_active_style(void);
+
 static void video_obj_free_cb(lv_timer_t* t);
 
 static void video_parse_cmd(char* info[], int size, char** url);
@@ -53,6 +55,8 @@ void lvx_example_video(char* info[], int size)
     char* src = NULL;
     video_parse_cmd(info, size, &src);
 
+    set_screen_active_style();
+
     lv_obj_t* video = lvx_video_create(lv_scr_act());
     lv_timer_t* timer = lv_timer_create(video_obj_free_cb, DURATION, video);
     lv_timer_set_repeat_count(timer, 1);
@@ -74,6 +78,8 @@ void lvx_example_video_controller(char* info[], int size)
     char* src = NULL;
     video_parse_cmd(info, size, &src);
 
+    set_screen_active_style();
+
     lv_obj_t* obj = lvx_video_controller_create(lv_scr_act());
 
     lv_obj_set_size(obj, LV_PCT(70), LV_PCT(70));
@@ -94,6 +100,8 @@ void lvx_example_video_call(char* info[], int size)
 {
     char* src = NULL;
     video_parse_cmd(info, size, &src);
+
+    set_screen_active_style();
 
     lv_obj_t* camera_obj = lvx_video_create(lv_scr_act());
     lvx_video_set_src(camera_obj, "Camera:");
@@ -128,6 +136,8 @@ void lvx_example_video_call(char* info[], int size)
  ****************************************************************************/
 void lvx_example_camera(char* info[], int size)
 {
+    set_screen_active_style();
+
     lv_obj_t* obj = lvx_camera_controller_create(lv_scr_act());
     char* url = NULL;
     char* option = NULL;
@@ -141,6 +151,15 @@ void lvx_example_camera(char* info[], int size)
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+
+static inline void set_screen_active_style(void)
+{
+    lv_obj_t * scr = lv_scr_act();
+    lv_obj_remove_style_all(scr);
+    lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, 0);
+    lv_obj_set_style_bg_color(scr, lv_palette_lighten(LV_PALETTE_GREY, 4), 0);
+    lv_obj_set_style_text_color(scr, lv_color_black(), 0);
+}
 
 static void video_obj_free_cb(lv_timer_t* t)
 {
