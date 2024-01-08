@@ -512,14 +512,14 @@ static int camera_scan(lv_image_dsc_t* img_dsc)
         }
         bgra8888_to_gray(img_dsc->data, img_dsc->header.w * 4, img_dsc->header.w, img_dsc->header.h, gray_buff, img_dsc->header.w);
 
-    } else if (img_dsc->header.cf == LV_COLOR_FORMAT_NATIVE_REVERSED) {
-
-        gray_buff = (uint8_t*)lv_malloc(img_dsc->data_size);
+    } else if (img_dsc->header.cf == LV_COLOR_FORMAT_NV12) {
+        lv_yuv_buf_t* yuv = (lv_yuv_buf_t*)img_dsc->data;
+        gray_buff = (uint8_t*)lv_malloc(yuv->semi_planar.y.stride * img_dsc->header.h);
         if (!gray_buff) {
             LV_LOG_ERROR("malloc failed");
             goto ERR;
         }
-        nv12_to_gray(img_dsc->data, img_dsc->header.w, img_dsc->header.h, gray_buff);
+        nv12_to_gray(yuv->semi_planar.y.buf, img_dsc->header.w, img_dsc->header.h, gray_buff);
 
     } else if (img_dsc->header.cf == LV_COLOR_FORMAT_NATIVE) {
 
