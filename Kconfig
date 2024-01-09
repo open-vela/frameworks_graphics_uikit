@@ -28,6 +28,23 @@ config FONT_LIB_PATH
 		/data/	, /data/font/xxxxxL
 		Note: '/' is required at the end of the string.
 
+choice FONT_CREATE_TYPE_CHOICE
+	prompt "Choose font create type"
+	default FONT_CREATE_TYPE_BITMAP
+	---help---
+		Select the font create type
+
+	config FONT_CREATE_TYPE_BITMAP
+		bool "Bitmap"
+	config FONT_CREATE_TYPE_OUTLINE
+		bool "Outline"
+endchoice
+
+config FONT_CREATE_TYPE
+	int
+	default 0 if FONT_CREATE_TYPE_BITMAP
+	default 1 if FONT_CREATE_TYPE_OUTLINE
+
 config FONT_NAME_MAX
 	int "Font name max length"
 	default 32
