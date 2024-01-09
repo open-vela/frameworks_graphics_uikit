@@ -519,7 +519,7 @@ static lv_font_t* font_manager_create_font_warpper(font_manager_t* manager, cons
     /* generate full file path */
     const char* path = font_manager_get_path(manager, ft_info->name);
 
-    font = lv_freetype_font_create(path, ft_info->size, ft_info->style);
+    font = lv_freetype_font_create(path, CONFIG_FONT_CREATE_TYPE, ft_info->size, ft_info->style);
 
     if (!font) {
         LV_LOG_ERROR("Freetype font init failed, name: %s, weight: %d, style: %d",
