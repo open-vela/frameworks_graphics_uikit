@@ -9,6 +9,7 @@
 
 #include "lvx_video_example.h"
 #include "lvx_video_controller.h"
+#include "media_defs.h"
 #include <ext/video/lvx_video.h>
 #include <stdio.h>
 
@@ -26,6 +27,7 @@
  *  STATIC PROTOTYPES
  **********************/
 static void set_screen_active_style(void);
+static void completed_cb(void* obj);
 
 static void video_obj_free_cb(lv_timer_t* t);
 
@@ -57,11 +59,8 @@ void lvx_example_video(char* info[], int size, void* param)
     set_screen_active_style();
 
     lv_obj_t* video = lvx_video_create(lv_scr_act());
-    lv_timer_t* timer = lv_timer_create(video_obj_free_cb, DURATION, video);
-    lv_timer_set_repeat_count(timer, 1);
-    lv_timer_pause(timer);
     lvx_video_set_src(video, src);
-    lv_timer_resume(timer);
+    lvx_video_set_callback(video, MEDIA_EVENT_COMPLETED, video, completed_cb);
 
     lv_obj_align(video, LV_ALIGN_CENTER, 0, 0);
 
@@ -145,6 +144,12 @@ static inline void set_screen_active_style(void)
     lv_obj_set_style_bg_opa(scr, LV_OPA_COVER, 0);
     lv_obj_set_style_bg_color(scr, lv_palette_lighten(LV_PALETTE_GREY, 4), 0);
     lv_obj_set_style_text_color(scr, lv_color_black(), 0);
+}
+
+static void completed_cb(void* obj)
+{
+    lvx_video_stop(obj);
+    lv_obj_del(obj);
 }
 
 static void video_obj_free_cb(lv_timer_t* t)
