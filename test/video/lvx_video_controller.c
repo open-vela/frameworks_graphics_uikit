@@ -69,6 +69,7 @@ lv_obj_t* lvx_video_controller_create(lv_obj_t* parent)
     lv_obj_clear_flag(video_obj, LV_OBJ_FLAG_SCROLLABLE);
 
     video_controller->video = lvx_video_create(video_obj);
+    lv_obj_set_size(video_controller->video, LV_PCT(100), LV_PCT(100));
     lv_obj_center(video_controller->video);
     lv_obj_add_event(video_controller->video, video_event_cb, LV_EVENT_VALUE_CHANGED, video_controller);
 

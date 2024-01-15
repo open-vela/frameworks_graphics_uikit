@@ -59,6 +59,7 @@ void lvx_example_video(char* info[], int size, void* param)
     set_screen_active_style();
 
     lv_obj_t* video = lvx_video_create(lv_scr_act());
+    lv_obj_set_size(video, LV_PCT(100), LV_PCT(100));
     lvx_video_set_src(video, src);
     lvx_video_set_callback(video, MEDIA_EVENT_COMPLETED, video, completed_cb);
 
@@ -114,7 +115,7 @@ void lvx_example_video_call(char* info[], int size, void* param)
     lv_timer_pause(timer1);
 
     lv_obj_t* video_obj = lvx_video_create(lv_scr_act());
-    lv_obj_set_size(video_obj, 240, 240);
+    lv_obj_set_size(video_obj, LV_PCT(30), LV_PCT(30));
     lv_obj_set_style_border_width(video_obj, 2, 0);
     lv_obj_set_style_border_color(video_obj, lv_color_hex(0xffffff), 0);
 
