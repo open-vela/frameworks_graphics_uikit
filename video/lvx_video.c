@@ -270,11 +270,48 @@ static void lvx_video_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 
 static void lvx_video_set_crop(lvx_video_t* video_obj)
 {
-    int crop_width = video_obj->img_dsc.header.w - (video_obj->crop_coords.x1 + video_obj->crop_coords.x2);
-    int crop_height = video_obj->img_dsc.header.h - (video_obj->crop_coords.y1 + video_obj->crop_coords.y2);
-    lv_obj_set_size(&video_obj->img.obj, crop_width, crop_height);
-    lv_img_set_offset_x(&video_obj->img.obj, -video_obj->crop_coords.x1);
-    lv_img_set_offset_y(&video_obj->img.obj, -video_obj->crop_coords.y1);
+    if (video_obj->crop_coords.x1 || video_obj->crop_coords.x2 || video_obj->crop_coords.y1 || video_obj->crop_coords.y2) {
+        int crop_width = video_obj->img_dsc.header.w - (video_obj->crop_coords.x1 + video_obj->crop_coords.x2);
+        int crop_height = video_obj->img_dsc.header.h - (video_obj->crop_coords.y1 + video_obj->crop_coords.y2);
+
+        video_obj->img.w = crop_width;
+        video_obj->img.h = crop_height;
+
+        lv_img_set_offset_x(&video_obj->img.obj, -video_obj->crop_coords.x1);
+        lv_img_set_offset_y(&video_obj->img.obj, -video_obj->crop_coords.y1);
+
+        lv_obj_set_style_translate_x(&video_obj->img.obj, video_obj->crop_coords.x1, 0);
+        lv_obj_set_style_translate_y(&video_obj->img.obj, video_obj->crop_coords.y1, 0);
+    }
+}
+
+static void lvx_video_frame_scale(lvx_video_t* video_obj)
+{
+    int32_t scale_y = LV_SCALE_NONE, scale_x = LV_SCALE_NONE, scale = LV_SCALE_NONE;
+
+    int32_t width = lv_obj_get_width(&video_obj->img.obj);
+    int32_t height = lv_obj_get_height(&video_obj->img.obj);
+
+    if (width <= 0 || height <= 0) {
+        return;
+    }
+
+    if (height > video_obj->img.h && width > video_obj->img.w) {
+        lv_obj_set_size(&video_obj->img.obj, video_obj->img.w, video_obj->img.h);
+    }
+
+    if (width < video_obj->img.w) {
+        scale_x = LV_SCALE_NONE * width / video_obj->img.w;
+    }
+
+    if (height < video_obj->img.h) {
+        scale_y = LV_SCALE_NONE * height / video_obj->img.h;
+    }
+
+    scale = LV_MIN(scale_x, scale_y);
+    if (scale != LV_SCALE_NONE) {
+        lv_image_set_scale(&video_obj->img.obj, scale);
+    }
 }
 
 static void video_frame_task_cb(lv_event_t* e)
@@ -291,6 +328,7 @@ static void video_frame_task_cb(lv_event_t* e)
     if (first_frame) {
         lv_image_set_src(&video_obj->img.obj, &video_obj->img_dsc);
         lvx_video_set_crop(video_obj);
+        lvx_video_frame_scale(video_obj);
         lv_obj_send_event(obj, video_obj->custom_event_id, NULL);
     } else {
         lv_cache_lock();
