@@ -67,7 +67,7 @@ lv_obj_t* lvx_video_controller_create(lv_obj_t* parent)
     /* init video */
     lv_obj_t* video_obj = lv_obj_create(obj);
     lv_obj_remove_style_all(video_obj);
-    lv_obj_set_size(video_obj, LV_PCT(100), LV_PCT(90));
+    lv_obj_set_size(video_obj, LV_PCT(100), LV_PCT(85));
     lv_obj_clear_flag(video_obj, LV_OBJ_FLAG_SCROLLABLE);
 
     video_controller->video = lvx_video_create(video_obj);
@@ -78,7 +78,7 @@ lv_obj_t* lvx_video_controller_create(lv_obj_t* parent)
     /* init controller widgets */
     lv_obj_t* controller_obj = lv_obj_create(obj);
     lv_obj_remove_style_all(controller_obj);
-    lv_obj_set_size(controller_obj, LV_PCT(100), LV_PCT(10));
+    lv_obj_set_size(controller_obj, LV_PCT(100), LV_PCT(15));
     lv_obj_clear_flag(controller_obj, LV_OBJ_FLAG_SCROLLABLE);
 
     /* init play btn */
@@ -92,17 +92,17 @@ lv_obj_t* lvx_video_controller_create(lv_obj_t* parent)
 
     /* init progress slider */
     video_controller->progress_slider = lv_slider_create(controller_obj);
-    lv_obj_set_size(video_controller->progress_slider, LV_PCT(73), 3);
-    lv_obj_align_to(video_controller->progress_slider, video_controller->play_imgbtn, LV_ALIGN_OUT_RIGHT_MID, 2, 0);
+
+    lv_obj_set_size(video_controller->progress_slider, LV_PCT(60), 6);
+    lv_obj_set_style_pad_all(video_controller->progress_slider, 8, LV_PART_KNOB);
+
     lv_obj_add_event(video_controller->progress_slider, progress_slider_event_cb, LV_EVENT_RELEASED,
         video_controller->video);
 
     /* init duration label */
     video_controller->dur_label = lv_label_create(controller_obj);
     lv_label_set_text(video_controller->dur_label, "00:00/00:00");
-    lv_obj_set_size(video_controller->play_imgbtn, LV_PCT(12), LV_PCT(100));
     lv_label_set_long_mode(video_controller->dur_label, LV_LABEL_LONG_CLIP);
-    lv_obj_align_to(video_controller->dur_label, video_controller->progress_slider, LV_ALIGN_OUT_RIGHT_MID, 2, 0);
 
     return obj;
 }
@@ -120,8 +120,9 @@ void lvx_video_controller_set_imgbtn(lv_obj_t* obj, const void* play_img, const 
     lv_image_decoder_get_info(play_img, &header);
     lv_obj_set_width(play_imgbtn, header.w);
 
-    lv_obj_align_to(video_controller->progress_slider, video_controller->play_imgbtn, LV_ALIGN_OUT_RIGHT_MID, 5, 0);
-    lv_obj_align_to(video_controller->dur_label, video_controller->progress_slider, LV_ALIGN_OUT_RIGHT_MID, 3, 0);
+    lv_obj_align(video_controller->play_imgbtn, LV_ALIGN_BOTTOM_LEFT, 0, 0);
+    lv_obj_align_to(video_controller->progress_slider, video_controller->play_imgbtn, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    lv_obj_align_to(video_controller->dur_label, video_controller->progress_slider, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
 }
 
 void lvx_video_controller_set_src(lv_obj_t* obj, const char* src)
