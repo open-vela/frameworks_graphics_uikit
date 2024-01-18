@@ -125,10 +125,11 @@ void lvx_video_controller_set_imgbtn(lv_obj_t* obj, const void* play_img, const 
     lv_obj_align_to(video_controller->dur_label, video_controller->progress_slider, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
 }
 
-void lvx_video_controller_set_src(lv_obj_t* obj, const char* src)
+void lvx_video_controller_set_src_opt(lv_obj_t* obj, const char* src, const char* option)
 {
     lvx_video_controller_t* video_controller = (lvx_video_controller_t*)obj;
     video_controller->src = src;
+    video_controller->option = option;
     video_controller->is_stop = true;
 }
 
@@ -174,7 +175,7 @@ static void play_pause_event_cb(lv_event_t* e)
     if (code == LV_EVENT_SHORT_CLICKED) {
         if (lv_obj_has_state(video_controller->play_imgbtn, LV_STATE_CHECKED)) {
             if (video_controller->is_stop) {
-                lvx_video_set_src(video_controller->video, video_controller->src);
+                lvx_video_set_src_opt(video_controller->video, video_controller->src, video_controller->option);
                 video_controller_set_callback(video_controller);
                 video_controller->is_stop = false;
             }
