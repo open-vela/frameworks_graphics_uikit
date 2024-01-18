@@ -16,6 +16,7 @@
 
 #include <ext/video/lvx_video.h>
 #include <stdio.h>
+#include <unistd.h>
 
 /*********************
  *      DEFINES
@@ -54,6 +55,8 @@ typedef enum {
     CAMERA_VIDEO = 2,
     CAMERA_SCAN = 3
 } camera_button_e;
+
+extern char* optarg;
 
 /**********************
  *  STATIC PROTOTYPES
@@ -147,23 +150,20 @@ void lvx_example_camera(char* info[], int size, void* param)
 
 static inline void camera_parse_cmd(camera_ctx_t* ctx, char* info[], int size)
 {
-    if (size > 0 && info) {
-        switch (size) {
-        case 1:
-            ctx->saved_path = info[0];
+    char ch;
+    while ((ch = getopt(size, info, "hs:o:")) != -1) {
+        switch (ch) {
+        case 's':
+            ctx->saved_path = optarg;
             break;
-        case 2:
-            if (strncmp(info[0], "-option", 7) == 0) {
-                ctx->option = info[1];
-            }
+        case 'o':
+            ctx->option = optarg;
             break;
-        case 3:
-            if (strncmp(info[1], "-option", 7) == 0) {
-                ctx->saved_path = info[0];
-                ctx->option = info[2];
-            }
-            break;
-        default:
+        case 'h':
+            LV_LOG("\nUsage:  lvxdemo %s [-h] -s <dir> -o <option>\n", info[0]);
+            LV_LOG("-h             help\n");
+            LV_LOG("-s <dir>       the directory that you want to save\n");
+            LV_LOG("-o <option>    the option for preparing recorder\n");
             break;
         }
     }
