@@ -30,6 +30,8 @@ typedef struct {
     lv_obj_t* play_imgbtn;
     lv_obj_t* progress_slider;
     lv_obj_t* dur_label;
+    const char* src;
+    uint8_t is_stop;
 } lvx_video_controller_t;
 
 extern const lv_obj_class_t lvx_video_controller_class;

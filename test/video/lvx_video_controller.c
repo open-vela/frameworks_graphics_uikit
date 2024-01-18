@@ -31,6 +31,8 @@ static void progress_slider_event_cb(lv_event_t* e);
 static void duration_received_cb(void* obj, int ret, unsigned duration);
 static void prepared_cb(void* obj);
 static void completed_cb(void* obj);
+static void stopped_cb(void* obj);
+static void video_controller_set_callback(lvx_video_controller_t* video_controller);
 
 /**********************
  *  STATIC VARIABLES
@@ -85,7 +87,7 @@ lv_obj_t* lvx_video_controller_create(lv_obj_t* parent)
 
     /* init click event callback for play button */
     lv_obj_add_flag(video_controller->play_imgbtn, LV_OBJ_FLAG_CHECKABLE);
-    lv_obj_add_event(video_controller->play_imgbtn, play_pause_event_cb, LV_EVENT_CLICKED, video_controller->video);
+    lv_obj_add_event(video_controller->play_imgbtn, play_pause_event_cb, LV_EVENT_ALL, video_controller);
     lv_obj_add_flag(video_controller->play_imgbtn, LV_OBJ_FLAG_CLICKABLE);
 
     /* init progress slider */
@@ -125,10 +127,8 @@ void lvx_video_controller_set_imgbtn(lv_obj_t* obj, const void* play_img, const 
 void lvx_video_controller_set_src(lv_obj_t* obj, const char* src)
 {
     lvx_video_controller_t* video_controller = (lvx_video_controller_t*)obj;
-    lvx_video_set_src(video_controller->video, src);
-
-    lvx_video_set_callback(video_controller->video, MEDIA_EVENT_PREPARED, video_controller, prepared_cb);
-    lvx_video_set_callback(video_controller->video, MEDIA_EVENT_COMPLETED, video_controller, completed_cb);
+    video_controller->src = src;
+    video_controller->is_stop = true;
 }
 
 /**********************
@@ -143,6 +143,13 @@ static void lvx_video_controller_constructor(const lv_obj_class_t* class_p, lv_o
 static void lvx_video_controller_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 {
     LV_UNUSED(class_p);
+}
+
+static inline void video_controller_set_callback(lvx_video_controller_t* video_controller)
+{
+    lvx_video_set_callback(video_controller->video, MEDIA_EVENT_PREPARED, video_controller, prepared_cb);
+    lvx_video_set_callback(video_controller->video, MEDIA_EVENT_COMPLETED, video_controller, completed_cb);
+    lvx_video_set_callback(video_controller->video, MEDIA_EVENT_STOPPED, video_controller, stopped_cb);
 }
 
 static void video_event_cb(lv_event_t* e)
@@ -160,12 +167,27 @@ static void video_event_cb(lv_event_t* e)
 
 static void play_pause_event_cb(lv_event_t* e)
 {
-    lv_obj_t* imgbtn = lv_event_get_target(e);
-    lv_obj_t* video = lv_event_get_user_data(e);
-    if (lv_obj_has_state(imgbtn, LV_STATE_CHECKED)) {
-        lvx_video_resume(video);
-    } else {
-        lvx_video_pause(video);
+    lv_event_code_t code = lv_event_get_code(e);
+    lvx_video_controller_t* video_controller = lv_event_get_user_data(e);
+
+    if (code == LV_EVENT_SHORT_CLICKED) {
+        if (lv_obj_has_state(video_controller->play_imgbtn, LV_STATE_CHECKED)) {
+            if (video_controller->is_stop) {
+                lvx_video_set_src(video_controller->video, video_controller->src);
+                video_controller_set_callback(video_controller);
+                video_controller->is_stop = false;
+            }
+            lvx_video_resume(video_controller->video);
+        } else {
+            lvx_video_pause(video_controller->video);
+        }
+    } else if (code == LV_EVENT_LONG_PRESSED) {
+        if (!video_controller->is_stop) {
+            lvx_video_stop(video_controller->video);
+            video_controller->is_stop = true;
+        } else {
+            lv_imgbtn_set_state(video_controller->play_imgbtn, LV_IMGBTN_STATE_CHECKED_RELEASED);
+        }
     }
 }
 
@@ -210,4 +232,13 @@ static void completed_cb(void* obj)
     lv_imgbtn_set_state(video_controller->play_imgbtn, LV_IMGBTN_STATE_RELEASED);
     lvx_video_pause(video_controller->video);
     lvx_video_seek(video_controller->video, 0);
+}
+
+static void stopped_cb(void* obj)
+{
+    lvx_video_controller_t* video_controller = (lvx_video_controller_t*)obj;
+
+    lv_label_set_text(video_controller->dur_label, "00:00/00:00");
+    lv_slider_set_value(video_controller->progress_slider, 0, LV_ANIM_OFF);
+    lv_imgbtn_set_state(video_controller->play_imgbtn, LV_IMGBTN_STATE_CHECKED_RELEASED);
 }
