@@ -31,6 +31,7 @@ typedef struct {
     lv_obj_t* progress_slider;
     lv_obj_t* dur_label;
     const char* src;
+    const char* option;
     uint8_t is_stop;
 } lvx_video_controller_t;
 
@@ -43,7 +44,7 @@ lv_obj_t* lvx_video_controller_create(lv_obj_t* parent);
 
 void lvx_video_controller_set_imgbtn(lv_obj_t* obj, const void* play_img, const void* pause_img);
 
-void lvx_video_controller_set_src(lv_obj_t* obj, const char* src);
+void lvx_video_controller_set_src_opt(lv_obj_t* obj, const char* src, const char* option);
 /**********************
  *      MACROS
  **********************/
