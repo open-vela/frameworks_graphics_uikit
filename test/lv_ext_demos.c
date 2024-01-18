@@ -200,7 +200,7 @@ static bool lv_ext_demos(char* info[], int size, void* param)
     }
 
     if (entry_info->entry_cb) {
-        entry_info->entry_cb(&info[1], size - 1, param);
+        entry_info->entry_cb(info, size, param);
         return true;
     }
 
