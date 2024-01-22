@@ -99,7 +99,7 @@ int main(int argc, FAR char* argv[])
     void* param = NULL;
 
 #ifdef CONFIG_LV_USE_NUTTX_LIBUV
-    uv_loop_t ui_loop;
+    uv_loop_t ui_loop = { .data = NULL };
 #endif
 
     lv_init();
