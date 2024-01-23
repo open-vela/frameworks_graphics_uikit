@@ -25,6 +25,10 @@
 #include <lvgl_test/ui_test.h>
 #endif
 
+#ifdef CONFIG_ANIM_ENGINE_FILE_DEMO
+#include <file_anim/file_anim.h>
+#endif
+
 /*********************
  *      DEFINES
  *********************/
@@ -71,6 +75,10 @@ static const demo_entry_info_t demos_entry_info[] = {
 
 #ifdef CONFIG_ANIM_ENGINE_LVGL_IMAGE_DEMO
     { "anim_image", .entry_cb = lvgl_anim_test },
+#endif
+
+#ifdef CONFIG_ANIM_ENGINE_FILE_DEMO
+    { "anim_file", .entry_cb = anim_file_demo },
 #endif
 
     { "", .entry_cb = NULL }
