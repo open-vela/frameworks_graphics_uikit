@@ -103,13 +103,13 @@ static inline int anim_get_property(anim_layer_t* layer_obj, anim_value_t* v)
     lv_obj_t* obj = (lv_obj_t*)(layer_obj->layer_object);
     switch (layer_obj->property_type) {
 
-    case ANIM_PT_TRANSFORM_WIDTH: {
-        lvgl_value_to_anim_value(lv_obj_get_style_transform_width(obj, LV_PART_MAIN), v);
+    case ANIM_PT_WIDTH: {
+        lvgl_value_to_anim_value(lv_obj_get_style_width(obj, LV_PART_MAIN), v);
         break;
     }
 
-    case ANIM_PT_TRANSFORM_HEIGHT: {
-        lvgl_value_to_anim_value(lv_obj_get_style_transform_height(obj, LV_PART_MAIN), v);
+    case ANIM_PT_HEIGHT: {
+        lvgl_value_to_anim_value(lv_obj_get_style_height(obj, LV_PART_MAIN), v);
         break;
     }
 
@@ -147,14 +147,14 @@ static inline int anim_get_property(anim_layer_t* layer_obj, anim_value_t* v)
         break;
     }
 
-    case ANIM_PT_TRANSLATE_X: {
-        lvgl_value_to_anim_value(lv_obj_get_style_translate_x(obj, LV_PART_MAIN),
+    case ANIM_PT_X: {
+        lvgl_value_to_anim_value(lv_obj_get_style_x(obj, LV_PART_MAIN),
             v);
         break;
     }
 
-    case ANIM_PT_TRANSLATE_Y: {
-        lvgl_value_to_anim_value(lv_obj_get_style_translate_y(obj, LV_PART_MAIN),
+    case ANIM_PT_Y: {
+        lvgl_value_to_anim_value(lv_obj_get_style_y(obj, LV_PART_MAIN),
             v);
         break;
     }
@@ -198,13 +198,13 @@ static inline int anim_set_property(anim_layer_t* layer_obj,
     lv_obj_t* obj = (lv_obj_t*)(layer_obj->layer_object);
     switch (layer_obj->property_type) {
 
-    case ANIM_PT_TRANSFORM_WIDTH: {
-        lv_obj_set_style_transform_width(obj, anim_value_to_lvgl_value(v), LV_PART_MAIN);
+    case ANIM_PT_WIDTH: {
+        lv_obj_set_style_width(obj, anim_value_to_lvgl_value(v), LV_PART_MAIN);
         break;
     }
 
-    case ANIM_PT_TRANSFORM_HEIGHT: {
-        lv_obj_set_style_transform_height(obj, anim_value_to_lvgl_value(v), LV_PART_MAIN);
+    case ANIM_PT_HEIGHT: {
+        lv_obj_set_style_height(obj, anim_value_to_lvgl_value(v), LV_PART_MAIN);
         break;
     }
 
@@ -241,14 +241,14 @@ static inline int anim_set_property(anim_layer_t* layer_obj,
         break;
     }
 
-    case ANIM_PT_TRANSLATE_X: {
-        lv_obj_set_style_translate_x(obj, anim_value_to_lvgl_value(v),
+    case ANIM_PT_X: {
+        lv_obj_set_style_x(obj, anim_value_to_lvgl_value(v),
             LV_PART_MAIN);
         break;
     }
 
-    case ANIM_PT_TRANSLATE_Y: {
-        lv_obj_set_style_translate_y(obj, anim_value_to_lvgl_value(v),
+    case ANIM_PT_Y: {
+        lv_obj_set_style_y(obj, anim_value_to_lvgl_value(v),
             LV_PART_MAIN);
         break;
     }
@@ -376,6 +376,42 @@ _DEFINE_ANIM_PROPERTY_CB_(
     lv_coord_t,
     1);
 
+_DEFINE_ANIM_PROPERTY_CB_SELECTOR_(
+    style,
+    transform_width,
+    lv_obj_set_style_transform_width,
+    lv_obj_get_style_transform_width,
+    lv_coord_t,
+    1,
+    LV_PART_MAIN);
+
+_DEFINE_ANIM_PROPERTY_CB_SELECTOR_(
+    style,
+    transform_height,
+    lv_obj_set_style_transform_height,
+    lv_obj_get_style_transform_height,
+    lv_coord_t,
+    1,
+    LV_PART_MAIN);
+
+_DEFINE_ANIM_PROPERTY_CB_SELECTOR_(
+    style,
+    translate_x,
+    lv_obj_set_style_translate_x,
+    lv_obj_get_style_translate_x,
+    lv_coord_t,
+    1,
+    LV_PART_MAIN);
+
+_DEFINE_ANIM_PROPERTY_CB_SELECTOR_(
+    style,
+    translate_y,
+    lv_obj_set_style_translate_y,
+    lv_obj_get_style_translate_y,
+    lv_coord_t,
+    1,
+    LV_PART_MAIN);
+
 static inline bool lvx_anim_register_property(anim_engine_handle_t handle)
 {
     anim_property_callback_t property_cb;
@@ -392,6 +428,12 @@ static inline bool lvx_anim_register_property(anim_engine_handle_t handle)
 
     _REGISTER_ANIM_PROPERTY_ENTRY_(object, obj_x, checkPositionLegality);
     _REGISTER_ANIM_PROPERTY_ENTRY_(object, obj_y, checkPositionLegality);
+
+    _REGISTER_ANIM_PROPERTY_ENTRY_(style, translate_y, checkPositionLegality);
+    _REGISTER_ANIM_PROPERTY_ENTRY_(style, translate_x, checkPositionLegality);
+
+    _REGISTER_ANIM_PROPERTY_ENTRY_(style, transform_height, checkWidthAndHeightLegality);
+    _REGISTER_ANIM_PROPERTY_ENTRY_(style, transform_width, checkWidthAndHeightLegality);
 
 #undef _REGISTER_ANIM_PROPERTY_ENTRY_
     return true;
