@@ -174,10 +174,14 @@ static inline void video_parse_cmd(char* info[], int size, char** url, char** op
     while ((ch = getopt(size, info, "hs:o:")) != -1) {
         switch (ch) {
         case 's':
-            *url = optarg;
+            if (optarg) {
+                *url = optarg;
+            }
             break;
         case 'o':
-            *option = optarg;
+            if (optarg) {
+                *option = optarg;
+            }
             break;
         case 'h':
             LV_LOG("\nUsage:  lvxdemo %s [-h] -s <file> -o <option>\n", info[0]);
@@ -185,6 +189,8 @@ static inline void video_parse_cmd(char* info[], int size, char** url, char** op
             LV_LOG("-s <file>      the file that you want to play\n");
             LV_LOG("-o <option>    the option for preparing player\n");
             break;
+        default:
+            return;
         }
     }
 }
