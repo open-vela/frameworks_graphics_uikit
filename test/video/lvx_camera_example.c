@@ -154,10 +154,14 @@ static inline void camera_parse_cmd(camera_ctx_t* ctx, char* info[], int size)
     while ((ch = getopt(size, info, "hs:o:")) != -1) {
         switch (ch) {
         case 's':
-            ctx->saved_path = optarg;
+            if (optarg) {
+                ctx->saved_path = optarg;
+            }
             break;
         case 'o':
-            ctx->option = optarg;
+            if (optarg) {
+                ctx->option = optarg;
+            }
             break;
         case 'h':
             LV_LOG("\nUsage:  lvxdemo %s [-h] -s <dir> -o <option>\n", info[0]);
@@ -165,6 +169,8 @@ static inline void camera_parse_cmd(camera_ctx_t* ctx, char* info[], int size)
             LV_LOG("-s <dir>       the directory that you want to save\n");
             LV_LOG("-o <option>    the option for preparing recorder\n");
             break;
+        default:
+            return;
         }
     }
 }
