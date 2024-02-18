@@ -199,12 +199,13 @@ static bool lv_ext_demos(char* info[], int size, void* param)
         for (int i = 0; i < demos_count; i++) {
             if (strcmp(name, demos_entry_info[i].name) == 0) {
                 entry_info = &demos_entry_info[i];
+                break;
             }
         }
     }
 
     if (entry_info == NULL) {
-        LV_LOG_ERROR("lv_ext_demos create(%s) failure!", size > 0 ? info[0] : "");
+        LV_LOG_ERROR("lv_ext_demos create(%s) failure!", (size > 0 && info) ? info[0] : "");
         goto err;
     }
 
