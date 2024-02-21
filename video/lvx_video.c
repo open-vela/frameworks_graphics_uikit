@@ -217,15 +217,6 @@ int lvx_video_get_playing(lv_obj_t* obj, media_uv_int_callback cb, void* cookie)
     return video_obj->vtable->video_adapter_get_playing(video_obj->vtable, video_obj->video_ctx, cb, cookie);
 }
 
-void* lvx_video_get_uv_loop(lv_obj_t* obj)
-{
-    LV_ASSERT_OBJ(obj, MY_CLASS);
-
-    lvx_video_t* video_obj = (lvx_video_t*)obj;
-
-    return video_obj->vtable->video_adapter_get_uv_loop(video_obj->vtable);
-}
-
 lv_image_dsc_t* lvx_video_get_img_dsc(lv_obj_t* obj)
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);

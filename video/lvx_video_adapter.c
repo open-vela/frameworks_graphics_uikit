@@ -831,13 +831,6 @@ static int video_adapter_get_playing(struct _lvx_video_vtable_t* vtable,
     return media_uv_player_get_playing(video_ctx->handle, cb, cookie);
 }
 
-static void* video_adapter_get_uv_loop(struct _lvx_video_vtable_t* vtable)
-{
-    struct lvx_video_adapter_ctx_s* adapter_ctx = (struct lvx_video_adapter_ctx_s*)lvx_video_vtable_get_default();
-
-    return adapter_ctx->ui_uv_loop;
-}
-
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
@@ -876,7 +869,6 @@ void lvx_video_adapter_init(void)
     adapter_ctx->vtable.video_adapter_loop = video_adapter_loop;
     adapter_ctx->vtable.video_adapter_get_playing = video_adapter_get_playing;
     adapter_ctx->vtable.video_adapter_set_callback = video_adapter_set_callback;
-    adapter_ctx->vtable.video_adapter_get_uv_loop = video_adapter_get_uv_loop;
 
     lvx_video_vtable_set_default(&(adapter_ctx->vtable));
 }
