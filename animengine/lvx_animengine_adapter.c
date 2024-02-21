@@ -454,12 +454,30 @@ void lvx_anim_unregister_property(anim_engine_handle_t handle)
 #undef _UNREGISTER_ANIM_PROPERTY_ENTRY_
 }
 
+static inline void anim_schedule_add_cb(void* user_data)
+{
+    anim_context_t* ctx = (anim_context_t*)user_data;
+    if (!ctx || ctx->timer_handle == NULL)
+        return;
+    lv_timer_t* timer = (lv_timer_t*)(ctx->timer_handle);
+    if (timer->paused)
+        lv_timer_resume(timer);
+}
+
+static inline void anim_schedule_remove_cb(void* user_data)
+{
+    anim_context_t* ctx = (anim_context_t*)user_data;
+    if (!ctx || ctx->timer_handle == NULL)
+        return;
+    lv_timer_t* timer = (lv_timer_t*)(ctx->timer_handle);
+    lv_timer_pause(timer);
+}
+
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
 anim_engine_handle_t lvx_anim_adapter_init(void)
 {
-
     anim_context_t* anim_ctx = anim_engine_init();
     anim_ctx->get_property_cb = anim_get_property;
     anim_ctx->set_property_cb = anim_set_property;
@@ -467,10 +485,25 @@ anim_engine_handle_t lvx_anim_adapter_init(void)
     anim_ctx->destroy_cb = anim_destroy;
     anim_ctx->frame_period = LVX_ANIM_DEFAULT_PERIOD;
     anim_ctx->set_event = anim_set_event;
+
     lv_timer_t* anim_timer = lv_timer_create(anim_timer_cb, LVX_ANIM_DEFAULT_PERIOD, anim_ctx->engine_handle);
     anim_ctx->timer_handle = anim_timer;
 
+    lv_timer_pause(anim_timer);
+
     lvx_anim_register_property(anim_ctx->engine_handle);
+
+    anim_register_event(
+        anim_ctx->engine_handle,
+        ANIM_EVENT_SCHEDULE_ADD,
+        anim_schedule_add_cb,
+        anim_ctx);
+
+    anim_register_event(
+        anim_ctx->engine_handle,
+        ANIM_EVENT_SCHEDULE_REMOVE,
+        anim_schedule_remove_cb,
+        anim_ctx);
 
     return anim_ctx->engine_handle;
 }
