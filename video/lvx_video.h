@@ -69,8 +69,6 @@ struct _lvx_video_vtable_t {
 
     int (*video_adapter_get_playing)(struct _lvx_video_vtable_t* vtable, void* ctx, media_uv_int_callback cb, void* cookie);
 
-    void* (*video_adapter_get_uv_loop)(struct _lvx_video_vtable_t* vtable);
-
     int (*video_adapter_set_callback)(struct _lvx_video_vtable_t* vtable, void* ctx, int event, void* obj, video_event_callback callback);
 };
 
@@ -99,7 +97,6 @@ int lvx_video_get_playing(lv_obj_t* obj, media_uv_int_callback cb, void* cookie)
 int lvx_video_set_callback(lv_obj_t* obj, int event, void* ctx_obj, video_event_callback callback);
 lv_image_dsc_t* lvx_video_get_img_dsc(lv_obj_t* obj);
 lv_event_code_t lvx_video_get_custom_event_id(lv_obj_t* obj);
-void* lvx_video_get_uv_loop(lv_obj_t* obj);
 
 /**********************
  *      MACROS
