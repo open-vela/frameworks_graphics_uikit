@@ -24,8 +24,6 @@
  *      TYPEDEFS
  **********************/
 
-extern char* optarg;
-
 /**********************
  *  STATIC PROTOTYPES
  **********************/
