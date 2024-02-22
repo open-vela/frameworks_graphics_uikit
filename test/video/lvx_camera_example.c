@@ -56,8 +56,6 @@ typedef enum {
     CAMERA_SCAN = 3
 } camera_button_e;
 
-extern char* optarg;
-
 /**********************
  *  STATIC PROTOTYPES
  **********************/
