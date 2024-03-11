@@ -101,7 +101,7 @@ int lvx_video_start(lv_obj_t* obj)
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
     if ((ret = video_obj->vtable->video_adapter_start(video_obj->vtable, video_obj->video_ctx)) == 0) {
-        lv_display_add_event_cb(video_obj->disp, video_frame_task_cb, LV_EVENT_VSYNC, obj);
+        lv_display_register_vsync_event(video_obj->disp, video_frame_task_cb, obj);
     }
 
     return ret;
@@ -121,7 +121,7 @@ int lvx_video_stop(lv_obj_t* obj)
 
         video_obj->vtable->video_adapter_close(video_obj->vtable, video_obj->video_ctx);
 
-        lv_display_remove_event_cb_with_user_data(video_obj->disp, video_frame_task_cb, obj);
+        lv_display_unregister_vsync_event(video_obj->disp, video_frame_task_cb, obj);
 
         lv_memset(&video_obj->img_dsc, 0, sizeof(video_obj->img_dsc));
     }
@@ -147,7 +147,7 @@ int lvx_video_pause(lv_obj_t* obj)
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
     if ((ret = video_obj->vtable->video_adapter_pause(video_obj->vtable, video_obj->video_ctx)) == 0) {
-        lv_display_remove_event_cb_with_user_data(video_obj->disp, video_frame_task_cb, obj);
+        lv_display_unregister_vsync_event(video_obj->disp, video_frame_task_cb, obj);
     }
 
     return ret;
@@ -162,7 +162,7 @@ int lvx_video_resume(lv_obj_t* obj)
     lvx_video_t* video_obj = (lvx_video_t*)obj;
 
     if ((ret = video_obj->vtable->video_adapter_resume(video_obj->vtable, video_obj->video_ctx)) == 0) {
-        lv_display_add_event_cb(video_obj->disp, video_frame_task_cb, LV_EVENT_VSYNC, obj);
+        lv_display_register_vsync_event(video_obj->disp, video_frame_task_cb, obj);
     }
 
     return ret;
@@ -260,7 +260,7 @@ static void lvx_video_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 
     video_obj->vtable->video_adapter_close(video_obj->vtable, video_obj->video_ctx);
 
-    lv_display_remove_event_cb_with_user_data(video_obj->disp, video_frame_task_cb, obj);
+    lv_display_unregister_vsync_event(video_obj->disp, video_frame_task_cb, obj);
 }
 
 static void lvx_video_set_crop(lvx_video_t* video_obj)
