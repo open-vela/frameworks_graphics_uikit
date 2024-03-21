@@ -58,10 +58,10 @@
  * Private Functions
  ****************************************************************************/
 
-static void anim_timer_cb(lv_timer_t* param)
+static void anim_frame_task_cb(lv_event_t* e)
 {
-    LV_UNUSED(param);
-    anim_engine_handle_t handle = (anim_engine_handle_t)param->user_data;
+    LV_UNUSED(e);
+    anim_engine_handle_t handle = (anim_engine_handle_t)lv_event_get_user_data(e);
     if (handle)
         anim_on_frame(handle, lv_tick_get());
 }
@@ -284,9 +284,14 @@ static inline int anim_set_property(anim_layer_t* layer_obj,
 static inline void anim_destroy(void* context)
 {
     anim_context_t* ctx = (anim_context_t*)context;
-    if (!ctx || ctx->timer_handle == NULL)
+    if (!ctx || ctx->user_data == NULL)
         return;
-    lv_timer_del(ctx->timer_handle);
+    lv_display_t* display = (lv_display_t*)(ctx->user_data);
+
+    if (ctx->on_frame) {
+        lv_display_unregister_vsync_event(display, anim_frame_task_cb, ctx);
+    }
+    ctx->on_frame = false;
 }
 
 static inline void on_obj_delete_cb(lv_event_t* e)
@@ -457,20 +462,26 @@ void lvx_anim_unregister_property(anim_engine_handle_t handle)
 static inline void anim_schedule_add_cb(void* user_data)
 {
     anim_context_t* ctx = (anim_context_t*)user_data;
-    if (!ctx || ctx->timer_handle == NULL)
+    if (!ctx || ctx->user_data == NULL)
         return;
-    lv_timer_t* timer = (lv_timer_t*)(ctx->timer_handle);
-    if (timer->paused)
-        lv_timer_resume(timer);
+
+    lv_display_t* display = (lv_display_t*)(ctx->user_data);
+
+    if (!ctx->on_frame) {
+        lv_display_register_vsync_event(display, anim_frame_task_cb, ctx);
+        ctx->on_frame = true;
+    }
 }
 
 static inline void anim_schedule_remove_cb(void* user_data)
 {
     anim_context_t* ctx = (anim_context_t*)user_data;
-    if (!ctx || ctx->timer_handle == NULL)
+    if (!ctx || ctx->user_data == NULL)
         return;
-    lv_timer_t* timer = (lv_timer_t*)(ctx->timer_handle);
-    lv_timer_pause(timer);
+    lv_display_t* display = (lv_display_t*)(ctx->user_data);
+
+    lv_display_unregister_vsync_event(display, anim_frame_task_cb, ctx);
+    ctx->on_frame = false;
 }
 
 /****************************************************************************
@@ -485,11 +496,9 @@ anim_engine_handle_t lvx_anim_adapter_init(void)
     anim_ctx->destroy_cb = anim_destroy;
     anim_ctx->frame_period = LVX_ANIM_DEFAULT_PERIOD;
     anim_ctx->set_event = anim_set_event;
+    anim_ctx->on_frame = false;
 
-    lv_timer_t* anim_timer = lv_timer_create(anim_timer_cb, LVX_ANIM_DEFAULT_PERIOD, anim_ctx->engine_handle);
-    anim_ctx->timer_handle = anim_timer;
-
-    lv_timer_pause(anim_timer);
+    anim_ctx->user_data = lv_display_get_default();
 
     lvx_anim_register_property(anim_ctx->engine_handle);
 

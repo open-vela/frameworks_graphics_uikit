@@ -107,14 +107,6 @@ config LVX_USE_ANIMENGINE_ADAPTER
 	depends on ANIMATION_ENGINE
 	default n
 
-if LVX_USE_ANIMENGINE_ADAPTER
-
-config LVX_ANIM_DEFAULT_PERIOD
-	int "animation engine default period"
-	default 33
-
-endif # LVX_USE_ANIMENGINE_ADAPTER
-
 config LVX_USE_QRSCAN
 	bool "QR scan library"
 	depends on LIB_QUIRC
