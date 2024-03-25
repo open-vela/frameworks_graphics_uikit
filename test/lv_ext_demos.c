@@ -29,6 +29,10 @@
 #include <file_anim/file_anim.h>
 #endif
 
+#ifdef CONFIG_LVX_USE_VECTOR_DRAW_DEMOS
+#include "draw/lvx_draw_demos.h"
+#endif
+
 /*********************
  *      DEFINES
  *********************/
@@ -82,6 +86,11 @@ static const demo_entry_info_t demos_entry_info[] = {
 #endif
 #ifdef CONFIG_LVX_USE_DEMO_BANDX
     { "bandx", .entry_cb = lvx_bandx_demo },
+#endif
+
+#ifdef CONFIG_LVX_USE_VECTOR_DRAW_DEMOS
+    { "tiger", .entry_cb = lvx_draw_demo_tiger },
+    { "hearts", .entry_cb = lvx_draw_demo_hearts },
 #endif
 
     { "", .entry_cb = NULL }

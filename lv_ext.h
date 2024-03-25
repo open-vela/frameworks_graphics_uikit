@@ -14,6 +14,8 @@ extern "C" {
 #include "video/lvx_video.h"
 #include "video/lvx_video_adapter.h"
 
+#include "draw/shapes/lvx_vector_shapes.h"
+
 /*********************
  *      DEFINES
  *********************/
