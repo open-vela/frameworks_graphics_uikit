@@ -21,6 +21,11 @@ config LVX_USE_VIDEO_EXAMPLE
 	depends on LVX_USE_VIDEO_ADAPTER
 	default n
 
+config LVX_USE_VECTOR_DRAW_DEMOS
+	bool "Enable vector complex draw demos"
+	depends on LV_USE_VECTOR_GRAPHIC
+	default n
+
 if LVX_USE_VIDEO_EXAMPLE
 
 config LVX_DEFAULT_VIDEO_PATH
