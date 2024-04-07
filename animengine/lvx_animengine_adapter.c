@@ -281,17 +281,30 @@ static inline int anim_set_property(anim_layer_t* layer_obj,
     return 0;
 }
 
+static void lvx_display_delete_event_cb(lv_event_t* e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_display_t* display = (lv_display_t*)lv_event_get_target(e);
+    if (code == LV_EVENT_DELETE) {
+        anim_context_t* anim_ctx = (anim_context_t*)lv_event_get_user_data(e);
+        lv_display_unregister_vsync_event(display, anim_frame_task_cb, anim_ctx);
+        anim_ctx->user_data = NULL;
+    }
+}
+
 static inline void anim_destroy(void* context)
 {
     anim_context_t* ctx = (anim_context_t*)context;
-    if (!ctx || ctx->user_data == NULL)
+    if (!ctx)
         return;
-    lv_display_t* display = (lv_display_t*)(ctx->user_data);
 
-    if (ctx->on_frame) {
-        lv_display_unregister_vsync_event(display, anim_frame_task_cb, ctx);
-    }
     ctx->on_frame = false;
+    if (ctx->user_data) {
+        lv_display_t* display = (lv_display_t*)ctx->user_data;
+        lv_display_unregister_vsync_event(display, anim_frame_task_cb, ctx);
+        lv_display_remove_event_cb_with_user_data(display, lvx_display_delete_event_cb, ctx);
+        ctx->user_data = NULL;
+    }
 }
 
 static inline void on_obj_delete_cb(lv_event_t* e)
@@ -487,6 +500,7 @@ static inline void anim_schedule_remove_cb(void* user_data)
 /****************************************************************************
  * Public Functions
  ****************************************************************************/
+
 anim_engine_handle_t lvx_anim_adapter_init(void)
 {
     anim_context_t* anim_ctx = anim_engine_init();
@@ -498,7 +512,12 @@ anim_engine_handle_t lvx_anim_adapter_init(void)
     anim_ctx->set_event = anim_set_event;
     anim_ctx->on_frame = false;
 
-    anim_ctx->user_data = lv_display_get_default();
+    lv_display_t* display = (lv_display_t*)lv_display_get_default();
+    if (display) {
+        lv_display_add_event_cb(display, lvx_display_delete_event_cb, LV_EVENT_DELETE, anim_ctx);
+    }
+
+    anim_ctx->user_data = display;
 
     lvx_anim_register_property(anim_ctx->engine_handle);
 
