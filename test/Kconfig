@@ -36,7 +36,7 @@ endif # LVX_USE_VIDEO_EXAMPLE
 
 config LVX_USE_DEMO_BANDX
 	bool "Smart Band demo"
-	depends on LV_USE_FRAGMENT && LV_USE_LIBPNG
+	depends on LV_USE_FRAGMENT && LV_USE_LIBPNG && LV_USE_FREETYPE
 	default n
 
 endif # EXAMPLES_LVEXTDEMO
