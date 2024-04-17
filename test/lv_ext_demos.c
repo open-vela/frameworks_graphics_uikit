@@ -117,9 +117,6 @@ int main(int argc, FAR char* argv[])
     lv_init();
 
     lv_nuttx_dsc_init(&info);
-    info.fb_path = CONFIG_LV_FBDEV_INTERFACE_DEFAULT_DEVICEPATH;
-    info.input_path = CONFIG_LV_TOUCHPAD_INTERFACE_DEFAULT_DEVICEPATH;
-
     lv_nuttx_init(&info, &result);
 
     lv_ext_init();
