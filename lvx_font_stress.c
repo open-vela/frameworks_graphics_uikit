@@ -13,8 +13,6 @@
 
 #if (LVX_USE_FONT_MANAGER != 0)
 
-#include <stdlib.h>
-
 /*********************
  *      DEFINES
  *********************/
@@ -340,7 +338,7 @@ static int random_one_utf8_char(char* buf, int buf_len, uint32_t char_range_min,
 
     int buf_index = 0;
 
-    uint32_t r = rand() % (char_range_max - char_range_min + 1) + char_range_min;
+    uint32_t r = lv_rand(char_range_min, char_range_max);
     if (r < 0x80) {
         buf[buf_index++] = r;
     } else if (r < 0x800) {
@@ -388,7 +386,7 @@ static int random_utf8_chars(char* buf, int buf_len, int char_num)
     int range_num = sizeof(ranges) / sizeof(ranges[0]);
     int buf_index = 0;
     for (int i = 0; i < char_num && buf_index < buf_len; i++) {
-        int range_index = rand() % range_num;
+        int range_index = lv_rand(0, range_num - 1);
         int ret = random_one_utf8_char(buf + buf_index, buf_len - buf_index, ranges[range_index][0], ranges[range_index][1]);
         if (ret < 0) {
             return -1;
