@@ -214,6 +214,18 @@ void lvx_video_set_poster(lv_obj_t* obj, const char* poster_path)
     lv_image_set_src(&video_obj->img.obj, poster_path);
 }
 
+void lvx_video_set_colorkey(lv_obj_t* obj, lv_color_t low, lv_color_t high)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+
+    lvx_video_t* video_obj = (lvx_video_t*)obj;
+
+    static lv_image_colorkey_t colorkey;
+    colorkey.low = low;
+    colorkey.high = high;
+    lv_obj_set_style_image_colorkey(&video_obj->img.obj, &colorkey, 0);
+}
+
 int lvx_video_get_playing(lv_obj_t* obj, media_uv_int_callback cb, void* cookie)
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
