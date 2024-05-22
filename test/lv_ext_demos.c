@@ -15,7 +15,12 @@
 #include <uv.h>
 #endif
 #include "../lv_ext.h"
-#include "lv_ext_demos.h"
+#include <lvgl/lvgl.h>
+
+#ifdef CONFIG_LVX_USE_VIDEO_EXAMPLE
+#include "video/lvx_camera_example.h"
+#include "video/lvx_video_example.h"
+#endif
 
 #ifdef CONFIG_ANIM_ENGINE_API_DEMO
 #include <api_demo/api_demo.h>
@@ -27,6 +32,10 @@
 
 #ifdef CONFIG_ANIM_ENGINE_FILE_DEMO
 #include <file_anim/file_anim.h>
+#endif
+
+#ifdef CONFIG_LVX_USE_DEMO_BANDX
+#include "bandx/lvx_bandx_demo.h"
 #endif
 
 #ifdef CONFIG_LVX_USE_VECTOR_DRAW_DEMOS
