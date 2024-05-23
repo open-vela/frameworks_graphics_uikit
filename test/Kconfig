@@ -39,4 +39,8 @@ config LVX_USE_DEMO_BANDX
 	depends on LV_USE_FRAGMENT && LV_USE_LIBPNG && LV_USE_FREETYPE
 	default n
 
+config LVX_TIME_OBJ_CREATION
+	bool "Obj create demo"
+	default n
+
 endif # EXAMPLES_LVEXTDEMO

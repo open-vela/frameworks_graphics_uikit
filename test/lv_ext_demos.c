@@ -42,6 +42,10 @@
 #include "draw/lvx_draw_demos.h"
 #endif
 
+#ifdef CONFIG_LVX_TIME_OBJ_CREATION
+#include "creation/lv_create_obj.h"
+#endif
+
 /*********************
  *      DEFINES
  *********************/
@@ -82,6 +86,7 @@ static const demo_entry_info_t demos_entry_info[] = {
     { "video_call", .entry_cb = lvx_example_video_call },
     { "video_ctl", .entry_cb = lvx_example_video_controller },
 #endif
+
 #ifdef CONFIG_ANIM_ENGINE_API_DEMO
     { "animengine", .entry_cb = anim_api_demo },
 #endif
@@ -93,6 +98,7 @@ static const demo_entry_info_t demos_entry_info[] = {
 #ifdef CONFIG_ANIM_ENGINE_FILE_DEMO
     { "anim_file", .entry_cb = anim_file_demo },
 #endif
+
 #ifdef CONFIG_LVX_USE_DEMO_BANDX
     { "bandx", .entry_cb = lvx_bandx_demo },
 #endif
@@ -100,6 +106,10 @@ static const demo_entry_info_t demos_entry_info[] = {
 #ifdef CONFIG_LVX_USE_VECTOR_DRAW_DEMOS
     { "tiger", .entry_cb = lvx_draw_demo_tiger },
     { "hearts", .entry_cb = lvx_draw_demo_hearts },
+#endif
+
+#ifdef CONFIG_LVX_TIME_OBJ_CREATION
+    { "time_obj_creation", .entry_cb = lvx_time_obj_creation },
 #endif
 
     { "", .entry_cb = NULL }

@@ -16,6 +16,10 @@ ifeq ($(CONFIG_LVX_USE_VECTOR_DRAW_DEMOS), y)
 CSRCS += $(shell find -L draw -name "*.c")
 endif
 
+ifeq ($(CONFIG_LVX_TIME_OBJ_CREATION), y)
+CSRCS += $(shell find -L creation -name "*.c")
+endif
+
 PRIORITY = $(CONFIG_EXAMPLES_LVEXTDEMO_PRIORITY)
 STACKSIZE = $(CONFIG_EXAMPLES_LVEXTDEMO_STACKSIZE)
 MODULE = $(CONFIG_EXAMPLES_LVEXTDEMO)
