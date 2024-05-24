@@ -92,6 +92,7 @@ int lvx_video_pause(lv_obj_t* obj);
 int lvx_video_resume(lv_obj_t* obj);
 int lvx_video_get_dur(lv_obj_t* obj, media_uv_unsigned_callback callback, void* cookie);
 int lvx_video_set_loop(lv_obj_t* obj, int loop);
+void lvx_video_set_align(lv_obj_t* obj, lv_image_align_t align);
 void lvx_video_set_poster(lv_obj_t* obj, const char* poster_path);
 int lvx_video_get_playing(lv_obj_t* obj, media_uv_int_callback cb, void* cookie);
 int lvx_video_set_callback(lv_obj_t* obj, int event, void* ctx_obj, video_event_callback callback);
