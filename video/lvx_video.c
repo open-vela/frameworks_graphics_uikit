@@ -196,6 +196,15 @@ int lvx_video_set_callback(lv_obj_t* obj, int event, void* ctx_obj, video_event_
     return video_obj->vtable->video_adapter_set_callback(video_obj->vtable, video_obj->video_ctx, event, ctx_obj, callback);
 }
 
+void lvx_video_set_align(lv_obj_t* obj, lv_image_align_t align)
+{
+    LV_ASSERT_OBJ(obj, MY_CLASS);
+
+    lvx_video_t* video_obj = (lvx_video_t*)obj;
+
+    lv_image_set_align(&video_obj->img.obj, align);
+}
+
 void lvx_video_set_poster(lv_obj_t* obj, const char* poster_path)
 {
     LV_ASSERT_OBJ(obj, MY_CLASS);
@@ -272,11 +281,15 @@ static void lvx_video_set_crop(lvx_video_t* video_obj)
         video_obj->img.w = crop_width;
         video_obj->img.h = crop_height;
 
-        lv_img_set_offset_x(&video_obj->img.obj, -video_obj->crop_coords.x1);
-        lv_img_set_offset_y(&video_obj->img.obj, -video_obj->crop_coords.y1);
+        if (video_obj->crop_coords.x1) {
+            lv_img_set_offset_x(&video_obj->img.obj, -video_obj->crop_coords.x1);
+            lv_obj_set_style_translate_x(&video_obj->img.obj, video_obj->crop_coords.x1, 0);
+        }
 
-        lv_obj_set_style_translate_x(&video_obj->img.obj, video_obj->crop_coords.x1, 0);
-        lv_obj_set_style_translate_y(&video_obj->img.obj, video_obj->crop_coords.y1, 0);
+        if (video_obj->crop_coords.y1) {
+            lv_img_set_offset_y(&video_obj->img.obj, -video_obj->crop_coords.y1);
+            lv_obj_set_style_translate_y(&video_obj->img.obj, video_obj->crop_coords.y1, 0);
+        }
     }
 }
 
