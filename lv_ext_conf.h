@@ -28,14 +28,6 @@
 #endif
 #endif
 
-#ifndef LVX_USE_ANIMENGINE_ADAPTER
-#ifdef CONFIG_LVX_USE_ANIMENGINE_ADAPTER
-#define LVX_USE_ANIMENGINE_ADAPTER CONFIG_LVX_USE_ANIMENGINE_ADAPTER
-#else
-#define LVX_USE_ANIMENGINE_ADAPTER 0
-#endif
-#endif
-
 /*==================
  *  WIDGET STYLE
  *================*/
