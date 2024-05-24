@@ -8,10 +8,6 @@ ifeq ($(CONFIG_LVX_USE_DEMO_BANDX), y)
 CSRCS += $(shell find -L bandx -name "*.c")
 endif
 
-ifeq ($(CONFIG_ANIMATION_ENGINE_EXAMPLES), y)
-CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/frameworks/graphics/animengine/examples
-endif
-
 ifeq ($(CONFIG_LVX_USE_VECTOR_DRAW_DEMOS), y)
 CSRCS += $(shell find -L draw -name "*.c")
 endif
