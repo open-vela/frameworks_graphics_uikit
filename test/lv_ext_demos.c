@@ -14,6 +14,7 @@
 #ifdef CONFIG_LV_USE_NUTTX_LIBUV
 #include <uv.h>
 #endif
+
 #include "../lv_ext.h"
 #include <lvgl/lvgl.h>
 
@@ -110,6 +111,8 @@ static const demo_entry_info_t demos_entry_info[] = {
 
 #ifdef CONFIG_LVX_TIME_OBJ_CREATION
     { "time_obj_creation", .entry_cb = lvx_time_obj_creation },
+    { "time_render_label", .entry_cb = lvx_time_render_label },
+    { "time_render_spangroup", .entry_cb = lvx_time_render_spangroup },
 #endif
 
     { "", .entry_cb = NULL }
