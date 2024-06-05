@@ -29,6 +29,10 @@ extern "C" {
  **********************/
 void lvx_time_obj_creation(char* info[], int size, void* param);
 
+void lvx_time_render_label(char* info[], int size, void* param);
+
+void lvx_time_render_spangroup(char* info[], int size, void* param);
+
 /**********************
  *      MACROS
  **********************/
