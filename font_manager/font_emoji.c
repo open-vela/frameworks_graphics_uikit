@@ -14,6 +14,7 @@
 #if FONT_USE_EMOJI
 
 #include <stdlib.h>
+#include <string.h>
 
 /*********************
  *      DEFINES
