@@ -9,6 +9,7 @@
 
 #include "font_cache.h"
 #include "font_utils.h"
+#include <string.h>
 
 /*********************
  *      DEFINES
