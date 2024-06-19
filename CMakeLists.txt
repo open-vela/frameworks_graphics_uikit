@@ -40,7 +40,8 @@ if(CONFIG_LVGL_EXTENSION)
   if(CONFIG_LVX_USE_ANIMENGINE_ADAPTER)
     file(GLOB CSRCS_ANIMENGINE_ADAPTER animengine/*.c)
     list(APPEND CSRCS ${CSRCS_ANIMENGINE_ADAPTER})
-    list(APPEND INCDIR ${NUTTX_APPS_DIR}/frameworks/graphics/animengine/include)
+    list(APPEND DEPENDS_LIBS_INCDIR
+         ${NUTTX_APPS_DIR}/frameworks/graphics/animengine/include)
   endif()
 
   if(CONFIG_LVX_USE_QRSCAN)
@@ -53,14 +54,14 @@ if(CONFIG_LVGL_EXTENSION)
   list(APPEND CSRCS_DRAW lv_ext.c)
   list(APPEND CSRCS ${CSRCS_DRAW})
 
-  # ##########################################################################
+  # ############################################################################
   # Library Configuration
-  # ##########################################################################
+  # ############################################################################
 
   nuttx_add_library(lvglext STATIC)
   target_sources(lvglext PRIVATE ${CSRCS})
   target_link_libraries(lvglext lvgl)
-  target_include_directories(lvglext PRIVATE ${INCDIR})
+  target_include_directories(lvglext PRIVATE ${INCDIR} ${DEPENDS_LIBS_INCDIR})
   nuttx_export_header(TARGET lvglext INCLUDE_DIRECTORIES ${INCDIR})
 
   add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test)
