@@ -42,6 +42,10 @@ ifneq ($(CONFIG_LVX_USE_QRSCAN),)
 CSRCS += $(wildcard ext/qrscan/*.c)
 endif
 
+ifneq ($(CONFIG_LVX_USE_POLYGON_CLIPPER),)
+CSRCS += $(wildcard ext/draw/clipper/*.c)
+endif
+
 CSRCS += $(wildcard ext/draw/shapes/*.c)
 
 CSRCS += ext/lvx_async.c
