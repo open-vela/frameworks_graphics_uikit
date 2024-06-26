@@ -112,6 +112,10 @@ config LVX_USE_QRSCAN
 	depends on LIB_QUIRC
 	default n
 
+config LVX_USE_POLYGON_CLIPPER
+	bool "General Polygon Clipper"
+	default n
+
 source "$APPSDIR/graphics/lvgl/ext/test/Kconfig"
 
 endif # LVGL_EXTENSION
