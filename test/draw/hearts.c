@@ -15,9 +15,10 @@
 #include "lvgl.h"
 
 #if LV_USE_VECTOR_GRAPHIC
-#include "time.h"
-#include "unistd.h"
-#include "sys/time.h"
+#include <stdlib.h>
+#include <time.h>
+#include <unistd.h>
+#include <sys/time.h>
 
 /*********************
  *      DEFINES
