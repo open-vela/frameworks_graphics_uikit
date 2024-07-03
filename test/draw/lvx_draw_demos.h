@@ -17,7 +17,6 @@ void lvx_draw_demo_tiger(char * info[], int size, void * param);
 
 void lvx_draw_demo_hearts(char * info[], int size, void * param);
 
-void lvx_draw_demo_clipper(char * info[], int size, void * param);
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

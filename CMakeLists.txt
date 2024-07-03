@@ -49,11 +49,6 @@ if(CONFIG_LVGL_EXTENSION)
     list(APPEND CSRCS ${CSRCS_QRSCAN})
   endif()
 
-  if(CONFIG_LVX_USE_POLYGON_CLIPPER)
-    file(GLOB CSRCS_CLIPPER draw/clipper/*.c)
-    list(APPEND CSRCS ${CSRCS_CLIPPER})
-  endif()
-
   file(GLOB CSRCS_DRAW draw/shapes/*.c)
   list(APPEND CSRCS_DRAW lvx_async.c)
   list(APPEND CSRCS_DRAW lv_ext.c)
