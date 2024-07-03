@@ -107,7 +107,6 @@ static const demo_entry_info_t demos_entry_info[] = {
 #ifdef CONFIG_LVX_USE_VECTOR_DRAW_DEMOS
     { "tiger", .entry_cb = lvx_draw_demo_tiger },
     { "hearts", .entry_cb = lvx_draw_demo_hearts },
-    { "clipper", .entry_cb = lvx_draw_demo_clipper },
 #endif
 
 #ifdef CONFIG_LVX_TIME_OBJ_CREATION
