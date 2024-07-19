@@ -60,7 +60,6 @@ if(CONFIG_LVGL_EXTENSION)
 
   nuttx_add_library(lvglext STATIC)
   target_sources(lvglext PRIVATE ${CSRCS})
-  target_link_libraries(lvglext lvgl)
   target_include_directories(lvglext PRIVATE ${INCDIR} ${DEPENDS_LIBS_INCDIR})
   nuttx_export_header(TARGET lvglext INCLUDE_DIRECTORIES ${INCDIR})
 
