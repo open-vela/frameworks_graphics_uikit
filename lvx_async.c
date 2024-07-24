@@ -8,7 +8,7 @@
  *********************/
 #include "lvx_async.h"
 #include "lv_ext.h"
-#include "lvgl/src/lvgl_private.h"
+
 /*********************
  *      DEFINES
  *********************/
@@ -76,6 +76,7 @@ lv_result_t lvx_async_after_refr_call_cancel(lv_async_cb_t async_xcb, void* user
 static lv_result_t lvx_async_refr_call(lv_ll_t* ll_p, lv_async_cb_t async_xcb, void* user_data)
 {
     if (!async_inited) {
+        /*Delayed until after display initialization */
         lvx_async_refr_init();
     }
 
@@ -137,8 +138,8 @@ static void lvx_async_refr_init(void)
         return;
     }
 
-    lv_event_add(&disp->event_list, on_refr_event, LV_EVENT_REFR_START, &async_refr_start_ll);
-    lv_event_add(&disp->event_list, on_refr_event, LV_EVENT_REFR_READY, &async_refr_finish_ll);
+    lv_display_add_event_cb(disp, on_refr_event, LV_EVENT_REFR_START, &async_refr_start_ll);
+    lv_display_add_event_cb(disp, on_refr_event, LV_EVENT_REFR_READY, &async_refr_finish_ll);
 
     _lv_ll_init(&async_refr_start_ll, sizeof(async_refr_info_t));
     _lv_ll_init(&async_refr_finish_ll, sizeof(async_refr_info_t));
