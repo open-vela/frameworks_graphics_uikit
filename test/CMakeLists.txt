@@ -38,6 +38,11 @@ if(CONFIG_UIKIT_DEMO)
     list(APPEND CSRCS ${CSRCS_VECTOR_DRAW})
   endif()
 
+  if(CONFIG_LVX_USE_MARKDOWN)
+    file(GLOB_RECURSE CSRCS_MARKDOWN "markdown/*.c")
+    list(APPEND CSRCS ${CSRCS_MARKDOWN})
+  endif()
+
   nuttx_add_application(
     NAME
     uikit_demo
@@ -54,3 +59,4 @@ if(CONFIG_UIKIT_DEMO)
     SRCS
     ${CSRCS})
 endif()
+
