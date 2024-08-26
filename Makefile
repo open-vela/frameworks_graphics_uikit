@@ -43,10 +43,9 @@ CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/quirc/quirc/lib
 CSRCS += $(wildcard src/qrscan/*.c)
 endif
 
-ifneq ($(CONFIG_UIKIT_ANIMATION_VIEW_PLAYER),)
-CSRCS += $(wildcard src/draw/player/uikit_anim_view_player.c)
+ifneq ($(CONFIG_LVX_USE_MARKDOWN),)
+CSRCS += $(wildcard ext/markdown/*.c)
 endif
-
 
 endif #CONFIG_UIKIT
 

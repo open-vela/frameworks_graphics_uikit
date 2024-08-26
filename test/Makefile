@@ -8,6 +8,10 @@ ifeq ($(CONFIG_UIKIT_DEMO_VECTOR_DRAW), y)
 CSRCS += $(shell find -L draw -name "*.c")
 endif
 
+ifeq ($(CONFIG_LVX_USE_MARKDOWN), y)
+CSRCS += $(shell find -L markdown -name "*.c")
+endif
+
 ifeq ($(CONFIG_UIKIT_DEMO_TIME_OBJCREATION), y)
 CSRCS += $(shell find -L creation -name "*.c")
 endif
