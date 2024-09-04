@@ -47,7 +47,14 @@ static const char * markdown_txt = \
             "\n"
             "\n"
             " $leq$, $geq$  $arcsin x, arccos x, arctan x, arccot x$  $iint, iint_D$  $alpha, beta, gamma$  "
-            "\n";
+            "\n"
+            "1. First item \n"
+            "2. Second item \n"
+            "    1. Nested 1\n"
+            "    2. Nested 2\n"
+            "***this ***is ***a ***bunch*** of*** nested*** emphases***\n"
+
+    ;
 
 /**********************
  *   GLOBAL FUNCTIONS
