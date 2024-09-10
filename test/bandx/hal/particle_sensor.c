@@ -15,8 +15,8 @@
  */
 #include "particle_sensor.h"
 
-#include <stdlib.h>
 #include <stdint.h>
+#include <stdlib.h>
 
 #define HR_BEATS_MAX 1000
 
@@ -26,14 +26,14 @@ static float hr_beats_max = 0;
 
 static void particle_sensor_update_range(float beats)
 {
-    if(beats < 1) {
+    if (beats < 1) {
         return;
     }
 
-    if(beats < hr_beats_min) {
+    if (beats < hr_beats_min) {
         hr_beats_min = beats;
     }
-    if(beats > hr_beats_max) {
+    if (beats > hr_beats_max) {
         hr_beats_max = beats;
     }
 }
@@ -42,10 +42,9 @@ float particle_sensor_get_beats(void)
 {
     float retval;
     int breats = ((uint16_t)rand() % 600 + 400);
-    if(breats > hr_last_beats) {
+    if (breats > hr_last_beats) {
         hr_last_beats++;
-    }
-    else if(breats < hr_last_beats) {
+    } else if (breats < hr_last_beats) {
         hr_last_beats--;
     }
     retval = hr_last_beats / 10.0f;
@@ -55,9 +54,9 @@ float particle_sensor_get_beats(void)
     return retval;
 }
 
-bool particle_sensor_get_beats_range(float * min, float * max)
+bool particle_sensor_get_beats_range(float* min, float* max)
 {
-    if(hr_beats_min > HR_BEATS_MAX - 1 || hr_beats_max < 1) {
+    if (hr_beats_min > HR_BEATS_MAX - 1 || hr_beats_max < 1) {
         return false;
     }
 

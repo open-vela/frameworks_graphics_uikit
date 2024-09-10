@@ -17,9 +17,9 @@
 
 #include <time.h>
 
-void clock_get_value(struct clock_value_s * clock_value)
+void clock_get_value(struct clock_value_s* clock_value)
 {
-    struct tm * t;
+    struct tm* t;
     time_t tt;
     time(&tt);
     t = localtime(&tt);
@@ -34,6 +34,6 @@ void clock_get_value(struct clock_value_s * clock_value)
     clock_value->ms = 0;
 }
 
-void clock_set_value(struct clock_value_s * clock_value)
+void clock_set_value(struct clock_value_s* clock_value)
 {
 }

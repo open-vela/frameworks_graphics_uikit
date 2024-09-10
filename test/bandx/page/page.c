@@ -34,7 +34,6 @@
  *  STATIC VARIABLES
  **********************/
 
-
 /**********************
  *      MACROS
  **********************/
@@ -47,7 +46,7 @@ void page_init(void)
 {
 }
 
-lv_fragment_t * page_create(const char * name, void * arg)
+lv_fragment_t* page_create(const char* name, void* arg)
 {
     LV_LOG_USER("name: %s arg: %p", name, arg);
 
@@ -65,24 +64,24 @@ lv_fragment_t * page_create(const char * name, void * arg)
     return NULL;
 }
 
-bool page_push(lv_fragment_t * self, const char * name, void * arg)
+bool page_push(lv_fragment_t* self, const char* name, void* arg)
 {
-    lv_fragment_t * page = page_create(name, NULL);
+    lv_fragment_t* page = page_create(name, NULL);
 
-    if(!page) {
+    if (!page) {
         LV_LOG_WARN("page push %s failed", name);
         return false;
     }
 
-    lv_fragment_manager_t * manager = lv_fragment_get_manager(self);
-    lv_obj_t * const * container = lv_fragment_get_container(self);
+    lv_fragment_manager_t* manager = lv_fragment_get_manager(self);
+    lv_obj_t* const* container = lv_fragment_get_container(self);
     lv_fragment_manager_push(manager, page, container);
     return true;
 }
 
-void page_pop(lv_fragment_t * self)
+void page_pop(lv_fragment_t* self)
 {
-    lv_fragment_manager_t * manager = lv_fragment_get_manager(self);
+    lv_fragment_manager_t* manager = lv_fragment_get_manager(self);
     lv_fragment_manager_pop(manager);
 }
 

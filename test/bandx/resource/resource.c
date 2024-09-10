@@ -8,6 +8,7 @@
  *********************/
 
 #include "resource.h"
+#include <string.h>
 
 /*********************
  *      DEFINES
@@ -28,17 +29,17 @@
  **********************/
 
 typedef struct {
-    const char * key;
-    const char * img_src;
+    const char* key;
+    const char* img_src;
 } resource_img_t;
 
 typedef struct {
-    const char * key;
-    const lv_font_t * font;
+    const char* key;
+    const lv_font_t* font;
 } resource_font_t;
 
 typedef struct {
-    const char * key;
+    const char* key;
     lv_style_t style;
 } resource_style_t;
 
@@ -50,7 +51,7 @@ typedef struct {
  *  STATIC VARIABLES
  **********************/
 
-#define IMG_DEF(NAME) { #NAME, IMG_BASE_PATH #NAME ".png"},
+#define IMG_DEF(NAME) { #NAME, IMG_BASE_PATH #NAME ".png" },
 static const resource_img_t g_img_resource_map[] = {
 #include "image/img_src.inc"
 };
@@ -83,9 +84,9 @@ void resource_init(void)
 #define FONT_DEF(NAME, SIZE)                                                   \
     do {                                                                       \
         lv_font_t* font = lv_freetype_font_create(FONT_BASE_PATH #NAME ".ttf", \
-                                                  CONFIG_FONT_CREATE_TYPE,     \
-                                                  SIZE,                                                              \
-                                                  LV_FREETYPE_FONT_STYLE_NORMAL);                                    \
+            CONFIG_UIKIT_FONT_CREATE_TYPE,                                     \
+            SIZE,                                                              \
+            LV_FREETYPE_FONT_STYLE_NORMAL);                                    \
         if (font) {                                                            \
             g_font_resource_map[font_index].key = #NAME "_" #SIZE;             \
             g_font_resource_map[font_index].font = font;                       \
@@ -113,10 +114,10 @@ void resource_init(void)
     LV_LOG_USER("create %d styles", style_index);
 }
 
-const lv_font_t * resource_get_font(const char * key)
+const lv_font_t* resource_get_font(const char* key)
 {
-    for(int i = 0; i < ARRAY_SIZE(g_font_resource_map); i++) {
-        if(strcmp(key, g_font_resource_map[i].key) == 0) {
+    for (int i = 0; i < ARRAY_SIZE(g_font_resource_map); i++) {
+        if (strcmp(key, g_font_resource_map[i].key) == 0) {
             return g_font_resource_map[i].font;
         }
     }
@@ -125,10 +126,10 @@ const lv_font_t * resource_get_font(const char * key)
     return LV_FONT_DEFAULT;
 }
 
-const void * resource_get_img(const char * key)
+const void* resource_get_img(const char* key)
 {
-    for(int i = 0; i < ARRAY_SIZE(g_img_resource_map); i++) {
-        if(strcmp(key, g_img_resource_map[i].key) == 0) {
+    for (int i = 0; i < ARRAY_SIZE(g_img_resource_map); i++) {
+        if (strcmp(key, g_img_resource_map[i].key) == 0) {
             return g_img_resource_map[i].img_src;
         }
     }
@@ -137,10 +138,10 @@ const void * resource_get_img(const char * key)
     return LV_SYMBOL_IMAGE;
 }
 
-lv_style_t * resource_get_style(const char * key)
+lv_style_t* resource_get_style(const char* key)
 {
-    for(int i = 0; i < ARRAY_SIZE(g_style_resource_map); i++) {
-        if(strcmp(key, g_style_resource_map[i].key) == 0) {
+    for (int i = 0; i < ARRAY_SIZE(g_style_resource_map); i++) {
+        if (strcmp(key, g_style_resource_map[i].key) == 0) {
             return &g_style_resource_map[i].style;
         }
     }

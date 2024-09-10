@@ -17,16 +17,15 @@
 #define __HAL_H
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
-#include <stdbool.h>
-#include <stdint.h>
 #include "backlight.h"
 #include "clock.h"
 #include "imu.h"
 #include "particle_sensor.h"
 #include "power.h"
+#include <stdbool.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 }

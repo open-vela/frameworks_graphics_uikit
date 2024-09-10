@@ -1,5 +1,5 @@
 ############################################################################
-# system/libuv/ext/Makefile
+# frameworks/graphics/uikit/Makefile
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -18,28 +18,43 @@
 #
 ############################################################################
 
-ifneq ($(CONFIG_LVGL_EXTENSION),)
+include $(APPDIR)/Make.defs
 
-ifeq ($(CONFIG_LVX_USE_FONT_MANAGER), y)
-CSRCS += ext/lvx_font_manager.c
-CSRCS += ext/lvx_font_stress.c
-CSRCS += $(wildcard ext/font_manager/*.c)
+CXXEXT := .cpp
+
+ifneq ($(CONFIG_UIKIT),)
+
+CSRCS += $(wildcard src/*.c)
+CSRCS += $(wildcard src/draw/shapes/*.c)
+
+ifeq ($(CONFIG_UIKIT_FONT_MANAGER), y)
+CSRCS += $(wildcard src/font_manager/*.c)
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/netutils/cjson/cJSON
 endif
 
-ifeq ($(CONFIG_LVX_USE_VIDEO_ADAPTER), y)
-CSRCS += $(wildcard ext/video/*.c)
+ifeq ($(CONFIG_UIKIT_VIDEO_ADAPTER), y)
+CSRCS += $(wildcard src/video/*.c)
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/frameworks/media/include
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/netutils/cjson/cJSON
 endif
 
-ifneq ($(CONFIG_LVX_USE_QRSCAN),)
-CSRCS += $(wildcard ext/qrscan/*.c)
+ifneq ($(CONFIG_UIKIT_QRSCAN),)
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/quirc/quirc/lib
+CSRCS += $(wildcard src/qrscan/*.c)
 endif
 
-CSRCS += $(wildcard ext/draw/shapes/*.c)
+endif #CONFIG_UIKIT
 
-CSRCS += ext/lvx_async.c
-CSRCS += ext/lv_ext.c
+ASRCS := $(wildcard $(ASRCS))
+CSRCS := $(wildcard $(CSRCS))
+CXXSRCS := $(wildcard $(CXXSRCS))
+MAINSRC := $(wildcard $(MAINSRC))
+NOEXPORTSRCS = $(ASRCS)$(CSRCS)$(CXXSRCS)$(MAINSRC)
 
-endif #CONFIG_LVGL_EXTENSION
+ifneq ($(NOEXPORTSRCS),)
+BIN := $(APPDIR)/staging/libframework.a
+endif
+
+EXPORT_FILES := include
+
+include $(APPDIR)/Application.mk

@@ -1,46 +1,51 @@
 
-menuconfig EXAMPLES_LVEXTDEMO
-	tristate "LVGL Ext Demo"
+menuconfig UIKIT_DEMO
+	tristate "UIKit Demo"
 	default n
 	depends on GRAPHICS_LVGL
 	---help---
-		Enable build the Light and Versatile Graphics Library Demo programs
+		Enable build the UIKit Demo programs
 
-if EXAMPLES_LVEXTDEMO
+if UIKIT_DEMO
 
-config EXAMPLES_LVEXTDEMO_PRIORITY
-	int "lvextdemo task priority"
+config UIKIT_DEMO_PRIORITY
+	int "uikit_demo task priority"
 	default 100
 
-config EXAMPLES_LVEXTDEMO_STACKSIZE
-	int "lvextdemo stack size"
+config UIKIT_DEMO_STACKSIZE
+	int "uikit_demo stack size"
 	default 32768
 
-config LVX_USE_VIDEO_EXAMPLE
-	bool "Enable video example"
-	depends on LVX_USE_VIDEO_ADAPTER
+config UIKIT_DEMO_VIDEO
+	bool "Enable video demo"
+	depends on UIKIT_VIDEO_ADAPTER
 	default n
 
-config LVX_USE_VECTOR_DRAW_DEMOS
+config UIKIT_DEMO_VECTOR_DRAW
 	bool "Enable vector complex draw demos"
 	depends on LV_USE_VECTOR_GRAPHIC
 	default n
 
-if LVX_USE_VIDEO_EXAMPLE
+config UIKIT_DEMO_FONT_STRESS
+	bool "Enable font stress demo"
+	depends on LV_USE_VECTOR_GRAPHIC
+	default n
+
+if UIKIT_DEMO_VIDEO
 
 config LVX_DEFAULT_VIDEO_PATH
 	string "Defailt video path in video example"
 	default "/data/h264_aac_240p.mp4"
 
-endif # LVX_USE_VIDEO_EXAMPLE
+endif # UIKIT_DEMO_VIDEO
 
-config LVX_USE_DEMO_BANDX
+config UIKIT_DEMO_BANDX
 	bool "Smart Band demo"
 	depends on LV_USE_FRAGMENT && LV_USE_LIBPNG && LV_USE_FREETYPE
 	default n
 
-config LVX_TIME_OBJ_CREATION
-	bool "Obj create demo"
+config UIKIT_DEMO_TIME_OBJCREATION
+	bool "Time object creation demo"
 	default n
 
-endif # EXAMPLES_LVEXTDEMO
+endif # UIKIT_DEMO

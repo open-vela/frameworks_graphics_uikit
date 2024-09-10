@@ -1,5 +1,5 @@
 # ##############################################################################
-# apps/graphics/lvgl/ext/test/CMakeLists.txt
+# frameworks/graphics/uikit/test/CMakeLists.txt
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
@@ -18,39 +18,40 @@
 #
 # ##############################################################################
 
-if(CONFIG_EXAMPLES_LVEXTDEMO)
+if(CONFIG_UIKIT_DEMO)
   set(INCDIR)
   list(APPEND INCDIR ${NUTTX_APPS_DIR}/graphics/lvgl)
-  set(CSRCS lv_ext_demos.c)
+  set(CSRCS uikit_demo.c)
 
-  if(CONFIG_LVX_USE_VIDEO_EXAMPLE)
+  if(CONFIG_UIKIT_DEMO_VIDEO)
     file(GLOB CSRCS_VIDEO_EXAMPLE "video/*.c")
     list(APPEND CSRCS ${CSRCS_VIDEO_EXAMPLE})
   endif()
 
-  if(CONFIG_LVX_USE_DEMO_BANDX)
+  if(CONFIG_UIKIT_DEMO_FONT_STRESS)
+    file(GLOB CSRCS_FONT_EXAMPLE "font/*.c")
+    list(APPEND CSRCS ${CSRCS_FONT_EXAMPLE})
+  endif()
+
+  if(CONFIG_UIKIT_DEMO_BANDX)
     file(GLOB_RECURSE CSRCS_DEMO_BANDX "bandx/*.c")
     list(APPEND CSRCS ${CSRCS_DEMO_BANDX})
   endif()
 
-  if(CONFIG_ANIMATION_ENGINE_EXAMPLES)
-    list(APPEND INCDIR ${NUTTX_APPS_DIR}/frameworks/graphics/animengine/examples)
-  endif()
-
-  if(CONFIG_LVX_USE_VECTOR_DRAW_DEMOS)
+  if(CONFIG_UIKIT_DEMO_VECTOR_DRAW)
     file(GLOB_RECURSE CSRCS_VECTOR_DRAW "draw/*.c")
     list(APPEND CSRCS ${CSRCS_VECTOR_DRAW})
   endif()
 
   nuttx_add_application(
     NAME
-    lvxdemo
+    uikit_demo
     PRIORITY
-    ${CONFIG_EXAMPLES_LVEXTDEMO_PRIORITY}
+    ${CONFIG_UIKIT_DEMO_PRIORITY}
     STACKSIZE
-    ${CONFIG_EXAMPLES_LVEXTDEMO_STACKSIZE}
+    ${CONFIG_UIKIT_DEMO_STACKSIZE}
     MODULE
-    ${CONFIG_EXAMPLES_LVEXTDEMO}
+    ${CONFIG_UIKIT_DEMO}
     INCLUDE_DIRECTORIES
     ${INCDIR}
     DEPENDS

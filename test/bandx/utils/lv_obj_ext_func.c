@@ -15,31 +15,31 @@
  */
 #include "lv_obj_ext_func.h"
 
-void lv_obj_set_opa_scale(lv_obj_t * obj, lv_opa_t opa)
+void lv_obj_set_opa_scale(lv_obj_t* obj, lv_opa_t opa)
 {
     lv_obj_set_style_opa(obj, opa, 0);
 }
 
-lv_opa_t lv_obj_get_opa_scale(lv_obj_t * obj)
+lv_opa_t lv_obj_get_opa_scale(lv_obj_t* obj)
 {
     return lv_obj_get_style_opa(obj, 0);
 }
 
 /**
-  * @brief  Add animation to objects
-  * @param  obj:Object address
-  * @param  a:Animation controller address
-  * @param  exec_cb:The address of the function that controls the properties of the object
-  * @param  start:Start value of animation
-  * @param  end:The end value of the animation
-  * @param  time:Animation execution time
-  * @param  delay:Delay time before the animation starts
-  * @param  ready_cb:Animation end event callback
-  * @param  path_cb:Animation curve
-  * @retval None
-  */
+ * @brief  Add animation to objects
+ * @param  obj:Object address
+ * @param  a:Animation controller address
+ * @param  exec_cb:The address of the function that controls the properties of the object
+ * @param  start:Start value of animation
+ * @param  end:The end value of the animation
+ * @param  time:Animation execution time
+ * @param  delay:Delay time before the animation starts
+ * @param  ready_cb:Animation end event callback
+ * @param  path_cb:Animation curve
+ * @retval None
+ */
 void lv_obj_add_anim(
-    lv_obj_t * obj, lv_anim_t * a,
+    lv_obj_t* obj, lv_anim_t* a,
     lv_anim_exec_xcb_t exec_cb,
     int32_t start, int32_t end,
     uint16_t time,
@@ -49,11 +49,11 @@ void lv_obj_add_anim(
 {
     lv_anim_t anim_temp;
 
-    if(a == NULL) {
+    if (a == NULL) {
         a = &anim_temp;
 
         /* INITIALIZE AN ANIMATION
-        *-----------------------*/
+         *-----------------------*/
         lv_anim_init(a);
     }
 

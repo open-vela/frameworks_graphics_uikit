@@ -18,8 +18,8 @@
  **********************/
 
 typedef struct {
-    const char * img_src_name;
-    const char * sport_name;
+    const char* img_src_name;
+    const char* sport_name;
     uint32_t color;
 } sport_info_t;
 
@@ -48,32 +48,31 @@ typedef struct {
  *   STATIC FUNCTIONS
  **********************/
 
-static void on_sport_icon_event(lv_event_t * event)
+static void on_sport_icon_event(lv_event_t* event)
 {
     lv_event_code_t code = lv_event_get_code(event);
-    if(code == LV_EVENT_CLICKED) {
+    if (code == LV_EVENT_CLICKED) {
         LV_LOG_WARN("NO match for this sport.");
     }
-
 }
 
-static void sport_title_create(lv_obj_t * par)
+static void sport_title_create(lv_obj_t* par)
 {
-    lv_obj_t * obj = lv_obj_create(par);
+    lv_obj_t* obj = lv_obj_create(par);
     lv_obj_remove_style_all(obj);
     lv_obj_set_size(obj, PAGE_HOR_RES, 35);
     lv_obj_align(obj, LV_ALIGN_TOP_MID, 0, 0);
 
-    lv_obj_t * label = lv_label_create(obj);
+    lv_obj_t* label = lv_label_create(obj);
     lv_label_set_text(label, "Sports");
     lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
     lv_obj_set_style_text_font(label, resource_get_font("bahnschrift_15"), LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 0);
 }
 
-static void sport_list_create(lv_obj_t * par,  sport_info_t * sport_info, int len)
+static void sport_list_create(lv_obj_t* par, sport_info_t* sport_info, int len)
 {
-    lv_obj_t * obj = lv_obj_create(par);
+    lv_obj_t* obj = lv_obj_create(par);
     lv_obj_remove_style_all(obj);
     lv_obj_set_size(obj, PAGE_HOR_RES, PAGE_VER_RES - 40);
     lv_obj_set_flex_flow(obj, LV_FLEX_FLOW_COLUMN);
@@ -81,90 +80,87 @@ static void sport_list_create(lv_obj_t * par,  sport_info_t * sport_info, int le
     lv_obj_set_style_pad_row(obj, 10, 0);
     lv_obj_align(obj, LV_ALIGN_TOP_MID, 0, 40);
 
-    for(int i = 0; i < len; i++) {
+    for (int i = 0; i < len; i++) {
 
-        lv_obj_t * obj_base = lv_btn_create(obj);
+        lv_obj_t* obj_base = lv_btn_create(obj);
         lv_obj_set_style_bg_color(obj_base, lv_color_hex(0x666666), LV_PART_MAIN);
         lv_obj_set_style_border_width(obj_base, 0, LV_PART_MAIN);
         lv_obj_set_size(obj_base, BTN_WIDTH, BTN_HEIGHT);
         lv_obj_add_event(obj_base, on_sport_icon_event, LV_EVENT_ALL, NULL);
 
-        lv_obj_t * img = lv_img_create(obj_base);
+        lv_obj_t* img = lv_img_create(obj_base);
         lv_img_set_src(img, resource_get_img(sport_info[i].img_src_name));
         lv_obj_set_style_image_recolor_opa(img, LV_OPA_COVER, LV_PART_MAIN);
         lv_obj_set_style_image_recolor(img, lv_color_hex(sport_info[i].color), LV_PART_MAIN);
         lv_obj_align(img, LV_ALIGN_LEFT_MID, 0, 0);
 
-        lv_obj_t * label = lv_label_create(obj_base);
+        lv_obj_t* label = lv_label_create(obj_base);
         lv_label_set_text(label, sport_info[i].sport_name);
         lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
         lv_obj_set_style_text_font(label, resource_get_font("bahnschrift_15"), LV_PART_MAIN);
         lv_obj_align_to(label, img, LV_ALIGN_LEFT_MID, 42, 0);
-
     }
 }
 
-static void on_root_event(lv_event_t * e)
+static void on_root_event(lv_event_t* e)
 {
-    lv_obj_t * root = lv_event_get_target(e);
+    lv_obj_t* root = lv_event_get_target(e);
     lv_event_code_t code = lv_event_get_code(e);
-    page_ctx_t * ctx = lv_obj_get_user_data(root);
+    page_ctx_t* ctx = lv_obj_get_user_data(root);
 
-    if(code == LV_EVENT_GESTURE) {
+    if (code == LV_EVENT_GESTURE) {
         lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-        if(dir == LV_DIR_RIGHT) {
+        if (dir == LV_DIR_RIGHT) {
             lv_obj_send_event(root, LV_EVENT_LEAVE, NULL);
         }
-    }
-    else if(code == LV_EVENT_LEAVE) {
+    } else if (code == LV_EVENT_LEAVE) {
         page_pop(&ctx->base);
     }
 }
 
-static void on_page_construct(lv_fragment_t * self, void * args)
+static void on_page_construct(lv_fragment_t* self, void* args)
 {
     LV_LOG_INFO("self: %p args: %p", self, args);
 
-    page_ctx_t * ctx = (page_ctx_t *) self;
+    page_ctx_t* ctx = (page_ctx_t*)self;
 
     sport_info_t sport_info_grp[SPORT_INFO_CNT] = {
-        {"icon_sprint", "Outdoor Running", 0x9AFF9A},
-        {"icon_walking", "Walking", 0x87CEFA},
-        {"icon_stretching", "Stretching", 0xFFF68F},
-        {"icon_hiking", "Hiking", 0xAB82FF},
-        {"icon_bicycle", "Outdoor cycling", 0xFFC1C1},
-        {"icon_running", "Indoor Running", 0x97FFFF},
-        {"icon_skipping_rope", "Rope skipping", 0xFFA54F},
-        {"icon_swimming", "Swimming", 0xFF83FA},
-        {"icon_sports", "More sports", 0x4876FF},
+        { "icon_sprint", "Outdoor Running", 0x9AFF9A },
+        { "icon_walking", "Walking", 0x87CEFA },
+        { "icon_stretching", "Stretching", 0xFFF68F },
+        { "icon_hiking", "Hiking", 0xAB82FF },
+        { "icon_bicycle", "Outdoor cycling", 0xFFC1C1 },
+        { "icon_running", "Indoor Running", 0x97FFFF },
+        { "icon_skipping_rope", "Rope skipping", 0xFFA54F },
+        { "icon_swimming", "Swimming", 0xFF83FA },
+        { "icon_sports", "More sports", 0x4876FF },
     };
 
-    for(int i = 0; i < SPORT_INFO_CNT; i++) {
+    for (int i = 0; i < SPORT_INFO_CNT; i++) {
         ctx->sport_info_grp[i] = sport_info_grp[i];
     }
-
 }
 
-static void on_page_destruct(lv_fragment_t * self)
+static void on_page_destruct(lv_fragment_t* self)
 {
     LV_LOG_INFO("self: %p", self);
 }
 
-static void on_page_attached(lv_fragment_t * self)
+static void on_page_attached(lv_fragment_t* self)
 {
     LV_LOG_INFO("self: %p", self);
 }
 
-static void on_page_detached(lv_fragment_t * self)
+static void on_page_detached(lv_fragment_t* self)
 {
     LV_LOG_INFO("self: %p", self);
 }
 
-static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
+static lv_obj_t* on_page_create(lv_fragment_t* self, lv_obj_t* container)
 {
     LV_LOG_INFO("self: %p container: %p", self, container);
 
-    lv_obj_t * root = lv_obj_create(container);
+    lv_obj_t* root = lv_obj_create(container);
     lv_obj_remove_style_all(root);
     lv_obj_add_style(root, resource_get_style("root_def"), 0);
     lv_obj_add_event(root, on_root_event, LV_EVENT_ALL, NULL);
@@ -174,28 +170,27 @@ static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
     return root;
 }
 
-static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
+static void on_page_created(lv_fragment_t* self, lv_obj_t* obj)
 {
     LV_LOG_INFO("self: %p obj: %p", self, obj);
 
-    page_ctx_t * ctx = (page_ctx_t *)self;
+    page_ctx_t* ctx = (page_ctx_t*)self;
 
     sport_title_create(obj);
     sport_list_create(obj, ctx->sport_info_grp, SPORT_INFO_CNT);
-
 }
 
-static void on_page_will_delete(lv_fragment_t * self, lv_obj_t * obj)
+static void on_page_will_delete(lv_fragment_t* self, lv_obj_t* obj)
 {
     LV_LOG_INFO("self: %p obj: %p", self, obj);
 }
 
-static void on_page_deleted(lv_fragment_t * self, lv_obj_t * obj)
+static void on_page_deleted(lv_fragment_t* self, lv_obj_t* obj)
 {
     LV_LOG_INFO("self: %p obj: %p", self, obj);
 }
 
-static bool on_page_event(lv_fragment_t * self, int code, void * user_data)
+static bool on_page_event(lv_fragment_t* self, int code, void* user_data)
 {
     LV_LOG_INFO("self: %p code: %d user_data: %p", self, code, user_data);
     return false;

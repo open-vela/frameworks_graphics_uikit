@@ -3,24 +3,24 @@
 # see the file kconfig-language.txt in the NuttX tools repository.
 #
 
-menuconfig LVGL_EXTENSION
-	bool "Enable LVGL extension"
+menuconfig UIKIT
+	bool "UIKit"
 	default n
 	---help---
-		Enable LVGL extension
+		Enable UIKit
 
-if LVGL_EXTENSION
+if UIKIT
 
-menuconfig LVX_USE_FONT_MANAGER
-	bool "LVX_USE_FONT_MANAGER"
+menuconfig UIKIT_FONT_MANAGER
+	bool "UIKIT_FONT_MANAGER"
 	default y
 	depends on LV_USE_FREETYPE
 	---help---
 		Enable font-manager for freetype fonts.
 
-if LVX_USE_FONT_MANAGER
+if UIKIT_FONT_MANAGER
 
-config FONT_LIB_PATH
+config UIKIT_FONT_LIB_PATH
 	string "Font library path"
 	default "/data/"
 	---help---
@@ -28,85 +28,85 @@ config FONT_LIB_PATH
 		/data/	, /data/font/xxxxxL
 		Note: '/' is required at the end of the string.
 
-choice FONT_CREATE_TYPE_CHOICE
+choice UIKIT_FONT_CREATE_TYPE_CHOICE
 	prompt "Choose font create type"
-	default FONT_CREATE_TYPE_BITMAP
+	default UIKIT_FONT_CREATE_TYPE_BITMAP
 	---help---
 		Select the font create type
 
-	config FONT_CREATE_TYPE_BITMAP
+	config UIKIT_FONT_CREATE_TYPE_BITMAP
 		bool "Bitmap"
-	config FONT_CREATE_TYPE_OUTLINE
+	config UIKIT_FONT_CREATE_TYPE_OUTLINE
 		bool "Outline"
 endchoice
 
-config FONT_CREATE_TYPE
+config UIKIT_FONT_CREATE_TYPE
 	int
-	default 0 if FONT_CREATE_TYPE_BITMAP
-	default 1 if FONT_CREATE_TYPE_OUTLINE
+	default 0 if UIKIT_FONT_CREATE_TYPE_BITMAP
+	default 1 if UIKIT_FONT_CREATE_TYPE_OUTLINE
 
-config FONT_NAME_MAX
+config UIKIT_FONT_NAME_MAX
 	int "Font name max length"
 	default 32
 
-config FONT_EXT_NAME
+config UIKIT_FONT_EXT_NAME
 	string "Font file extension"
 	default "ttf"
 
-config FONT_EXT_MAX
+config UIKIT_FONT_EXT_MAX
 	int "Font file extension max length"
 	default 8
 
-config FONT_CACHE_SIZE
+config UIKIT_FONT_CACHE_SIZE
 	int "Font cache size"
 	default 8
 	---help---
 		The maximum number of caches for reuse freetype info
 
-config FONT_USE_LV_FONT_DEFAULT
+config UIKIT_FONT_USE_LV_FONT_DEFAULT
 	bool "Use LV_FONT_DEFAULT when font creation fails"
 	default y
 
-config FONT_USE_FONT_FAMILY
+config UIKIT_FONT_USE_FONT_FAMILY
 	bool "Enable font-family"
 	select NETUTILS_CJSON
 	default n
 
-config FONT_CONFIG_FILE_PATH
+config UIKIT_FONT_CONFIG_FILE_PATH
 	string "Font config file path"
-	depends on FONT_USE_FONT_FAMILY
+	depends on UIKIT_FONT_USE_FONT_FAMILY
 	default "/etc/font_config.json"
 
-config FONT_USE_EMOJI
+config UIKIT_FONT_USE_EMOJI
 	bool "Enable emoji support"
-	depends on FONT_USE_FONT_FAMILY
+	depends on UIKIT_FONT_USE_FONT_FAMILY
 	default y
 
-config FONT_EMOJI_HEADER
+config UIKIT_FONT_EMOJI_HEADER
 	string "Name header used to identify Emoji"
-	depends on FONT_USE_EMOJI
+	depends on UIKIT_FONT_USE_EMOJI
 	default "Emoji"
 
-endif # LVX_USE_FONT_MANAGER
+endif # UIKIT_FONT_MANAGER
 
-config LVX_USE_VIDEO_ADAPTER
+config UIKIT_VIDEO_ADAPTER
 	bool "Enable video adapter based on media server"
 	depends on MEDIA_SERVER && NETUTILS_CJSON
 	default n
 
-if LVX_USE_VIDEO_ADAPTER
+if UIKIT_VIDEO_ADAPTER
 
-config LVX_VIDEO_CONFIG_FILE_PATH
+config UIKIT_VIDEO_CONFIG_FILE_PATH
 	string "Video config file path"
-	default "/etc/lvx_video_config.json"
+	default "/etc/uikit_video_config.json"
 
-endif # LVX_USE_VIDEO_ADAPTER
+endif # UIKIT_VIDEO_ADAPTER
 
-config LVX_USE_QRSCAN
+config UIKIT_QRSCAN
 	bool "QR scan library"
 	depends on LIB_QUIRC
 	default n
 
-source "$APPSDIR/graphics/lvgl/ext/test/Kconfig"
+source "$APPSDIR/frameworks/graphics/uikit/test/Kconfig"
 
-endif # LVGL_EXTENSION
+endif # UIKIT
