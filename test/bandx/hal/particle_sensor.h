@@ -17,14 +17,13 @@
 #define __PARTICLE_SENSOR_H
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <stdbool.h>
 
 float particle_sensor_get_beats(void);
-bool particle_sensor_get_beats_range(float * min, float * max);
+bool particle_sensor_get_beats_range(float* min, float* max);
 void particle_sensor_reset_beats_range(void);
 
 #ifdef __cplusplus

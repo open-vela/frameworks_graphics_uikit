@@ -1,5 +1,5 @@
 # ##############################################################################
-# apps/graphics/lvgl/ext/CMakeLists.txt
+# frameworks/graphics/uikit/CMakeLists.txt
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more contributor
 # license agreements.  See the NOTICE file distributed with this work for
@@ -18,50 +18,46 @@
 #
 # ##############################################################################
 
-if(CONFIG_LVGL_EXTENSION)
-  set(INCDIR ${CMAKE_CURRENT_LIST_DIR})
+if(CONFIG_UIKIT)
+  set(INCDIR ${CMAKE_CURRENT_LIST_DIR}/include)
   set(CSRCS)
 
-  if(CONFIG_LVX_USE_FONT_MANAGER)
-    file(GLOB CSRCS_FONT font_manager/*.c)
-    list(APPEND CSRCS_FONT lvx_font_manager.c)
-    list(APPEND CSRCS_FONT lvx_font_stress.c)
+  if(CONFIG_UIKIT_FONT_MANAGER)
+    file(GLOB CSRCS_FONT src/font_manager/*.c)
+    list(APPEND CSRCS_FONT src/uikit_font_manager.c)
     list(APPEND CSRCS ${CSRCS_FONT})
     list(APPEND INCDIR ${NUTTX_APPS_DIR}/netutils/cjson/cJSON)
   endif()
 
-  if(CONFIG_LVX_USE_VIDEO_ADAPTER)
-    file(GLOB CSRCS_VIDEO_ADAPTER video/*.c)
+  if(CONFIG_UIKIT_VIDEO_ADAPTER)
+    file(GLOB CSRCS_VIDEO_ADAPTER src/video/*.c)
     list(APPEND CSRCS ${CSRCS_VIDEO_ADAPTER})
     list(APPEND INCDIR ${NUTTX_APPS_DIR}/frameworks/media/include)
     list(APPEND INCDIR ${NUTTX_APPS_DIR}/netutils/cjson/cJSON)
   endif()
 
-  if(CONFIG_LVX_USE_ANIMENGINE_ADAPTER)
-    file(GLOB CSRCS_ANIMENGINE_ADAPTER animengine/*.c)
-    list(APPEND CSRCS ${CSRCS_ANIMENGINE_ADAPTER})
-    list(APPEND DEPENDS_LIBS_INCDIR
-         ${NUTTX_APPS_DIR}/frameworks/graphics/animengine/include)
-  endif()
-
-  if(CONFIG_LVX_USE_QRSCAN)
-    file(GLOB CSRCS_QRSCAN qrscan/*.c)
+  if(CONFIG_UIKIT_QRSCAN)
+    file(GLOB CSRCS_QRSCAN src/qrscan/*.c)
     list(APPEND CSRCS ${CSRCS_QRSCAN})
   endif()
 
-  file(GLOB CSRCS_DRAW draw/shapes/*.c)
-  list(APPEND CSRCS_DRAW lvx_async.c)
-  list(APPEND CSRCS_DRAW lv_ext.c)
+  file(GLOB CSRCS_DRAW src/draw/shapes/*.c)
+  list(APPEND CSRCS_DRAW src/uikit_async.c)
+  list(APPEND CSRCS_DRAW src/uikit.c)
   list(APPEND CSRCS ${CSRCS_DRAW})
 
   # ############################################################################
   # Library Configuration
   # ############################################################################
 
-  nuttx_add_library(lvglext STATIC)
-  target_sources(lvglext PRIVATE ${CSRCS})
-  target_include_directories(lvglext PRIVATE ${INCDIR} ${DEPENDS_LIBS_INCDIR})
-  nuttx_export_header(TARGET lvglext INCLUDE_DIRECTORIES ${INCDIR})
+  nuttx_add_library(uikit STATIC)
+  target_sources(uikit PRIVATE ${CSRCS})
+  target_include_directories(uikit PRIVATE ${INCDIR} ${DEPENDS_LIBS_INCDIR})
+
+  set_property(
+    TARGET nuttx
+    APPEND
+    PROPERTY NUTTX_INCLUDE_DIRECTORIES ${CMAKE_CURRENT_LIST_DIR}/include)
 
   add_subdirectory(${CMAKE_CURRENT_LIST_DIR}/test)
 endif()

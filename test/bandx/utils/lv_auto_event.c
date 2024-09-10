@@ -15,9 +15,9 @@
  */
 #include "lv_auto_event.h"
 
-static void lv_auto_event_task_handler(lv_timer_t * task)
+static void lv_auto_event_task_handler(lv_timer_t* task)
 {
-    lv_auto_event_t * ae = (lv_auto_event_t *)(task->user_data);
+    lv_auto_event_t* ae = (lv_auto_event_t*)(task->user_data);
 
     lv_obj_send_event(
         *(ae->auto_event_data[ae->run_index].obj_p),
@@ -26,20 +26,19 @@ static void lv_auto_event_task_handler(lv_timer_t * task)
 
     ae->run_index++;
 
-    if(ae->run_index < ae->len) {
+    if (ae->run_index < ae->len) {
         lv_timer_set_period(task, ae->auto_event_data[ae->run_index].delay);
-    }
-    else {
+    } else {
         lv_timer_del(task);
         lv_free(ae);
     }
 }
 
-lv_auto_event_t * lv_auto_event_create(lv_auto_event_data_t * auto_event_data, uint32_t len)
+lv_auto_event_t* lv_auto_event_create(lv_auto_event_data_t* auto_event_data, uint32_t len)
 {
-    lv_auto_event_t * ae = lv_malloc(sizeof(lv_auto_event_t));
+    lv_auto_event_t* ae = lv_malloc(sizeof(lv_auto_event_t));
 
-    if(ae == NULL) {
+    if (ae == NULL) {
         return NULL;
     }
 
@@ -50,9 +49,9 @@ lv_auto_event_t * lv_auto_event_create(lv_auto_event_data_t * auto_event_data, u
     return ae;
 }
 
-void lv_auto_event_del(lv_auto_event_t * ae)
+void lv_auto_event_del(lv_auto_event_t* ae)
 {
-    if(ae == NULL) {
+    if (ae == NULL) {
         return;
     }
 

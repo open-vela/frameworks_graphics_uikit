@@ -8,15 +8,14 @@
  *********************/
 #include "page.h"
 
-
 #define APP_ENTRY_CNT 7
 /**********************
  *      TYPEDEFS
  **********************/
 
 typedef struct {
-    const void * name;
-    const char * text;
+    const void* name;
+    const char* text;
     uint32_t bg_color;
 } app_entry_t;
 
@@ -52,7 +51,7 @@ typedef struct {
  *   STATIC FUNCTIONS
  **********************/
 
-static void app_icon_click_anim(lv_obj_t * img, bool ispress)
+static void app_icon_click_anim(lv_obj_t* img, bool ispress)
 {
     lv_anim_t a;
     lv_anim_init(&a);
@@ -69,42 +68,41 @@ static void app_icon_click_anim(lv_obj_t * img, bool ispress)
     lv_anim_start(&a);
 }
 
-static void on_app_icon_event(lv_event_t * e)
+static void on_app_icon_event(lv_event_t* e)
 {
-    page_ctx_t * ctx = lv_event_get_user_data(e);
-    lv_obj_t * icon = lv_event_get_current_target(e);
+    page_ctx_t* ctx = lv_event_get_user_data(e);
+    lv_obj_t* icon = lv_event_get_current_target(e);
     lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * img = lv_obj_get_child(icon, 0);
+    lv_obj_t* img = lv_obj_get_child(icon, 0);
 
-    switch(code) {
-        case LV_EVENT_PRESSED:
-            app_icon_click_anim(img, true);
-            break;
-        case LV_EVENT_RELEASED:
-        case LV_EVENT_PRESS_LOST:
-            app_icon_click_anim(img, false);
-            break;
-        case LV_EVENT_CLICKED: {
-                const app_entry_t * entry = lv_obj_get_user_data(icon);
+    switch (code) {
+    case LV_EVENT_PRESSED:
+        app_icon_click_anim(img, true);
+        break;
+    case LV_EVENT_RELEASED:
+    case LV_EVENT_PRESS_LOST:
+        app_icon_click_anim(img, false);
+        break;
+    case LV_EVENT_CLICKED: {
+        const app_entry_t* entry = lv_obj_get_user_data(icon);
 
-                page_push(&ctx->base, entry->name, NULL);
-            }
-            break;
-        default:
-            break;
+        page_push(&ctx->base, entry->name, NULL);
+    } break;
+    default:
+        break;
     }
 }
 
-static void app_icon_create(page_ctx_t * ctx, lv_obj_t * par, const app_entry_t * entry)
+static void app_icon_create(page_ctx_t* ctx, lv_obj_t* par, const app_entry_t* entry)
 {
-    lv_obj_t * cont = lv_obj_create(par);
+    lv_obj_t* cont = lv_obj_create(par);
     lv_obj_remove_style_all(cont);
     lv_obj_add_style(cont, &ctx->cont_style, 0);
     lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
     lv_obj_set_flex_align(cont, LV_FLEX_ALIGN_START, LV_FLEX_ALIGN_CENTER, LV_FLEX_ALIGN_CENTER);
 
-    lv_obj_t * icon = lv_obj_create(cont);
-    lv_style_t * trans_style = resource_get_style("btn_trans");
+    lv_obj_t* icon = lv_obj_create(cont);
+    lv_style_t* trans_style = resource_get_style("btn_trans");
     lv_obj_remove_style_all(icon);
     lv_obj_add_style(icon, &ctx->icon_style, 0);
 
@@ -115,40 +113,39 @@ static void app_icon_create(page_ctx_t * ctx, lv_obj_t * par, const app_entry_t 
     lv_obj_add_style(icon, trans_style, LV_STATE_DEFAULT);
 
     lv_obj_set_style_bg_color(icon, lv_color_hex(entry->bg_color), 0);
-    lv_obj_set_user_data(icon, (void *)entry);
+    lv_obj_set_user_data(icon, (void*)entry);
     lv_obj_add_event(icon, on_app_icon_event, LV_EVENT_ALL, ctx);
     lv_obj_clear_flag(icon, LV_OBJ_FLAG_SCROLLABLE);
 
-    lv_obj_t * img = lv_img_create(icon);
+    lv_obj_t* img = lv_img_create(icon);
     lv_img_set_src(img, resource_get_img(entry->name));
     lv_obj_center(img);
 
-    lv_obj_t * label = lv_label_create(cont);
+    lv_obj_t* label = lv_label_create(cont);
     lv_obj_add_style(label, &ctx->label_style, 0);
     lv_label_set_text(label, entry->text);
 }
 
-static void on_root_event(lv_event_t * e)
+static void on_root_event(lv_event_t* e)
 {
-    lv_obj_t * root = lv_event_get_target(e);
+    lv_obj_t* root = lv_event_get_target(e);
     lv_event_code_t code = lv_event_get_code(e);
-    page_ctx_t * ctx = lv_obj_get_user_data(root);
+    page_ctx_t* ctx = lv_obj_get_user_data(root);
 
-    if(code == LV_EVENT_GESTURE) {
+    if (code == LV_EVENT_GESTURE) {
         lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-        if(dir == LV_DIR_RIGHT) {
+        if (dir == LV_DIR_RIGHT) {
             lv_obj_send_event(root, LV_EVENT_LEAVE, NULL);
         }
-    }
-    else if(code == LV_EVENT_LEAVE) {
+    } else if (code == LV_EVENT_LEAVE) {
         page_pop(&ctx->base);
     }
 }
 
-static void on_page_construct(lv_fragment_t * self, void * args)
+static void on_page_construct(lv_fragment_t* self, void* args)
 {
     LV_LOG_INFO("self: %p args: %p", self, args);
-    page_ctx_t * ctx = (page_ctx_t *)self;
+    page_ctx_t* ctx = (page_ctx_t*)self;
 
     lv_style_init(&ctx->cont_style);
     lv_style_set_width(&ctx->cont_style, LV_PCT(100));
@@ -173,36 +170,35 @@ static void on_page_construct(lv_fragment_t * self, void * args)
         { "settings", "Settings", 0x0089FF },
     };
 
-    for(int i = 0; i < APP_ENTRY_CNT; i++) {
+    for (int i = 0; i < APP_ENTRY_CNT; i++) {
         ctx->app_entry[i] = app_entry[i];
     }
-
 }
 
-static void on_page_destruct(lv_fragment_t * self)
+static void on_page_destruct(lv_fragment_t* self)
 {
     LV_LOG_INFO("self: %p", self);
-    page_ctx_t * ctx = (page_ctx_t *)self;
+    page_ctx_t* ctx = (page_ctx_t*)self;
     lv_style_reset(&ctx->cont_style);
     lv_style_reset(&ctx->icon_style);
     lv_style_reset(&ctx->label_style);
 }
 
-static void on_page_attached(lv_fragment_t * self)
+static void on_page_attached(lv_fragment_t* self)
 {
     LV_LOG_INFO("self: %p", self);
 }
 
-static void on_page_detached(lv_fragment_t * self)
+static void on_page_detached(lv_fragment_t* self)
 {
     LV_LOG_INFO("self: %p", self);
 }
 
-static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
+static lv_obj_t* on_page_create(lv_fragment_t* self, lv_obj_t* container)
 {
     LV_LOG_INFO("self: %p container: %p", self, container);
 
-    lv_obj_t * root = lv_obj_create(container);
+    lv_obj_t* root = lv_obj_create(container);
     lv_obj_remove_style_all(root);
     lv_obj_add_style(root, resource_get_style("root_def"), 0);
     lv_obj_add_event(root, on_root_event, LV_EVENT_ALL, NULL);
@@ -211,11 +207,11 @@ static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
     return root;
 }
 
-static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
+static void on_page_created(lv_fragment_t* self, lv_obj_t* obj)
 {
     LV_LOG_INFO("self: %p obj: %p", self, obj);
 
-    page_ctx_t * ctx = (page_ctx_t *)self;
+    page_ctx_t* ctx = (page_ctx_t*)self;
 
     /* root */
     lv_obj_set_flex_flow(obj, LV_FLEX_FLOW_COLUMN);
@@ -224,7 +220,7 @@ static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
     lv_obj_set_style_pad_ver(obj, APP_ICON_PAD_VER, 0);
 
     /* apps */
-    for(int i = 0; i < APP_ENTRY_CNT; i++) {
+    for (int i = 0; i < APP_ENTRY_CNT; i++) {
         app_icon_create(
             ctx,
             obj,
@@ -233,29 +229,29 @@ static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
 
     /* shadow image */
     {
-        lv_obj_t * img1 = lv_img_create(obj);
+        lv_obj_t* img1 = lv_img_create(obj);
         lv_img_set_src(img1, resource_get_img("icon_shadow_up"));
         lv_obj_align(img1, LV_ALIGN_TOP_MID, 0, -APP_ICON_PAD_VER);
         lv_obj_add_flag(img1, LV_OBJ_FLAG_FLOATING);
 
-        lv_obj_t * img2 = lv_img_create(obj);
+        lv_obj_t* img2 = lv_img_create(obj);
         lv_img_set_src(img2, resource_get_img("icon_shadow_down"));
         lv_obj_align(img2, LV_ALIGN_BOTTOM_MID, 0, APP_ICON_PAD_VER);
         lv_obj_add_flag(img2, LV_OBJ_FLAG_FLOATING);
     }
 }
 
-static void on_page_will_delete(lv_fragment_t * self, lv_obj_t * obj)
+static void on_page_will_delete(lv_fragment_t* self, lv_obj_t* obj)
 {
     LV_LOG_INFO("self: %p obj: %p", self, obj);
 }
 
-static void on_page_deleted(lv_fragment_t * self, lv_obj_t * obj)
+static void on_page_deleted(lv_fragment_t* self, lv_obj_t* obj)
 {
     LV_LOG_INFO("self: %p obj: %p", self, obj);
 }
 
-static bool on_page_event(lv_fragment_t * self, int code, void * user_data)
+static bool on_page_event(lv_fragment_t* self, int code, void* user_data)
 {
     LV_LOG_INFO("self: %p code: %d user_data: %p", self, code, user_data);
     return false;

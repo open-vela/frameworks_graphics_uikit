@@ -6,13 +6,13 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "lvx_draw_demos.h"
+#include "draw_demos.h"
 #include "lvgl.h"
 
 #if LV_USE_VECTOR_GRAPHIC
+#include "sys/time.h"
 #include "time.h"
 #include "unistd.h"
-#include "sys/time.h"
 
 /*********************
  *      DEFINES
@@ -25,7 +25,7 @@
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static lv_obj_t * lv_tiger_create(lv_obj_t * parent);
+static lv_obj_t* lv_tiger_create(lv_obj_t* parent);
 
 /**********************
  *  STATIC VARIABLES
@@ -46,49 +46,49 @@ extern const float tigerPoints[];
 typedef struct _pathData {
     lv_vector_fill_t m_fillRule;
     int32_t m_paintMode; /* 1: fill, 2 stroke*/
-    lv_vector_stroke_cap_t  m_capStyle;
+    lv_vector_stroke_cap_t m_capStyle;
     lv_vector_stroke_join_t m_joinStyle;
-    float         m_miterLimit;
-    float         m_lineWidth;
-    lv_color_t     m_fcolor;
-    lv_color_t     m_scolor;
-    lv_vector_path_t   *  m_path;
+    float m_miterLimit;
+    float m_lineWidth;
+    lv_color_t m_fcolor;
+    lv_color_t m_scolor;
+    lv_vector_path_t* m_path;
 } pathData;
 
 typedef struct _PS {
-    pathData  *  m_paths;
-    int             m_numPaths;
+    pathData* m_paths;
+    int m_numPaths;
 } PS;
 
-static PS * PS_construct(const char * commands, int commandCount, const float * points, int pointCount)
+static PS* PS_construct(const char* commands, int commandCount, const float* points, int pointCount)
 {
-    PS * ps = (PS *)lv_malloc(sizeof(PS));
+    PS* ps = (PS*)lv_malloc(sizeof(PS));
     int p = 0;
     int c = 0;
     int i = 0;
     int paths = 0;
     int maxElements = 0;
 
-    while(c < commandCount) {
+    while (c < commandCount) {
         int elements, e;
         c += 4;
         p += 8;
         elements = (int)points[p++];
-        if(elements > maxElements)
+        if (elements > maxElements)
             maxElements = elements;
-        for(e = 0; e < elements; e++) {
-            switch(commands[c]) {
-                case 'M':
-                    p += 2;
-                    break;
-                case 'L':
-                    p += 2;
-                    break;
-                case 'C':
-                    p += 6;
-                    break;
-                case 'E':
-                    break;
+        for (e = 0; e < elements; e++) {
+            switch (commands[c]) {
+            case 'M':
+                p += 2;
+                break;
+            case 'L':
+                p += 2;
+                break;
+            case 'C':
+                p += 6;
+                break;
+            case 'E':
+                break;
             }
             c++;
         }
@@ -96,66 +96,66 @@ static PS * PS_construct(const char * commands, int commandCount, const float * 
     }
 
     ps->m_numPaths = paths;
-    ps->m_paths = (pathData *)lv_malloc(paths * sizeof(pathData));
+    ps->m_paths = (pathData*)lv_malloc(paths * sizeof(pathData));
 
     i = 0;
     p = 0;
     c = 0;
-    while(c < commandCount) {
+    while (c < commandCount) {
         int elements, e;
         // fill type
         int32_t paintMode = 0;
         ps->m_paths[i].m_fillRule = LV_VECTOR_FILL_NONZERO;
-        switch(commands[c]) {
-            case 'N':
-                break;
-            case 'F':
-                ps->m_paths[i].m_fillRule = LV_VECTOR_FILL_NONZERO;
-                paintMode |= 1;
-                break;
-            case 'E':
-                ps->m_paths[i].m_fillRule = LV_VECTOR_FILL_EVENODD;
-                paintMode |= 1;
-                break;
+        switch (commands[c]) {
+        case 'N':
+            break;
+        case 'F':
+            ps->m_paths[i].m_fillRule = LV_VECTOR_FILL_NONZERO;
+            paintMode |= 1;
+            break;
+        case 'E':
+            ps->m_paths[i].m_fillRule = LV_VECTOR_FILL_EVENODD;
+            paintMode |= 1;
+            break;
         }
         c++;
 
         // stroke type
-        switch(commands[c]) {
-            case 'N':
-                break;
-            case 'S':
-                paintMode |= 2;
-                break;
+        switch (commands[c]) {
+        case 'N':
+            break;
+        case 'S':
+            paintMode |= 2;
+            break;
         }
         ps->m_paths[i].m_paintMode = paintMode;
         c++;
 
-        //line cap
-        switch(commands[c]) {
-            case 'B':
-                ps->m_paths[i].m_capStyle = LV_VECTOR_STROKE_CAP_BUTT;
-                break;
-            case 'R':
-                ps->m_paths[i].m_capStyle = LV_VECTOR_STROKE_CAP_ROUND;
-                break;
-            case 'S':
-                ps->m_paths[i].m_capStyle = LV_VECTOR_STROKE_CAP_SQUARE;
-                break;
+        // line cap
+        switch (commands[c]) {
+        case 'B':
+            ps->m_paths[i].m_capStyle = LV_VECTOR_STROKE_CAP_BUTT;
+            break;
+        case 'R':
+            ps->m_paths[i].m_capStyle = LV_VECTOR_STROKE_CAP_ROUND;
+            break;
+        case 'S':
+            ps->m_paths[i].m_capStyle = LV_VECTOR_STROKE_CAP_SQUARE;
+            break;
         }
         c++;
 
-        //line join
-        switch(commands[c]) {
-            case 'M':
-                ps->m_paths[i].m_joinStyle = LV_VECTOR_STROKE_JOIN_MITER;
-                break;
-            case 'R':
-                ps->m_paths[i].m_joinStyle = LV_VECTOR_STROKE_JOIN_ROUND;
-                break;
-            case 'B':
-                ps->m_paths[i].m_joinStyle = LV_VECTOR_STROKE_JOIN_BEVEL;
-                break;
+        // line join
+        switch (commands[c]) {
+        case 'M':
+            ps->m_paths[i].m_joinStyle = LV_VECTOR_STROKE_JOIN_MITER;
+            break;
+        case 'R':
+            ps->m_paths[i].m_joinStyle = LV_VECTOR_STROKE_JOIN_ROUND;
+            break;
+        case 'B':
+            ps->m_paths[i].m_joinStyle = LV_VECTOR_STROKE_JOIN_BEVEL;
+            break;
         }
         c++;
 
@@ -175,39 +175,36 @@ static PS * PS_construct(const char * commands, int commandCount, const float * 
         // path element
         elements = (int)points[p++];
         ps->m_paths[i].m_path = lv_vector_path_create(LV_VECTOR_PATH_QUALITY_MEDIUM);
-        for(e = 0; e < elements; e++) {
-            switch(commands[c]) {
-                case 'M': {
-                        lv_fpoint_t pt;
-                        pt.x = points[p];
-                        pt.y = points[p + 1];
-                        lv_vector_path_move_to(ps->m_paths[i].m_path, &pt);
-                        p += 2;
-                    }
-                    break;
-                case 'L': {
-                        lv_fpoint_t pt;
-                        pt.x = points[p];
-                        pt.y = points[p + 1];
-                        lv_vector_path_line_to(ps->m_paths[i].m_path, &pt);
-                        p += 2;
-                    }
-                    break;
-                case 'C': {
-                        lv_fpoint_t pt[3];
-                        pt[0].x = points[p];
-                        pt[0].y = points[p + 1];
-                        pt[1].x = points[p + 2];
-                        pt[1].y = points[p + 3];
-                        pt[2].x = points[p + 4];
-                        pt[2].y = points[p + 5];
-                        lv_vector_path_cubic_to(ps->m_paths[i].m_path, &pt[0], &pt[1], &pt[2]);
-                        p += 6;
-                    }
-                    break;
-                case 'E':
-                    lv_vector_path_close(ps->m_paths[i].m_path);
-                    break;
+        for (e = 0; e < elements; e++) {
+            switch (commands[c]) {
+            case 'M': {
+                lv_fpoint_t pt;
+                pt.x = points[p];
+                pt.y = points[p + 1];
+                lv_vector_path_move_to(ps->m_paths[i].m_path, &pt);
+                p += 2;
+            } break;
+            case 'L': {
+                lv_fpoint_t pt;
+                pt.x = points[p];
+                pt.y = points[p + 1];
+                lv_vector_path_line_to(ps->m_paths[i].m_path, &pt);
+                p += 2;
+            } break;
+            case 'C': {
+                lv_fpoint_t pt[3];
+                pt[0].x = points[p];
+                pt[0].y = points[p + 1];
+                pt[1].x = points[p + 2];
+                pt[1].y = points[p + 3];
+                pt[2].x = points[p + 4];
+                pt[2].y = points[p + 5];
+                lv_vector_path_cubic_to(ps->m_paths[i].m_path, &pt[0], &pt[1], &pt[2]);
+                p += 6;
+            } break;
+            case 'E':
+                lv_vector_path_close(ps->m_paths[i].m_path);
+                break;
             }
             c++;
         }
@@ -216,10 +213,10 @@ static PS * PS_construct(const char * commands, int commandCount, const float * 
     return ps;
 }
 
-static void PS_destruct(PS * ps)
+static void PS_destruct(PS* ps)
 {
     int i;
-    for(i = 0; i < ps->m_numPaths; i++)  {
+    for (i = 0; i < ps->m_numPaths; i++) {
         lv_vector_path_delete(ps->m_paths[i].m_path);
     }
     lv_free(ps->m_paths);
@@ -228,23 +225,23 @@ static void PS_destruct(PS * ps)
 
 typedef struct {
     lv_obj_t obj;
-    lv_timer_t * anim_timer;
-    PS * tiger;
+    lv_timer_t* anim_timer;
+    PS* tiger;
     lv_matrix_t matrix;
 } lv_tiger_t;
 
 #define MY_CLASS &lv_tiger_class
 
-static void draw_animation(lv_obj_t * obj, lv_layer_t * layer)
+static void draw_animation(lv_obj_t* obj, lv_layer_t* layer)
 {
     int32_t w = lv_obj_get_width(obj);
     int32_t h = lv_obj_get_height(obj);
-    lv_tiger_t * t = (lv_tiger_t *)obj;
+    lv_tiger_t* t = (lv_tiger_t*)obj;
     float scale = (float)h / tigerMaxY;
 
-    lv_vector_dsc_t * ctx = lv_vector_dsc_create(layer);
+    lv_vector_dsc_t* ctx = lv_vector_dsc_create(layer);
 
-    lv_area_t rect = {0, 0, w, h};
+    lv_area_t rect = { 0, 0, w, h };
     lv_vector_dsc_set_fill_color(ctx, lv_color_white());
     lv_vector_clear_area(ctx, &rect); // clear screen
 
@@ -252,14 +249,14 @@ static void draw_animation(lv_obj_t * obj, lv_layer_t * layer)
     lv_matrix_translate(&t->matrix, 100, 220);
     lv_matrix_scale(&t->matrix, scale, scale);
 
-    lv_matrix_translate(&t->matrix, w/2, h/2);
+    lv_matrix_translate(&t->matrix, w / 2, h / 2);
     lv_matrix_rotate(&t->matrix, 180.0f);
-    lv_matrix_translate(&t->matrix, -w/2, -h/2);
+    lv_matrix_translate(&t->matrix, -w / 2, -h / 2);
 
     lv_vector_dsc_set_transform(ctx, &t->matrix);
 
-    PS * ps = t->tiger;
-    for(int i = 0; i < ps->m_numPaths; i++) {
+    PS* ps = t->tiger;
+    for (int i = 0; i < ps->m_numPaths; i++) {
         lv_vector_dsc_set_fill_rule(ctx, ps->m_paths[i].m_fillRule);
         lv_vector_dsc_set_stroke_cap(ctx, ps->m_paths[i].m_capStyle);
         lv_vector_dsc_set_stroke_join(ctx, ps->m_paths[i].m_joinStyle);
@@ -268,17 +265,15 @@ static void draw_animation(lv_obj_t * obj, lv_layer_t * layer)
         lv_vector_dsc_set_stroke_color(ctx, ps->m_paths[i].m_scolor);
         lv_vector_dsc_set_fill_color(ctx, ps->m_paths[i].m_fcolor);
 
-        if(ps->m_paths[i].m_paintMode == 1) {
+        if (ps->m_paths[i].m_paintMode == 1) {
             lv_vector_dsc_set_stroke_opa(ctx, 0x0);
             lv_vector_dsc_set_fill_opa(ctx, 0xFF);
             lv_vector_dsc_add_path(ctx, ps->m_paths[i].m_path);
-        }
-        else if(ps->m_paths[i].m_paintMode == 2) {
+        } else if (ps->m_paths[i].m_paintMode == 2) {
             lv_vector_dsc_set_stroke_opa(ctx, 0xFF);
             lv_vector_dsc_set_fill_opa(ctx, 0x0);
             lv_vector_dsc_add_path(ctx, ps->m_paths[i].m_path);
-        }
-        else if(ps->m_paths[i].m_paintMode == 3) {
+        } else if (ps->m_paths[i].m_paintMode == 3) {
             lv_vector_dsc_set_stroke_opa(ctx, 0xFF);
             lv_vector_dsc_set_fill_opa(ctx, 0xFF);
             lv_vector_dsc_add_path(ctx, ps->m_paths[i].m_path);
@@ -289,15 +284,15 @@ static void draw_animation(lv_obj_t * obj, lv_layer_t * layer)
     lv_vector_dsc_delete(ctx);
 }
 
-static void widget_draw(lv_tiger_t * tiger_widget)
+static void widget_draw(lv_tiger_t* tiger_widget)
 {
-    lv_obj_t * obj = (lv_obj_t *)tiger_widget;
+    lv_obj_t* obj = (lv_obj_t*)tiger_widget;
     lv_obj_invalidate(obj);
 }
 
-static void anim_timer_cb(lv_timer_t * param)
+static void anim_timer_cb(lv_timer_t* param)
 {
-    lv_tiger_t * t = (lv_tiger_t *)param->user_data;
+    lv_tiger_t* t = (lv_tiger_t*)param->user_data;
     widget_draw(t);
 }
 
@@ -305,18 +300,18 @@ static void anim_timer_cb(lv_timer_t * param)
  *   GLOBAL FUNCTIONS
  **********************/
 
-void lvx_draw_demo_tiger(char * info[], int size, void * param)
+void uikit_draw_demo_tiger(char* info[], int size, void* param)
 {
-    lv_obj_t * tiger_widget = lv_tiger_create(lv_scr_act());
+    lv_obj_t* tiger_widget = lv_tiger_create(lv_scr_act());
     lv_obj_set_size(tiger_widget, LV_PCT(100), LV_PCT(100));
 }
 
-static void lv_tiger_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-static void lv_tiger_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-static void lv_tiger_event(const lv_obj_class_t * class_p, lv_event_t * e);
-static void lv_tiger_draw(lv_obj_t * obj, lv_event_t * e);
+static void lv_tiger_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj);
+static void lv_tiger_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj);
+static void lv_tiger_event(const lv_obj_class_t* class_p, lv_event_t* e);
+static void lv_tiger_draw(lv_obj_t* obj, lv_event_t* e);
 
-const lv_obj_class_t lv_tiger_class  = {
+const lv_obj_class_t lv_tiger_class = {
     .constructor_cb = lv_tiger_constructor,
     .destructor_cb = lv_tiger_destructor,
     .event_cb = lv_tiger_event,
@@ -325,37 +320,37 @@ const lv_obj_class_t lv_tiger_class  = {
     .name = "tiger",
 };
 
-static lv_obj_t * lv_tiger_create(lv_obj_t * parent)
+static lv_obj_t* lv_tiger_create(lv_obj_t* parent)
 {
     LV_LOG_INFO("begin");
-    lv_obj_t * obj = lv_obj_class_create_obj(MY_CLASS, parent);
+    lv_obj_t* obj = lv_obj_class_create_obj(MY_CLASS, parent);
     lv_obj_class_init_obj(obj);
     return obj;
 }
 
-static void lv_tiger_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+static void lv_tiger_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 {
     LV_UNUSED(class_p);
-    lv_tiger_t * tiger = (lv_tiger_t *)obj;
+    lv_tiger_t* tiger = (lv_tiger_t*)obj;
     tiger->tiger = PS_construct(tigerCommands, tigerCommandCount, tigerPoints, tigerPointCount);
     tiger->anim_timer = lv_timer_create(anim_timer_cb, 16, tiger);
 }
 
-static void lv_tiger_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+static void lv_tiger_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 {
     LV_UNUSED(class_p);
-    lv_tiger_t * tiger = (lv_tiger_t *)obj;
+    lv_tiger_t* tiger = (lv_tiger_t*)obj;
     lv_timer_delete(tiger->anim_timer);
     PS_destruct(tiger->tiger);
 }
 
-static void lv_tiger_draw(lv_obj_t * obj, lv_event_t * e)
+static void lv_tiger_draw(lv_obj_t* obj, lv_event_t* e)
 {
-    lv_layer_t * layer = lv_event_get_layer(e);
+    lv_layer_t* layer = lv_event_get_layer(e);
     draw_animation(obj, layer);
 }
 
-static void lv_tiger_event(const lv_obj_class_t * class_p, lv_event_t * e)
+static void lv_tiger_event(const lv_obj_class_t* class_p, lv_event_t* e)
 {
     LV_UNUSED(class_p);
 
@@ -363,11 +358,12 @@ static void lv_tiger_event(const lv_obj_class_t * class_p, lv_event_t * e)
 
     /*Call the ancestor's event handler*/
     res = lv_obj_event_base(MY_CLASS, e);
-    if(res != LV_RESULT_OK) return;
+    if (res != LV_RESULT_OK)
+        return;
 
     lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t * obj = lv_event_get_current_target(e);
-    if(code == LV_EVENT_DRAW_MAIN) {
+    lv_obj_t* obj = lv_event_get_current_target(e);
+    if (code == LV_EVENT_DRAW_MAIN) {
         lv_tiger_draw(obj, e);
     }
 }
@@ -377,10 +373,10 @@ static void lv_tiger_event(const lv_obj_class_t * class_p, lv_event_t * e)
  **********************/
 #else
 
-void lvx_draw_demo_tiger(char * info[], int size, void * param)
+void uikit_draw_demo_tiger(char* info[], int size, void* param)
 {
     /*fallback for online examples*/
-    lv_obj_t * label = lv_label_create(lv_screen_active());
+    lv_obj_t* label = lv_label_create(lv_screen_active());
     lv_label_set_text(label, "Vector graphics is not enabled");
     lv_obj_center(label);
 }
