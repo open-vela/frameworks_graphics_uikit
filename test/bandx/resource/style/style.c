@@ -33,18 +33,18 @@
  *   GLOBAL FUNCTIONS
  **********************/
 
-void style_empty_init(lv_style_t * style)
+void style_empty_init(lv_style_t* style)
 {
 }
 
-void style_root_def_init(lv_style_t * style)
+void style_root_def_init(lv_style_t* style)
 {
     lv_style_set_bg_color(style, lv_color_black());
     lv_style_set_bg_opa(style, LV_OPA_COVER);
     lv_style_set_size(style, LV_PCT(100), LV_PCT(100));
 }
 
-void style_btn_trans_init(lv_style_t * style)
+void style_btn_trans_init(lv_style_t* style)
 {
     static const lv_style_prop_t props[] = {
         LV_STYLE_BG_COLOR,

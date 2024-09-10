@@ -25,11 +25,11 @@ extern "C" {
 #define LV_ANIM_TIME_DEFAULT 300
 #define LV_ANIM_EXEC(attr) (lv_anim_exec_xcb_t) lv_obj_set_##attr
 
-bool lv_obj_del_safe(lv_obj_t ** obj);
-void lv_obj_set_opa_scale(lv_obj_t * obj, lv_opa_t opa);
-lv_opa_t lv_obj_get_opa_scale(lv_obj_t * obj);
+bool lv_obj_del_safe(lv_obj_t** obj);
+void lv_obj_set_opa_scale(lv_obj_t* obj, lv_opa_t opa);
+lv_opa_t lv_obj_get_opa_scale(lv_obj_t* obj);
 void lv_obj_add_anim(
-    lv_obj_t * obj, lv_anim_t * a,
+    lv_obj_t* obj, lv_anim_t* a,
     lv_anim_exec_xcb_t exec_cb,
     int32_t start,
     int32_t end,
@@ -40,14 +40,14 @@ void lv_obj_add_anim(
 #define LV_OBJ_ADD_ANIM(obj, attr, target, time)   \
     do {                                           \
         lv_obj_add_anim(                           \
-                                                   (obj), NULL,                           \
-                                                   (lv_anim_exec_xcb_t)lv_obj_set_##attr, \
-                                                   lv_obj_get_##attr(obj),                \
-                                                   (target),                              \
-                                                   (time),                                \
-                                                   0,                                     \
-                                                   NULL,                                  \
-                                                   lv_anim_path_ease_out);                \
+            (obj), NULL,                           \
+            (lv_anim_exec_xcb_t)lv_obj_set_##attr, \
+            lv_obj_get_##attr(obj),                \
+            (target),                              \
+            (time),                                \
+            0,                                     \
+            NULL,                                  \
+            lv_anim_path_ease_out);                \
     } while (0)
 
 #ifdef __cplusplus

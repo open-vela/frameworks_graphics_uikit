@@ -1,5 +1,5 @@
 ############################################################################
-# apps/graphics/lvgl/ext/Make.defs
+# frameworks/graphics/uikit/Make.defs
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
@@ -18,9 +18,11 @@
 #
 ############################################################################
 
-ifneq ($(CONFIG_LVGL_EXTENSION),)
+ifneq ($(CONFIG_UIKIT),)
+CONFIGURED_APPS += $(APPDIR)/frameworks/graphics/uikit
 
-CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/graphics/lvgl/ext
-CXXFLAGS += ${INCDIR_PREFIX}$(APPDIR)/graphics/lvgl/ext
-include $(APPDIR)/graphics/lvgl/ext/test/Make.defs
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/frameworks/graphics/uikit/include
+CXXFLAGS += ${INCDIR_PREFIX}$(APPDIR)/frameworks/graphics/uikit/include
+
+-include $(APPDIR)/frameworks/graphics/uikit/test/Make.defs
 endif
