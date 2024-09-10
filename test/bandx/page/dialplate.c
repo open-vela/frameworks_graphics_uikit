@@ -19,10 +19,10 @@ typedef struct {
     lv_coord_t y;
     lv_coord_t bar_width;
     lv_coord_t arc_radius;
-    const void * img_src;
-    lv_obj_t * label;
-    lv_obj_t * bar;
-    lv_obj_t * arc;
+    const void* img_src;
+    lv_obj_t* label;
+    lv_obj_t* bar;
+    lv_obj_t* arc;
 } color_bar_t;
 
 enum color_bar_index {
@@ -40,8 +40,8 @@ typedef struct {
     lv_obj_t* bar_batt;
     lv_obj_t* label_time_hour;
     lv_obj_t* label_time_min;
-    lv_timer_t * task_label_time_update;
-    lv_timer_t * task_color_bar_update;
+    lv_timer_t* task_label_time_update;
+    lv_timer_t* task_color_bar_update;
     struct clock_value_s clock_value;
     color_bar_t color_bar_grp[COLOR_BAR_MAX];
 } page_ctx_t;
@@ -65,9 +65,9 @@ typedef struct {
 /**********************
  *   STATIC FUNCTIONS
  **********************/
-static lv_obj_t * obj_batt_create(lv_obj_t * par)
+static lv_obj_t* obj_batt_create(lv_obj_t* par)
 {
-    lv_obj_t * bar = lv_obj_create(par);
+    lv_obj_t* bar = lv_obj_create(par);
     lv_obj_set_style_bg_color(bar, lv_color_white(), LV_PART_MAIN);
     lv_obj_clear_flag(bar, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_set_style_border_width(bar, 0, LV_PART_MAIN);
@@ -78,42 +78,42 @@ static lv_obj_t * obj_batt_create(lv_obj_t * par)
     return bar;
 }
 
-static void topbar_create(lv_obj_t * par)
+static void topbar_create(lv_obj_t* par)
 {
-    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+    page_ctx_t* ctx = (page_ctx_t*)lv_obj_get_user_data(par);
 
-    lv_obj_t * topbar = lv_obj_create(par);
+    lv_obj_t* topbar = lv_obj_create(par);
     lv_obj_set_size(topbar, LV_PCT(100), 25);
     lv_obj_set_style_bg_color(topbar, lv_color_black(), LV_PART_MAIN);
     lv_obj_set_style_border_width(topbar, 0, LV_PART_MAIN);
     lv_obj_clear_flag(topbar, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_align(topbar, LV_ALIGN_TOP_MID, 0, 0);
 
-    lv_obj_t * img1 = lv_img_create(topbar);
+    lv_obj_t* img1 = lv_img_create(topbar);
     lv_img_set_src(img1, resource_get_img("icon_bluetooth"));
     lv_obj_align(img1, LV_ALIGN_LEFT_MID, 20, 0);
 
-    lv_obj_t * img2 = lv_img_create(topbar);
+    lv_obj_t* img2 = lv_img_create(topbar);
     lv_img_set_src(img2, resource_get_img("icon_battery"));
     lv_obj_set_style_pad_all(topbar, 0, LV_PART_MAIN);
     lv_obj_align(img2, LV_ALIGN_RIGHT_MID, -20, 0);
 
-    lv_obj_t * bar = obj_batt_create(img2);
+    lv_obj_t* bar = obj_batt_create(img2);
     ctx->bar_batt = bar;
 }
 
-static void label_date_create(lv_obj_t * par)
+static void label_date_create(lv_obj_t* par)
 {
-    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+    page_ctx_t* ctx = (page_ctx_t*)lv_obj_get_user_data(par);
 
-    lv_obj_t * spangroup = lv_spangroup_create(par);
+    lv_obj_t* spangroup = lv_spangroup_create(par);
     lv_obj_set_style_text_font(spangroup, resource_get_font("erasbd_23"), LV_PART_MAIN);
     lv_obj_set_style_text_color(spangroup, lv_color_white(), LV_PART_MAIN);
     lv_obj_align(spangroup, LV_ALIGN_TOP_MID, 0, 25);
 
-    lv_span_t * span1 = lv_spangroup_new_span(spangroup);
-    lv_span_t * span2 = lv_spangroup_new_span(spangroup);
-    lv_span_t * span3 = lv_spangroup_new_span(spangroup);
+    lv_span_t* span1 = lv_spangroup_new_span(spangroup);
+    lv_span_t* span2 = lv_spangroup_new_span(spangroup);
+    lv_span_t* span3 = lv_spangroup_new_span(spangroup);
     lv_style_set_text_color(&span2->style, lv_color_hex(0xF15A24));
 
     ctx->span_month = span1;
@@ -121,17 +121,17 @@ static void label_date_create(lv_obj_t * par)
     ctx->span_week = span3;
 }
 
-static void label_time_create(lv_obj_t * par)
+static void label_time_create(lv_obj_t* par)
 {
-    page_ctx_t * ctx = (page_ctx_t *) lv_obj_get_user_data(par);
+    page_ctx_t* ctx = (page_ctx_t*)lv_obj_get_user_data(par);
 
-    lv_obj_t * label = lv_label_create(par);
+    lv_obj_t* label = lv_label_create(par);
     lv_obj_set_style_text_font(label, resource_get_font("erasbd_128"), LV_PART_MAIN);
     lv_obj_set_style_text_color(label, lv_color_white(), LV_PART_MAIN);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 33);
     ctx->label_time_hour = label;
 
-    lv_obj_t * img = lv_img_create(par);
+    lv_obj_t* img = lv_img_create(par);
     lv_img_set_src(img, resource_get_img("num_shadow"));
     lv_obj_set_pos(img, 16, 136);
 
@@ -146,14 +146,14 @@ static void label_time_create(lv_obj_t * par)
     ctx->label_time_min = label;
 }
 
-static void label_time_update(lv_timer_t * task)
+static void label_time_update(lv_timer_t* task)
 {
-    page_ctx_t * ctx = (page_ctx_t *) task->user_data;
+    page_ctx_t* ctx = (page_ctx_t*)task->user_data;
     clock_get_value(&ctx->clock_value);
 
     char month_buf[32];
     char date_buf[32];
-    const char * week_str[] = {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"};
+    const char* week_str[] = { "SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT" };
     int week_index = ctx->clock_value.week % ARRAY_SIZE(week_str);
 
     lv_snprintf(month_buf, sizeof(month_buf), "%02d-", ctx->clock_value.month);
@@ -166,22 +166,22 @@ static void label_time_update(lv_timer_t * task)
     lv_label_set_text_fmt(ctx->label_time_min, "%02d", ctx->clock_value.min);
 }
 
-static void color_bar_create(lv_obj_t * par, color_bar_t * color_bar, int len)
+static void color_bar_create(lv_obj_t* par, color_bar_t* color_bar, int len)
 {
-    for(int i = 0; i < len; i++) {
+    for (int i = 0; i < len; i++) {
         lv_color_t color = lv_color_hex(color_bar[i].color);
         lv_coord_t y_pos = color_bar[i].y;
         lv_coord_t bar_width = color_bar[i].bar_width;
         lv_coord_t arc_size = color_bar[i].arc_radius * 2;
 
-        lv_obj_t * bar = lv_bar_create(par);
+        lv_obj_t* bar = lv_bar_create(par);
         lv_bar_set_value(bar, 100, LV_ANIM_OFF);
         lv_obj_set_style_bg_color(bar, color, LV_PART_INDICATOR);
         lv_obj_set_style_bg_color(bar, color, LV_PART_MAIN);
         lv_obj_set_size(bar, bar_width, 32);
         lv_obj_set_pos(bar, -12, y_pos);
 
-        lv_obj_t * arc = lv_arc_create(par);
+        lv_obj_t* arc = lv_arc_create(par);
         lv_obj_set_style_arc_color(arc, color, LV_PART_INDICATOR);
         lv_obj_set_style_arc_width(
             arc,
@@ -198,17 +198,17 @@ static void color_bar_create(lv_obj_t * par, color_bar_t * color_bar, int len)
 
         lv_obj_align_to(arc, bar, LV_ALIGN_OUT_RIGHT_TOP, -arc_size / 2 - 10, 0);
 
-        lv_obj_t * img = lv_img_create(bar);
+        lv_obj_t* img = lv_img_create(bar);
         lv_img_set_src(img, resource_get_img(color_bar[i].img_src));
         lv_obj_align(img, LV_ALIGN_LEFT_MID, 20, 0);
 
-        if(i == COLOR_BAR_WEATHER) {
-            lv_obj_t * img_deg = lv_img_create(bar);
+        if (i == COLOR_BAR_WEATHER) {
+            lv_obj_t* img_deg = lv_img_create(bar);
             lv_img_set_src(img_deg, resource_get_img("centigrade"));
             lv_obj_align(img_deg, LV_ALIGN_RIGHT_MID, 0, 0);
         }
 
-        lv_obj_t * label = lv_label_create(bar);
+        lv_obj_t* label = lv_label_create(bar);
         lv_obj_set_style_text_font(
             label,
             resource_get_font("erasbd_28"),
@@ -227,9 +227,9 @@ static void color_bar_create(lv_obj_t * par, color_bar_t * color_bar, int len)
     }
 }
 
-static void color_bar_update(lv_timer_t * task)
+static void color_bar_update(lv_timer_t* task)
 {
-    page_ctx_t * ctx = (page_ctx_t *) task->user_data;
+    page_ctx_t* ctx = (page_ctx_t*)task->user_data;
 
     lv_label_set_text_fmt(ctx->color_bar_grp[COLOR_BAR_WEATHER].label, "15");
     lv_label_set_text_fmt(ctx->color_bar_grp[COLOR_BAR_STEP].label, "%d", imu_get_steps());
@@ -239,80 +239,73 @@ static void color_bar_update(lv_timer_t * task)
         (int)particle_sensor_get_beats());
 }
 
-static void on_root_event(lv_event_t * e)
+static void on_root_event(lv_event_t* e)
 {
-    lv_obj_t * root = lv_event_get_target(e);
+    lv_obj_t* root = lv_event_get_target(e);
     lv_event_code_t code = lv_event_get_code(e);
-    page_ctx_t * ctx = lv_obj_get_user_data(root);
+    page_ctx_t* ctx = lv_obj_get_user_data(root);
 
-    if(code == LV_EVENT_GESTURE) {
+    if (code == LV_EVENT_GESTURE) {
         lv_dir_t dir = lv_indev_get_gesture_dir(lv_indev_get_act());
-        if(dir == LV_DIR_LEFT) {
+        if (dir == LV_DIR_LEFT) {
             lv_obj_send_event(root, LV_EVENT_LEAVE, NULL);
         }
-    }
-    else if(code == LV_EVENT_LEAVE) {
+    } else if (code == LV_EVENT_LEAVE) {
         page_push(&ctx->base, "launcher", NULL);
     }
 }
 
-static void on_page_construct(lv_fragment_t * self, void * args)
+static void on_page_construct(lv_fragment_t* self, void* args)
 {
     LV_LOG_INFO("self: %p args: %p", self, args);
 
-    page_ctx_t * ctx = (page_ctx_t *) self;
+    page_ctx_t* ctx = (page_ctx_t*)self;
 
     color_bar_t color_bar_grp[COLOR_BAR_MAX] = {
-        {
-            .color = 0xF7931E,
+        { .color = 0xF7931E,
             .y = 245,
             .bar_width = 130,
             .arc_radius = 120,
-            .img_src = "weather"
-        },
+            .img_src = "weather" },
 
-        {
-            .color = 0x3FA9F5,
+        { .color = 0x3FA9F5,
             .y = 285,
             .bar_width = 130,
             .arc_radius = 80,
-            .img_src = "step"
-        },
+            .img_src = "step" },
 
-        {
-            .color = 0xED1C24,
+        { .color = 0xED1C24,
             .y = 325,
             .bar_width = 130,
             .arc_radius = 40,
-            .img_src = "heart"
-        },
+            .img_src = "heart" },
     };
 
-    for(int i = 0; i < COLOR_BAR_MAX; i++) {
+    for (int i = 0; i < COLOR_BAR_MAX; i++) {
         ctx->color_bar_grp[i] = color_bar_grp[i];
     }
 }
 
-static void on_page_destruct(lv_fragment_t * self)
+static void on_page_destruct(lv_fragment_t* self)
 {
     LV_LOG_INFO("self: %p", self);
 }
 
-static void on_page_attached(lv_fragment_t * self)
+static void on_page_attached(lv_fragment_t* self)
 {
     LV_LOG_INFO("self: %p", self);
 }
 
-static void on_page_detached(lv_fragment_t * self)
+static void on_page_detached(lv_fragment_t* self)
 {
     LV_LOG_INFO("self: %p", self);
 }
 
-static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
+static lv_obj_t* on_page_create(lv_fragment_t* self, lv_obj_t* container)
 {
     LV_LOG_INFO("self: %p container: %p", self, container);
 
-    lv_obj_t * root = lv_obj_create(container);
+    lv_obj_t* root = lv_obj_create(container);
     lv_obj_remove_style_all(root);
     lv_obj_add_style(root, resource_get_style("root_def"), 0);
     lv_obj_add_event(root, on_root_event, LV_EVENT_ALL, NULL);
@@ -321,11 +314,11 @@ static lv_obj_t * on_page_create(lv_fragment_t * self, lv_obj_t * container)
     return root;
 }
 
-static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
+static void on_page_created(lv_fragment_t* self, lv_obj_t* obj)
 {
     LV_LOG_INFO("self: %p obj: %p", self, obj);
 
-    page_ctx_t * ctx = (page_ctx_t *) self;
+    page_ctx_t* ctx = (page_ctx_t*)self;
     lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
     clock_get_value(&ctx->clock_value);
 
@@ -341,21 +334,21 @@ static void on_page_created(lv_fragment_t * self, lv_obj_t * obj)
     color_bar_update(ctx->task_color_bar_update);
 }
 
-static void on_page_will_delete(lv_fragment_t * self, lv_obj_t * obj)
+static void on_page_will_delete(lv_fragment_t* self, lv_obj_t* obj)
 {
     LV_LOG_INFO("self: %p obj: %p", self, obj);
 
-    page_ctx_t * ctx = (page_ctx_t *) self;
+    page_ctx_t* ctx = (page_ctx_t*)self;
     lv_timer_del(ctx->task_color_bar_update);
     lv_timer_del(ctx->task_label_time_update);
 }
 
-static void on_page_deleted(lv_fragment_t * self, lv_obj_t * obj)
+static void on_page_deleted(lv_fragment_t* self, lv_obj_t* obj)
 {
     LV_LOG_INFO("self: %p obj: %p", self, obj);
 }
 
-static bool on_page_event(lv_fragment_t * self, int code, void * user_data)
+static bool on_page_event(lv_fragment_t* self, int code, void* user_data)
 {
     LV_LOG_INFO("self: %p code: %d user_data: %p", self, code, user_data);
     return false;

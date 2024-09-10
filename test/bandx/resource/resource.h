@@ -30,11 +30,11 @@ extern "C" {
 
 void resource_init(void);
 
-const lv_font_t * resource_get_font(const char * key);
+const lv_font_t* resource_get_font(const char* key);
 
-const void * resource_get_img(const char * key);
+const void* resource_get_img(const char* key);
 
-lv_style_t * resource_get_style(const char * key);
+lv_style_t* resource_get_style(const char* key);
 
 /**********************
  *      MACROS
