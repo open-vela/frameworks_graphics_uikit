@@ -45,6 +45,9 @@ endif
 
 ifneq ($(CONFIG_LVX_USE_MARKDOWN),)
 CSRCS += $(wildcard ext/markdown/*.c)
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/cmark-gfm/src
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/cmark-gfm/extensions
 endif
 
 endif #CONFIG_UIKIT

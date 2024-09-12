@@ -28,7 +28,6 @@ extern "C" {
 #include <lvgl/lvgl.h>
 
 #ifdef CONFIG_LVX_USE_MARKDOWN
-#include <cmark/cmark-gfm.h>
 
 /*********************
  *      DEFINES
@@ -58,7 +57,7 @@ typedef void (*lv_markdown_unsupported_cb_t)(char * buff, uint32_t size, lv_styl
 
 typedef struct {
     lv_obj_t obj;
-    cmark_node * doc;
+    void * doc;
     void * ctx;
 
     lv_style_t thematic_break_style;
