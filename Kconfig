@@ -109,7 +109,7 @@ config UIKIT_QRSCAN
 
 config LVX_USE_MARKDOWN
 	bool "MarkDown library"
-	depends on LIB_CMARK
+	depends on LIB_CMARK_GFM
 	default n
 
 source "$APPSDIR/frameworks/graphics/uikit/test/Kconfig"

@@ -10,6 +10,9 @@ endif
 
 ifeq ($(CONFIG_LVX_USE_MARKDOWN), y)
 CSRCS += $(shell find -L markdown -name "*.c")
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/cmark-gfm/src
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/cmark-gfm/extensions
 endif
 
 ifeq ($(CONFIG_UIKIT_DEMO_TIME_OBJCREATION), y)

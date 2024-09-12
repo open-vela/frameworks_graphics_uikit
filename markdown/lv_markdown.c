@@ -22,11 +22,12 @@
 
 #ifdef CONFIG_LVX_USE_MARKDOWN
 
-#include <cmark/cmark-gfm-extension_api.h>
-#include <cmark/cmark-gfm-core-extensions.h>
-#include <cmark/strikethrough.h>
-#include <cmark/table.h>
-#include <cmark/latexmath.h>
+#include <cmark-gfm.h>
+#include <cmark-gfm-extension_api.h>
+#include <cmark-gfm-core-extensions.h>
+#include <strikethrough.h>
+#include <table.h>
+#include <latexmath.h>
 
 /*********************
  *      DEFINES
@@ -36,9 +37,6 @@
 #define LIST_MARKER_SIZE 8
 #define UNSUPPORTED_NODE_HINT 128
 #define THEMATIC_BREAK_PADDING 8
-
-#undef LV_LOG_INFO
-#define LV_LOG_INFO LV_LOG_USER
 
 /**********************
  *      TYPEDEFS
@@ -147,7 +145,7 @@ void lv_markdown_set_data(lv_obj_t * obj, const char * data, uint32_t data_len)
     lv_obj_clean(obj);
 
     mark->doc = parser_document(data, data_len, opts);
-    render_contents(obj, mark->doc, opts);
+    render_contents(obj, (cmark_node *)mark->doc, opts);
 }
 
 void lv_markdown_set_heading_style_cb(lv_obj_t * obj, lv_markdown_heading_style_cb_t cb)
@@ -224,7 +222,8 @@ static void lv_markdown_destructor(const lv_obj_class_t * class_p, lv_obj_t * ob
     LV_UNUSED(class_p);
     lv_markdown_t * mark = (lv_markdown_t *)obj;
     if(mark->doc) {
-        cmark_node_free(mark->doc);
+        cmark_node * node = (cmark_node *)mark->doc;
+        cmark_node_free(node);
         mark->doc = NULL;
     }
 }
