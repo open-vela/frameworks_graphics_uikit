@@ -6,7 +6,7 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "uikit/uikit.h"
+#include "../uikit_internal.h"
 
 #ifdef CONFIG_UIKIT_VIDEO_ADAPTER
 
