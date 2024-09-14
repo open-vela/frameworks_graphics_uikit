@@ -6,7 +6,7 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "uikit/uikit.h"
+#include "uikit_internal.h"
 
 /*********************
  *      DEFINES

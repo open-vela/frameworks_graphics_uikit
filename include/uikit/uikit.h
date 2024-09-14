@@ -27,28 +27,9 @@ extern "C" {
  **********************/
 struct vg_font_manager_t;
 
-typedef struct _vg_global_t {
-    vg_async_t async_info;
-
-#if (UIKIT_FONT_MANAGER != 0)
-    struct vg_font_manager_t* font_manager;
-#endif
-
-#if (UIKIT_VIDEO_ADAPTER != 0)
-    vg_video_vtable_t* video_vtable;
-#endif
-
-    void* user_data;
-} vg_global_t;
-
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
-static inline vg_global_t* VG_GLOBAL_DEFAULT(void)
-{
-    return (vg_global_t*)(LV_GLOBAL_DEFAULT()->user_data);
-}
-
 void* vg_get_user_data(void);
 
 void vg_set_user_data(void* data);

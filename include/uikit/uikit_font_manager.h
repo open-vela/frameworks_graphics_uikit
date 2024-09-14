@@ -18,7 +18,7 @@ extern "C" {
 #endif
 #include <lvgl/lvgl.h>
 
-#if (UIKIT_FONT_MANAGER != 0)
+#if UIKIT_FONT_MANAGER
 
 /*********************
  *      DEFINES

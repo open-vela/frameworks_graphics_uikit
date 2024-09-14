@@ -7,9 +7,9 @@
  *      INCLUDES
  *********************/
 
-#include "uikit/uikit.h"
+#include "uikit_internal.h"
 
-#if (UIKIT_FONT_MANAGER != 0)
+#if UIKIT_FONT_MANAGER
 #include "font_manager/font_manager.h"
 #include "font_manager/font_utils.h"
 #include <string.h>

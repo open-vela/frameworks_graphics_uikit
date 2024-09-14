@@ -6,7 +6,7 @@
 /*********************
  *      INCLUDES
  *********************/
-#include "uikit/uikit.h"
+#include "uikit_internal.h"
 #include "video/video_adapter.h"
 
 /*********************
@@ -40,6 +40,7 @@ static inline void _update_ext_global(void* data)
 
 void vg_init(void)
 {
+    lv_init();
     if (VG_GLOBAL_DEFAULT()) {
         LV_LOG_WARN("lv_ext has been initialized!");
         return;
@@ -54,11 +55,11 @@ void vg_init(void)
     lv_memset(data, 0x00, sizeof(vg_global_t));
     _update_ext_global(data);
 
-#if (UIKIT_FONT_MANAGER != 0)
+#if UIKIT_FONT_MANAGER
     vg_font_init();
 #endif
 
-#ifdef CONFIG_UIKIT_VIDEO_ADAPTER
+#if UIKIT_VIDEO_ADAPTER
     vg_video_adapter_init();
 #endif
 }
@@ -74,16 +75,18 @@ void vg_deinit(void)
 
     vg_async_refr_deinit();
 
-#if (UIKIT_FONT_MANAGER != 0)
+#if UIKIT_FONT_MANAGER
     vg_font_deinit();
 #endif
 
-#ifdef CONFIG_UIKIT_VIDEO_ADAPTER
+#if UIKIT_VIDEO_ADAPTER
     vg_video_adapter_uninit();
 #endif
 
     _update_ext_global(NULL);
     lv_free(data);
+
+    lv_deinit();
 }
 
 void* vg_get_user_data(void)
@@ -98,14 +101,14 @@ void vg_set_user_data(void* data)
 
 void vg_uv_deinit(void)
 {
-#ifdef CONFIG_UIKIT_VIDEO_ADAPTER
+#if UIKIT_VIDEO_ADAPTER
     vg_video_adapter_loop_deinit();
 #endif
 }
 
 void vg_uv_init(void* loop)
 {
-#ifdef CONFIG_UIKIT_VIDEO_ADAPTER
+#if UIKIT_VIDEO_ADAPTER
     vg_video_adapter_loop_init(loop);
 #endif
 }
