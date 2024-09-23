@@ -203,6 +203,12 @@ void lv_markdown_set_unsupported_cb(lv_obj_t * obj, lv_markdown_unsupported_cb_t
     mark->unsupported_cb = cb;
 }
 
+void lv_markdown_set_list_marker_width(lv_obj_t * obj, int32_t width)
+{
+    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    mark->list_marker_width = width;
+}
+
 /**********************
  *   STATIC FUNCTIONS
  **********************/
@@ -215,6 +221,8 @@ static void lv_markdown_constructor(const lv_obj_class_t * class_p, lv_obj_t * o
     lv_style_init(&mark->thematic_break_style);
     lv_style_init(&mark->paragraph_style);
     lv_style_init(&mark->url_style);
+
+    mark->list_marker_width = 20;
 }
 
 static void lv_markdown_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
@@ -269,7 +277,7 @@ static void enter_block(lv_markdown_t * mark)
     if(ctx->current_obj == NULL || ctx->block_type != MARKDOWN_BLOCK_TYPE_TEXT) {
         int32_t offset = 0;
         int32_t width = ctx->max_width;
-        if(ctx->list_level > 0) offset = (ctx->list_level - 1) * 20;
+        if(ctx->list_level > 0) offset = (ctx->list_level - 1) * mark->list_marker_width;
         if(ctx->is_inline) {
             if(ctx->inline_block_width > 0) width = ctx->inline_block_width;
             else {
@@ -416,7 +424,7 @@ static void render_node(cmark_node * node, cmark_event_type ev_type, lv_obj_t * 
                 if(entering) {
                     ctx->inline_offset = 0;
                     ctx->is_inline = true;
-                    ctx->inline_block_width = 20;
+                    ctx->inline_block_width = mark->list_marker_width;
                     ctx->inline_gap = 5;
 
                     enter_block(mark);

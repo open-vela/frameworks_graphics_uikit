@@ -60,6 +60,8 @@ typedef struct {
     void * doc;
     void * ctx;
 
+    int32_t list_marker_width;
+
     lv_style_t thematic_break_style;
     lv_style_t paragraph_style;
     lv_style_t url_style;
@@ -96,6 +98,7 @@ void lv_markdown_set_data(lv_obj_t * obj, const char * data, uint32_t data_len);
 
 void lv_markdown_set_heading_style_cb(lv_obj_t * obj, lv_markdown_heading_style_cb_t cb);
 void lv_markdown_set_list_marker_cb(lv_obj_t * obj, lv_markdown_list_marker_cb_t cb);
+void lv_markdown_set_list_marker_width(lv_obj_t * obj, int32_t width);
 void lv_markdown_set_thematic_break_style_cb(lv_obj_t * obj, lv_markdown_thematic_break_style_cb_t cb);
 void lv_markdown_set_paragraph_style_cb(lv_obj_t * obj, lv_markdown_paragraph_style_cb_t cb);
 void lv_markdown_set_text_deco_style_cb(lv_obj_t * obj, lv_markdown_text_deco_style_cb_t cb);
