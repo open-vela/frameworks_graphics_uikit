@@ -38,6 +38,9 @@
 #define UNSUPPORTED_NODE_HINT 128
 #define THEMATIC_BREAK_PADDING 8
 
+#undef LV_LOG_INFO
+#define LV_LOG_INFO(...) LV_LOG_USER(__VA_ARGS__)
+
 /**********************
  *      TYPEDEFS
  **********************/
@@ -553,12 +556,14 @@ static void render_node(cmark_node * node, cmark_event_type ev_type, lv_obj_t * 
                 switch(type) {
                     case CMARK_NODE_CODE:
                     case CMARK_NODE_CODE_BLOCK:
+                    case CMARK_NODE_HTML_BLOCK:
+                    case CMARK_NODE_HTML_INLINE:
                         ctx->block_type = MARKDOWN_BLOCK_TYPE_TEXT;
                         enter_block(mark);
                         ctx->unsupported_level++;
                         add_text(mark, NULL);
                         ctx->unsupported_level--;
-                        exit_block(mark);
+                        if(type == CMARK_NODE_CODE_BLOCK || type == CMARK_NODE_HTML_BLOCK) exit_block(mark);
                         LV_LOG_INFO("[%s NOT SUPPORT YET]\n", cmark_node_get_type_string(node));
                         return;
                     default:
@@ -570,6 +575,11 @@ static void render_node(cmark_node * node, cmark_event_type ev_type, lv_obj_t * 
                 else ctx->unsupported_level--;
 
                 if(ctx->unsupported_level == 0) {
+                    ctx->unsupported_level = 1;
+                    enter_block(mark);
+                    add_text(mark, NULL);
+                    exit_block(mark);
+                    ctx->unsupported_level = 0;
                     ctx->unsupported_node_type = 0;
                 }
 
