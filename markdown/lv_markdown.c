@@ -38,9 +38,6 @@
 #define UNSUPPORTED_NODE_HINT 128
 #define THEMATIC_BREAK_PADDING 8
 
-#undef LV_LOG_INFO
-#define LV_LOG_INFO(...) LV_LOG_USER(__VA_ARGS__)
-
 /**********************
  *      TYPEDEFS
  **********************/
@@ -574,11 +571,13 @@ static void render_node(cmark_node * node, cmark_event_type ev_type, lv_obj_t * 
                 if(entering) ctx->unsupported_level++;
                 else ctx->unsupported_level--;
 
-                if(ctx->unsupported_level == 0) {
+                if(ctx->unsupported_level == 0 && !entering) {
                     ctx->unsupported_level = 1;
                     enter_block(mark);
-                    add_text(mark, NULL);
-                    exit_block(mark);
+                    if(!(type == CMARK_NODE_LATEX_MATH)) {
+                        add_text(mark, NULL);
+                        exit_block(mark);
+                    }
                     ctx->unsupported_level = 0;
                     ctx->unsupported_node_type = 0;
                 }
