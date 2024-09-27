@@ -676,6 +676,7 @@ static void default_markdown_text_deco_style_cb(lv_style_t * style, lv_markdown_
             break;
         case LV_MARKDOWN_DECOR_EM:
             lv_style_set_text_decor(style, LV_TEXT_DECOR_UNDERLINE);
+            break;
         case LV_MARKDOWN_DECOR_STRONG:
             lv_style_set_text_color(style, lv_color_hex(0x991123));
             break;
