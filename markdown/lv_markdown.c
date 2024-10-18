@@ -292,7 +292,7 @@ static void enter_block(lv_markdown_t * mark)
         switch(ctx->block_type) {
             case MARKDOWN_BLOCK_TYPE_TEXT: {
                     ctx->current_obj = lv_spangroup_create(&mark->obj);
-
+                    lv_obj_remove_flag(ctx->current_obj, LV_OBJ_FLAG_CLICKABLE);
                     lv_obj_set_pos(ctx->current_obj, offset, ctx->current_top);
                     lv_obj_set_width(ctx->current_obj, width);
                     lv_spangroup_set_mode(ctx->current_obj, LV_SPAN_MODE_BREAK);
