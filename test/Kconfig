@@ -33,7 +33,7 @@ config UIKIT_DEMO_FONT_STRESS
 
 if UIKIT_DEMO_VIDEO
 
-config LVX_DEFAULT_VIDEO_PATH
+config UIKIT_DEFAULT_VIDEO_PATH
 	string "Defailt video path in video example"
 	default "/data/h264_aac_240p.mp4"
 

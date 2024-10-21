@@ -4,8 +4,8 @@
  *
  */
 
-#ifndef LVX_VECTOR_DRAW_DEMOS_H
-#define LVX_VECTOR_DRAW_DEMOS_H
+#ifndef UIKIT_VECTOR_DRAW_DEMOS_H
+#define UIKIT_VECTOR_DRAW_DEMOS_H
 
 #include "uikit/uikit.h"
 
@@ -21,4 +21,4 @@ void uikit_draw_demo_hearts(char* info[], int size, void* param);
 } /* extern "C" */
 #endif
 
-#endif /*LVX_VECTOR_DRAW_DEMOS_H*/
+#endif /*UIKIT_VECTOR_DRAW_DEMOS_H*/
