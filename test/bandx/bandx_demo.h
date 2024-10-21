@@ -3,8 +3,8 @@
  *
  */
 
-#ifndef LVX_BANDX_DEMO_H
-#define LVX_BANDX_DEMO_H
+#ifndef UIKIT_BANDX_DEMO_H
+#define UIKIT_BANDX_DEMO_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,4 +37,4 @@ void uikit_bandx_demo(char* info[], int size, void* param);
 } /*extern "C"*/
 #endif
 
-#endif /*LVX_BANDX_DEMO_H*/
+#endif /*UIKIT_BANDX_DEMO_H*/

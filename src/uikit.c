@@ -1,5 +1,5 @@
 /**
- * @file lv_ext.c
+ * @file uikit.c
  *
  */
 
@@ -42,13 +42,13 @@ void vg_init(void)
 {
     lv_init();
     if (VG_GLOBAL_DEFAULT()) {
-        LV_LOG_WARN("lv_ext has been initialized!");
+        LV_LOG_WARN("uikit has been initialized!");
         return;
     }
 
     vg_global_t* data = lv_malloc(sizeof(vg_global_t));
     if (data == NULL) {
-        LV_LOG_WARN("lv_ext init failure!");
+        LV_LOG_WARN("uikit init failure!");
         return;
     }
 
@@ -69,7 +69,7 @@ void vg_deinit(void)
     void* data = VG_GLOBAL_DEFAULT();
 
     if (data == NULL) {
-        LV_LOG_WARN("lv_ext hasn't been initialized!");
+        LV_LOG_WARN("uikit hasn't been initialized!");
         return;
     }
 
