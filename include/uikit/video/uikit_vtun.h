@@ -3,8 +3,8 @@
  *
  */
 
-#ifndef LVX_VTUN_H
-#define LVX_VTUN_H
+#ifndef UIKIT_VTUN_H
+#define UIKIT_VTUN_H
 
 #define VTUN_FRAME_PLANE_NUM 3
 

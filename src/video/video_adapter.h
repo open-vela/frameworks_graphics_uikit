@@ -18,8 +18,8 @@
  *
  ****************************************************************************/
 
-#ifndef LVX_VIDEO_ADAPTER_H
-#define LVX_VIDEO_ADAPTER_H
+#ifndef UIKIT_VIDEO_ADAPTER_H
+#define UIKIT_VIDEO_ADAPTER_H
 
 /****************************************************************************
  * Included Files
@@ -99,4 +99,4 @@ void vg_video_adapter_loop_deinit(void);
 }
 #endif
 
-#endif /* LVX_VIDEO_ADAPTER_H */
+#endif /* UIKIT_VIDEO_ADAPTER_H */

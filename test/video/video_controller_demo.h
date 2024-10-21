@@ -3,8 +3,8 @@
  *
  */
 
-#ifndef LVX_VIDEO_CONTROLLER_H
-#define LVX_VIDEO_CONTROLLER_H
+#ifndef UIKIT_VIDEO_CONTROLLER_H
+#define UIKIT_VIDEO_CONTROLLER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,4 +53,4 @@ void video_controller_demo_set_src_opt(lv_obj_t* obj, const char* src, const cha
 } /* extern "C" */
 #endif
 
-#endif /*LVX_VIDEO_CONTROLLER_H*/
+#endif /*UIKIT_VIDEO_CONTROLLER_H*/

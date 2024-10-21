@@ -3,8 +3,8 @@
  *
  */
 
-#ifndef LVX_VIDEO_H
-#define LVX_VIDEO_H
+#ifndef UIKIT_VIDEO_H
+#define UIKIT_VIDEO_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -110,4 +110,4 @@ lv_event_code_t vg_video_get_custom_event_id(lv_obj_t* obj);
 } /* extern "C" */
 #endif
 
-#endif /*LVX_VIDEO_H*/
+#endif /*UIKIT_VIDEO_H*/
