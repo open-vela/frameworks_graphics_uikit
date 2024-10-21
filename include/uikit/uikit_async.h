@@ -3,8 +3,8 @@
  *
  */
 
-#ifndef LVX_ASYNC_H
-#define LVX_ASYNC_H
+#ifndef UIKIT_ASYNC_H
+#define UIKIT_ASYNC_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -75,4 +75,4 @@ vg_async_result_t vg_async_after_refr_call_cancel(vg_async_cb_t async_xcb, void*
 } /*extern "C"*/
 #endif
 
-#endif /*LVX_ASYNC_H*/
+#endif /*UIKIT_ASYNC_H*/

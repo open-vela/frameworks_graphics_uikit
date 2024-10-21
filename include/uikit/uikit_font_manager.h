@@ -2,8 +2,8 @@
  * @file uikit_font_manager.h
  *
  */
-#ifndef LVX_FONT_MANAGER_H
-#define LVX_FONT_MANAGER_H
+#ifndef UIKIT_FONT_MANAGER_H
+#define UIKIT_FONT_MANAGER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -90,4 +90,4 @@ bool vg_font_remove_path(vg_font_path_handle_t handle);
 } /* extern "C" */
 #endif
 
-#endif /* LVX_FONT_MANAGER_H */
+#endif /* UIKIT_FONT_MANAGER_H */

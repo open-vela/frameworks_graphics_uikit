@@ -167,7 +167,7 @@ static void video_obj_free_cb(lv_timer_t* t)
 
 static inline void video_parse_cmd(char* info[], int size, char** url, char** option)
 {
-    *url = CONFIG_LVX_DEFAULT_VIDEO_PATH;
+    *url = CONFIG_UIKIT_DEFAULT_VIDEO_PATH;
 
     char ch;
     while ((ch = getopt(size, info, "hs:o:")) != -1) {
