@@ -39,11 +39,6 @@ config UIKIT_DEFAULT_VIDEO_PATH
 
 endif # UIKIT_DEMO_VIDEO
 
-config UIKIT_DEMO_BANDX
-	bool "Smart Band demo"
-	depends on LV_USE_FRAGMENT && LV_USE_LIBPNG && LV_USE_FREETYPE
-	default n
-
 config UIKIT_DEMO_TIME_OBJCREATION
 	bool "Time object creation demo"
 	default n
