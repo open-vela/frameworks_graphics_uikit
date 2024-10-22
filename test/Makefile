@@ -4,10 +4,6 @@ ifeq ($(CONFIG_UIKIT_DEMO_VIDEO), y)
 CSRCS += $(wildcard video/*.c)
 endif
 
-ifeq ($(CONFIG_UIKIT_DEMO_BANDX), y)
-CSRCS += $(shell find -L bandx -name "*.c")
-endif
-
 ifeq ($(CONFIG_UIKIT_DEMO_VECTOR_DRAW), y)
 CSRCS += $(shell find -L draw -name "*.c")
 endif

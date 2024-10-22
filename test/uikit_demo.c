@@ -23,10 +23,6 @@
 #include "video/video_demo.h"
 #endif
 
-#ifdef CONFIG_UIKIT_DEMO_BANDX
-#include "bandx/bandx_demo.h"
-#endif
-
 #ifdef CONFIG_UIKIT_DEMO_VECTOR_DRAW
 #include "draw/draw_demos.h"
 #endif
@@ -74,10 +70,6 @@ static const demo_entry_info_t demos_entry_info[] = {
     { "camera", .entry_cb = uikit_demo_camera },
     { "video_call", .entry_cb = uikit_demo_video_call },
     { "video_ctl", .entry_cb = uikit_demo_video_controller },
-#endif
-
-#ifdef CONFIG_UIKIT_DEMO_BANDX
-    { "bandx", .entry_cb = uikit_bandx_demo },
 #endif
 
 #ifdef CONFIG_UIKIT_DEMO_VECTOR_DRAW
