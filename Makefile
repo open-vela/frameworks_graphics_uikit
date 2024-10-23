@@ -34,7 +34,7 @@ endif
 
 ifeq ($(CONFIG_UIKIT_VIDEO_ADAPTER), y)
 CSRCS += $(wildcard src/video/*.c)
-CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/frameworks/media/include
+CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/frameworks/multimedia/media/include
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/netutils/cjson/cJSON
 endif
 
