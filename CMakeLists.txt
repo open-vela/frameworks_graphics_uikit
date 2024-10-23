@@ -32,7 +32,7 @@ if(CONFIG_UIKIT)
   if(CONFIG_UIKIT_VIDEO_ADAPTER)
     file(GLOB CSRCS_VIDEO_ADAPTER src/video/*.c)
     list(APPEND CSRCS ${CSRCS_VIDEO_ADAPTER})
-    list(APPEND INCDIR ${NUTTX_APPS_DIR}/frameworks/media/include)
+    list(APPEND INCDIR ${NUTTX_APPS_DIR}/frameworks/multimedia/media/include)
     list(APPEND INCDIR ${NUTTX_APPS_DIR}/netutils/cjson/cJSON)
   endif()
 
