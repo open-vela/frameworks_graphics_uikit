@@ -111,7 +111,8 @@ static const struct vg_video_format_s g_video_format_map[] = {
 #if LV_COLOR_DEPTH == 16
     { LV_COLOR_FORMAT_NATIVE, VTUN_FRAME_FORMAT_RGB565 },
 #endif
-    { LV_COLOR_FORMAT_NV12, VTUN_FRAME_FORMAT_NV12 }
+    { LV_COLOR_FORMAT_NV12, VTUN_FRAME_FORMAT_NV12 },
+    { LV_COLOR_FORMAT_NV21, VTUN_FRAME_FORMAT_NV21 },
 };
 
 /****************************************************************************
@@ -573,7 +574,7 @@ static int video_adapter_get_frame(struct _vg_video_vtable_t* vtable,
     img_dsc->header.stride = frame_p->plane[0].stride;
     img_dsc->data_size = img_dsc->header.stride * frame_p->h;
 
-    if (img_dsc->header.cf == LV_COLOR_FORMAT_NV12) {
+    if (LV_COLOR_FORMAT_IS_NV(img_dsc->header.cf)) {
         video_ctx->yuv.semi_planar.y.buf = frame_p->plane[0].addr;
         video_ctx->yuv.semi_planar.y.stride = frame_p->plane[0].stride;
         video_ctx->yuv.semi_planar.uv.buf = frame_p->plane[1].addr;
