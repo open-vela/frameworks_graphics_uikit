@@ -8,9 +8,9 @@ UIKit is a toolkit for developing graphical user interfaces. It provides a set o
 
 UIKit includes the following tools:
 - Font Manager: a comprehensive font management tool.
-    - It supports multiple functions, such as loading fonts, creating fonts, and deleting fonts.
-    - It also supports font cache management, which can avoid loading fonts repeatedly and frequent IO reading, thus achieving efficient font rendering.
-    - The Font Manager also specifically expands the management function of emoji fonts, and supports image fonts in formats such as png and bin.
+    - supports multiple functions, such as loading fonts, creating fonts, and deleting fonts.
+    - supports font cache management, which can avoid loading fonts repeatedly and frequent IO reading, thus achieving efficient font rendering.
+    - expands the management function of emoji fonts, and supports image fonts in formats such as png and bin.
 
 - QR Code Scanner: a QR code scanner based on the quirc library. Before using it, the image needs to be converted to grayscale. It provides interfaces for converting YUYV, NV12, RGBA8888, RGB565, RGB332 and other formats of images to grayscale. The scanning result will be returned as a string.
 
