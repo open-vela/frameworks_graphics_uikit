@@ -1,0 +1,13 @@
+font_base:
+  UIKIT: 1
+  UIKIT_FONT_LIB_PATH: "/"
+  UIKIT_FONT_USE_FONT_FAMILY: 1
+
+font_outline:
+  UIKIT_FONT_CREATE_TYPE_OUTLINE: 1
+
+video:
+  UIKIT_VIDEO_ADAPTER: 1
+
+qrscan:
+  UIKIT_QRSCAN: 1
