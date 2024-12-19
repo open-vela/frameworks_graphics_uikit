@@ -133,14 +133,19 @@ int main(int argc, FAR char* argv[])
     lv_nuttx_uv_loop_run(&ui_loop, data);
 #else
     while (1) {
-        lv_timer_handler();
-        usleep(10 * 1000);
+        uint32_t idle;
+        idle = lv_timer_handler();
+
+        /* Minimum sleep of 1ms */
+
+        idle = idle ? idle : 1;
+        usleep(idle * 1000);
     }
 #endif
 
 demo_end:
     vg_uv_deinit();
-    lv_disp_remove(result.disp);
+    lv_nuttx_deinit(&result);
     vg_deinit();
     lv_deinit();
 
