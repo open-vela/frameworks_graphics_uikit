@@ -50,6 +50,11 @@ CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/cmark-gfm/src
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/cmark-gfm/extensions
 endif
 
+ifneq ($(CONFIG_UIKIT_ANIMATION_VIEW_PLAYER),)
+CSRCS += $(wildcard src/draw/player/uikit_anim_view_player.c)
+endif
+
+
 endif #CONFIG_UIKIT
 
 ASRCS := $(wildcard $(ASRCS))
