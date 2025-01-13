@@ -112,6 +112,11 @@ config UIKIT_MARKDOWN
 	depends on LIB_CMARK_GFM
 	default n
 
+config UIKIT_ANIMATION_VIEW_PLAYER
+	bool "Vector animation player"
+	depends on VG_ANIMATION_VIEW
+	default n
+
 source "$APPSDIR/frameworks/graphics/uikit/test/Kconfig"
 
 endif # UIKIT
