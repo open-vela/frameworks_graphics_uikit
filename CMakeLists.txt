@@ -41,6 +41,11 @@ if(CONFIG_UIKIT)
     list(APPEND CSRCS ${CSRCS_QRSCAN})
   endif()
 
+  if(CONFIG_UIKIT_ANIMATION_VIEW_PLAYER)
+    file(GLOB CSRCS_PLAYER src/draw/player/uikit_anim_view_player.c)
+    list(APPEND CSRCS ${CSRCS_PLAYER})
+  endif()
+
   file(GLOB CSRCS_DRAW src/draw/shapes/*.c)
   list(APPEND CSRCS_DRAW src/uikit_async.c)
   list(APPEND CSRCS_DRAW src/uikit.c)
