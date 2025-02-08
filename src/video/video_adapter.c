@@ -449,11 +449,6 @@ static void* video_adapter_open(struct _vg_video_vtable_t* vtable,
         return NULL;
     }
 
-    if ((ctx->fd = vg_connect_to_server(ctx->cfg.vtun_name)) < 0) {
-        LV_LOG_ERROR("connect to vtun server %s failed!", ctx->cfg.vtun_name);
-        return NULL;
-    }
-
     if (!strstart(src, CAMERA_SRC_HEADER, NULL)) {
         const char* url = NULL;
         strstart(ctx->cfg.vtun_name, VTUN_HEADER, &url);
@@ -479,10 +474,6 @@ static void* video_adapter_open(struct _vg_video_vtable_t* vtable,
     return ctx;
 
 fail:
-    if (ctx->fd > 0) {
-        close(ctx->fd);
-        ctx->fd = 0;
-    }
 
     if (ctx->handle) {
         media_uv_player_close(ctx->handle, 0, NULL);
@@ -544,6 +535,10 @@ static int video_adapter_get_frame(struct _vg_video_vtable_t* vtable,
     lv_image_dsc_t* img_dsc = &video->img_dsc;
 
     struct vg_video_ctx_s* video_ctx = (struct vg_video_ctx_s*)ctx;
+    if (video_ctx->fd <= 0 && (video_ctx->fd = vg_connect_to_server(video_ctx->cfg.vtun_name)) < 0) {
+        LV_LOG_ERROR("connect to vtun server %s failed!", video_ctx->cfg.vtun_name);
+        return -EPERM;
+    }
 
     if (send(video_ctx->fd, &cmd, sizeof(cmd), MSG_NOSIGNAL) < 0) {
         LV_LOG_ERROR("frame request send error %d", errno);
