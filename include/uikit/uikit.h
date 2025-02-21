@@ -17,6 +17,7 @@ extern "C" {
 #include "uikit/uikit_vector_shapes.h"
 #include "uikit/video/uikit_video.h"
 #include "uikit/video/uikit_vtun.h"
+#include "uikit/uikit_markdown.h"
 
 /*********************
  *      DEFINES

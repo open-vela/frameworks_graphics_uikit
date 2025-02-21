@@ -18,9 +18,9 @@
  *      INCLUDES
  *********************/
 
-#include "lv_markdown.h"
+#include "uikit/uikit_markdown.h"
 
-#ifdef CONFIG_LVX_USE_MARKDOWN
+#ifdef CONFIG_UIKIT_MARKDOWN
 
 #include <cmark-gfm.h>
 #include <cmark-gfm-extension_api.h>
@@ -32,7 +32,7 @@
 /*********************
  *      DEFINES
  *********************/
-#define MY_CLASS (&lv_markdown_class)
+#define MY_CLASS (&vg_markdown_class)
 
 #define LIST_MARKER_SIZE 8
 #define UNSUPPORTED_NODE_HINT 128
@@ -76,19 +76,19 @@ typedef struct {
 /**********************
  *  STATIC PROTOTYPES
  **********************/
-static void lv_markdown_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-static void lv_markdown_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
-static void lv_markdown_event(const lv_obj_class_t * class_p, lv_event_t * e);
+static void vg_markdown_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void vg_markdown_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj);
+static void vg_markdown_event(const lv_obj_class_t * class_p, lv_event_t * e);
 
 static cmark_node * parser_document(const char * data, uint32_t data_len, int options);
 static void render_contents(lv_obj_t * obj, cmark_node * root, int options);
-static void add_text(lv_markdown_t * mark, const char * text);
+static void add_text(vg_markdown_t * mark, const char * text);
 
 static void default_markdown_heading_style_cb(lv_style_t * style, int32_t level);
 static void default_markdown_list_marker_cb(char * buff, uint32_t size, int32_t level, int32_t index, bool ordered);
 static void default_markdown_thematic_break_style_cb(lv_style_t * style);
 static void default_markdown_paragraph_style_cb(lv_style_t * style);
-static void default_markdown_text_deco_style_cb(lv_style_t * style, lv_markdown_decor_t decor);
+static void default_markdown_text_deco_style_cb(lv_style_t * style, vg_markdown_decor_t decor);
 static void default_markdown_url_create_cb(lv_span_t * span, const char * src, const char * title, const char * alt);
 static lv_obj_t * default_markdown_image_create_cb(lv_obj_t * parent, const char * src, const char * title,
                                                    const char * alt, int32_t width_hint);
@@ -97,11 +97,11 @@ static void default_markdown_unsupported_cb(char * buff, uint32_t size, lv_style
 /**********************
  *  STATIC VARIABLES
  **********************/
-const lv_obj_class_t lv_markdown_class = {
-    .constructor_cb = lv_markdown_constructor,
-    .destructor_cb = lv_markdown_destructor,
-    .event_cb = lv_markdown_event,
-    .instance_size = sizeof(lv_markdown_t),
+const lv_obj_class_t vg_markdown_class = {
+    .constructor_cb = vg_markdown_constructor,
+    .destructor_cb = vg_markdown_destructor,
+    .event_cb = vg_markdown_event,
+    .instance_size = sizeof(vg_markdown_t),
     .base_class = &lv_obj_class,
     .name = "lv_markdown",
 };
@@ -116,7 +116,7 @@ static cmark_mem mem_allocator = {
  *   GLOBAL FUNCTIONS
  **********************/
 
-lv_obj_t * lv_markdown_create(lv_obj_t * parent)
+lv_obj_t * vg_markdown_create(lv_obj_t * parent)
 {
     cmark_gfm_core_extensions_ensure_registered();
 
@@ -125,7 +125,7 @@ lv_obj_t * lv_markdown_create(lv_obj_t * parent)
     return obj;
 }
 
-void lv_markdown_set_data(lv_obj_t * obj, const char * data, uint32_t data_len)
+void vg_markdown_set_data(lv_obj_t * obj, const char * data, uint32_t data_len)
 {
     if(!data || !data_len) {
         return;
@@ -137,7 +137,7 @@ void lv_markdown_set_data(lv_obj_t * obj, const char * data, uint32_t data_len)
     opts |= CMARK_OPT_TABLE_PREFER_STYLE_ATTRIBUTES;
     opts |= CMARK_OPT_LIBERAL_HTML_TAG;
 
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     if(mark->doc) {
         cmark_node_free(mark->doc);
         mark->doc = NULL;
@@ -148,74 +148,74 @@ void lv_markdown_set_data(lv_obj_t * obj, const char * data, uint32_t data_len)
     render_contents(obj, (cmark_node *)mark->doc, opts);
 }
 
-void lv_markdown_set_heading_style_cb(lv_obj_t * obj, lv_markdown_heading_style_cb_t cb)
+void vg_markdown_set_heading_style_cb(lv_obj_t * obj, vg_markdown_heading_style_cb_t cb)
 {
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     mark->heading_style_cb = cb;
 }
 
-void lv_markdown_set_list_marker_cb(lv_obj_t * obj, lv_markdown_list_marker_cb_t cb)
+void vg_markdown_set_list_marker_cb(lv_obj_t * obj, vg_markdown_list_marker_cb_t cb)
 {
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     mark->list_marker_cb = cb;
 }
 
-void lv_markdown_set_thematic_break_style_cb(lv_obj_t * obj, lv_markdown_thematic_break_style_cb_t cb)
+void vg_markdown_set_thematic_break_style_cb(lv_obj_t * obj, vg_markdown_thematic_break_style_cb_t cb)
 
 {
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     mark->thematic_break_style_cb = cb;
 }
 
-void lv_markdown_set_paragraph_style_cb(lv_obj_t * obj, lv_markdown_paragraph_style_cb_t cb)
+void vg_markdown_set_paragraph_style_cb(lv_obj_t * obj, vg_markdown_paragraph_style_cb_t cb)
 {
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     mark->paragraph_style_cb = cb;
 }
 
-void lv_markdown_set_text_deco_style_cb(lv_obj_t * obj, lv_markdown_text_deco_style_cb_t cb)
+void vg_markdown_set_text_deco_style_cb(lv_obj_t * obj, vg_markdown_text_deco_style_cb_t cb)
 {
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     mark->text_deco_style_cb = cb;
 }
 
-void lv_markdown_set_url_create_cb(lv_obj_t * obj, lv_markdown_url_create_cb_t cb)
+void vg_markdown_set_url_create_cb(lv_obj_t * obj, vg_markdown_url_create_cb_t cb)
 {
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     mark->url_create_cb = cb;
 }
 
-void lv_markdown_set_image_url_process_cb(lv_obj_t * obj, lv_markdown_image_url_process_cb_t cb)
+void vg_markdown_set_image_url_process_cb(lv_obj_t * obj, vg_markdown_image_url_process_cb_t cb)
 {
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     mark->image_url_process_cb = cb;
 }
 
-void lv_markdown_set_image_create_cb(lv_obj_t * obj, lv_markdown_image_create_cb_t cb)
+void vg_markdown_set_image_create_cb(lv_obj_t * obj, vg_markdown_image_create_cb_t cb)
 {
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     mark->image_create_cb = cb;
 }
 
-void lv_markdown_set_unsupported_cb(lv_obj_t * obj, lv_markdown_unsupported_cb_t cb)
+void vg_markdown_set_unsupported_cb(lv_obj_t * obj, vg_markdown_unsupported_cb_t cb)
 {
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     mark->unsupported_cb = cb;
 }
 
-void lv_markdown_set_list_marker_width(lv_obj_t * obj, int32_t width)
+void vg_markdown_set_list_marker_width(lv_obj_t * obj, int32_t width)
 {
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     mark->list_marker_width = width;
 }
 
 /**********************
  *   STATIC FUNCTIONS
  **********************/
-static void lv_markdown_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+static void vg_markdown_constructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
     LV_UNUSED(class_p);
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     mark->doc = NULL;
 
     lv_style_init(&mark->thematic_break_style);
@@ -225,10 +225,10 @@ static void lv_markdown_constructor(const lv_obj_class_t * class_p, lv_obj_t * o
     mark->list_marker_width = 20;
 }
 
-static void lv_markdown_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
+static void vg_markdown_destructor(const lv_obj_class_t * class_p, lv_obj_t * obj)
 {
     LV_UNUSED(class_p);
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     if(mark->doc) {
         cmark_node * node = (cmark_node *)mark->doc;
         cmark_node_free(node);
@@ -236,7 +236,7 @@ static void lv_markdown_destructor(const lv_obj_class_t * class_p, lv_obj_t * ob
     }
 }
 
-static void lv_markdown_event(const lv_obj_class_t * class_p, lv_event_t * e)
+static void vg_markdown_event(const lv_obj_class_t * class_p, lv_event_t * e)
 {
     LV_UNUSED(class_p);
     lv_obj_event_base(class_p, e);
@@ -271,7 +271,7 @@ static cmark_node * parser_document(const char * data, uint32_t data_len, int op
     return doc;
 }
 
-static void enter_block(lv_markdown_t * mark)
+static void enter_block(vg_markdown_t * mark)
 {
     markdown_ctx_t * ctx = (markdown_ctx_t *)mark->ctx;
     if(ctx->current_obj == NULL || ctx->block_type != MARKDOWN_BLOCK_TYPE_TEXT) {
@@ -337,7 +337,7 @@ static void enter_block(lv_markdown_t * mark)
     }
 }
 
-static void exit_block(lv_markdown_t * mark)
+static void exit_block(vg_markdown_t * mark)
 {
     markdown_ctx_t * ctx = (markdown_ctx_t *)mark->ctx;
     if(ctx->current_obj == NULL)
@@ -350,7 +350,7 @@ static void exit_block(lv_markdown_t * mark)
     ctx->current_obj = NULL;
 }
 
-void add_text(lv_markdown_t * mark, const char * text)
+void add_text(vg_markdown_t * mark, const char * text)
 {
     markdown_ctx_t * ctx = (markdown_ctx_t *)mark->ctx;
 
@@ -376,16 +376,16 @@ void add_text(lv_markdown_t * mark, const char * text)
     else default_markdown_heading_style_cb(&span->style, ctx->heading_level);
 
     if(ctx->emphasis_level > 0) {
-        if(mark->text_deco_style_cb) mark->text_deco_style_cb(&span->style, LV_MARKDOWN_DECOR_EM);
-        else default_markdown_text_deco_style_cb(&span->style, LV_MARKDOWN_DECOR_EM);
+        if(mark->text_deco_style_cb) mark->text_deco_style_cb(&span->style, VG_MARKDOWN_DECOR_EM);
+        else default_markdown_text_deco_style_cb(&span->style, VG_MARKDOWN_DECOR_EM);
     }
     if(ctx->strong_level > 0) {
-        if(mark->text_deco_style_cb) mark->text_deco_style_cb(&span->style, LV_MARKDOWN_DECOR_STRONG);
-        else default_markdown_text_deco_style_cb(&span->style, LV_MARKDOWN_DECOR_STRONG);
+        if(mark->text_deco_style_cb) mark->text_deco_style_cb(&span->style, VG_MARKDOWN_DECOR_STRONG);
+        else default_markdown_text_deco_style_cb(&span->style, VG_MARKDOWN_DECOR_STRONG);
     }
     if(ctx->strikethrough_enabled) {
-        if(mark->text_deco_style_cb) mark->text_deco_style_cb(&span->style, LV_MARKDOWN_DECOR_STRIKETHROUGH);
-        else default_markdown_text_deco_style_cb(&span->style, LV_MARKDOWN_DECOR_STRIKETHROUGH);
+        if(mark->text_deco_style_cb) mark->text_deco_style_cb(&span->style, VG_MARKDOWN_DECOR_STRIKETHROUGH);
+        else default_markdown_text_deco_style_cb(&span->style, VG_MARKDOWN_DECOR_STRIKETHROUGH);
     }
 }
 
@@ -393,7 +393,7 @@ static void render_node(cmark_node * node, cmark_event_type ev_type, lv_obj_t * 
 {
     LV_UNUSED(options);
 
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     markdown_ctx_t * ctx = (markdown_ctx_t *)mark->ctx;
     bool entering = (ev_type == CMARK_EVENT_ENTER);
     cmark_node_type type = cmark_node_get_type(node);
@@ -590,7 +590,7 @@ static void render_node(cmark_node * node, cmark_event_type ev_type, lv_obj_t * 
 
 static void render_contents(lv_obj_t * obj, cmark_node * root, int options)
 {
-    lv_markdown_t * mark = (lv_markdown_t *)obj;
+    vg_markdown_t * mark = (vg_markdown_t *)obj;
     cmark_event_type ev_type;
     cmark_iter * iter = cmark_iter_new(root);
 
@@ -667,19 +667,19 @@ static void default_markdown_paragraph_style_cb(lv_style_t * style)
 {
     LV_UNUSED(style);
 }
-static void default_markdown_text_deco_style_cb(lv_style_t * style, lv_markdown_decor_t decor)
+static void default_markdown_text_deco_style_cb(lv_style_t * style, vg_markdown_decor_t decor)
 {
     switch(decor) {
-        case LV_MARKDOWN_DECOR_STRIKETHROUGH:
+        case VG_MARKDOWN_DECOR_STRIKETHROUGH:
             lv_style_set_text_decor(style, LV_TEXT_DECOR_STRIKETHROUGH);
             break;
-        case LV_MARKDOWN_DECOR_EM:
+        case VG_MARKDOWN_DECOR_EM:
             lv_style_set_text_decor(style, LV_TEXT_DECOR_UNDERLINE);
             break;
-        case LV_MARKDOWN_DECOR_STRONG:
+        case VG_MARKDOWN_DECOR_STRONG:
             lv_style_set_text_color(style, lv_color_hex(0x991123));
             break;
-        case LV_MARKDOWN_DECOR_NONE:
+        case VG_MARKDOWN_DECOR_NONE:
             lv_style_set_text_font(style, lv_font_default());
             lv_style_set_text_decor(style, LV_TEXT_DECOR_NONE);
             break;
@@ -754,4 +754,4 @@ static void default_markdown_unsupported_cb(char * buff, uint32_t size, lv_style
     lv_snprintf(buff, size, "[%s IS UNSUPPORTED YET]", type_str);
     lv_style_set_text_color(style, lv_palette_main(LV_PALETTE_GREY));
 }
-#endif /*CONFIG_LVX_USE_MARKDOWN*/
+#endif /*CONFIG_UIKIT_MARKDOWN*/

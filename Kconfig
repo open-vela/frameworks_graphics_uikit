@@ -107,7 +107,7 @@ config UIKIT_QRSCAN
 	depends on LIB_QUIRC
 	default n
 
-config LVX_USE_MARKDOWN
+config UIKIT_MARKDOWN
 	bool "MarkDown library"
 	depends on LIB_CMARK_GFM
 	default n

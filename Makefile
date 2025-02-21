@@ -43,8 +43,8 @@ CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/quirc/quirc/lib
 CSRCS += $(wildcard src/qrscan/*.c)
 endif
 
-ifneq ($(CONFIG_LVX_USE_MARKDOWN),)
-CSRCS += $(wildcard ext/markdown/*.c)
+ifneq ($(CONFIG_UIKIT_MARKDOWN),)
+CSRCS += $(wildcard src/markdown/*.c)
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/cmark-gfm/src
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/cmark-gfm/extensions
