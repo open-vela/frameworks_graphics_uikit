@@ -87,7 +87,7 @@ static const demo_entry_info_t demos_entry_info[] = {
 #endif
 
 #ifdef CONFIG_UIKIT_MARKDOWN
-    { "markdown", .entry_cb = uikit_markdown_demo },
+    { "markdown", .entry_cb = uikit_demo_markdown },
 #endif
     { "", .entry_cb = NULL }
 };
