@@ -8,9 +8,9 @@
  *********************/
 
 #include <nuttx/config.h>
-#include "lv_ext.h"
+#include "uikit/uikit.h"
 
-#ifdef CONFIG_LVX_USE_MARKDOWN
+#ifdef CONFIG_UIKIT_MARKDOWN
 
 #include "markdown_test.h"
 
@@ -60,12 +60,12 @@ static const char * markdown_txt = \
  *   GLOBAL FUNCTIONS
  **********************/
 
-void lvx_markdown_demo(char * info[], int size, void * param)
+void uikit_markdown_demo(char * info[], int size, void * param)
 {
-    lv_obj_t * markdown_widget = lv_markdown_create(lv_scr_act());
+    lv_obj_t * markdown_widget = uikit_markdown_create(lv_scr_act());
     lv_obj_set_size(markdown_widget, LV_PCT(100), LV_PCT(100));
 
-    lv_markdown_set_data(markdown_widget, markdown_txt, strlen(markdown_txt));
+    uikit_markdown_set_data(markdown_widget, markdown_txt, strlen(markdown_txt));
 }
 
 #endif

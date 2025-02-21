@@ -31,7 +31,7 @@
 #include "creation/object_creation_test.h"
 #endif
 
-#ifdef CONFIG_LVX_USE_MARKDOWN
+#ifdef CONFIG_UIKIT_MARKDOWN
 #include "markdown/markdown_test.h"
 #endif
 /*********************
@@ -86,8 +86,8 @@ static const demo_entry_info_t demos_entry_info[] = {
     { "time_render_spangroup", .entry_cb = uikit_demo_time_render_spangroup },
 #endif
 
-#ifdef CONFIG_LVX_USE_MARKDOWN
-    { "markdown", .entry_cb = lvx_markdown_demo },
+#ifdef CONFIG_UIKIT_MARKDOWN
+    { "markdown", .entry_cb = uikit_markdown_demo },
 #endif
     { "", .entry_cb = NULL }
 };
