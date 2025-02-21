@@ -55,6 +55,6 @@ ifneq ($(NOEXPORTSRCS),)
 BIN := $(APPDIR)/staging/libuikit.a
 endif
 
-EXPORT_FILES := include
+EXPORT_FILES := include test/Kconfig test/CMakeLists.txt test/Make.defs test/Makefile
 
 include $(APPDIR)/Application.mk
