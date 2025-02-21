@@ -41,6 +41,9 @@ if(CONFIG_UIKIT_DEMO)
   if(CONFIG_UIKIT_MARKDOWN)
     file(GLOB_RECURSE CSRCS_MARKDOWN "markdown/*.c")
     list(APPEND CSRCS ${CSRCS_MARKDOWN})
+    list(APPEND INCDIR ${NUTTX_APPS_DIR}/external/cmark-gfm)
+    list(APPEND INCDIR ${NUTTX_APPS_DIR}/external/cmark-gfm/cmark-gfm/src)
+    list(APPEND INCDIR ${NUTTX_APPS_DIR}/external/cmark-gfm/cmark-gfm/extensions)
   endif()
 
   nuttx_add_application(
