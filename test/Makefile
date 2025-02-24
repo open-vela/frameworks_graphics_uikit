@@ -31,4 +31,14 @@ MODULE = $(CONFIG_UIKIT_DEMO)
 PROGNAME += uikit_demo
 MAINSRC += uikit_demo.c
 
+ASRCS := $(wildcard $(ASRCS))
+CSRCS := $(wildcard $(CSRCS))
+CXXSRCS := $(wildcard $(CXXSRCS))
+MAINSRC := $(wildcard $(MAINSRC))
+NOEXPORTSRCS = $(ASRCS)$(CSRCS)$(CXXSRCS)$(MAINSRC)
+
+ifneq ($(NOEXPORTSRCS),)
+BIN := $(APPDIR)/staging/libuikit.a
+endif
+
 include $(APPDIR)/Application.mk
