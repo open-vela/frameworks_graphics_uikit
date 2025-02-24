@@ -46,6 +46,11 @@ if(CONFIG_UIKIT_DEMO)
     list(APPEND INCDIR ${NUTTX_APPS_DIR}/external/cmark-gfm/cmark-gfm/extensions)
   endif()
 
+  if(CONFIG_UIKIT_DEMO_TIME_OBJCREATION)
+    file(GLOB_RECURSE CSRCS_TIME_OBJCREATION "creation/*.c")
+    list(APPEND CSRCS ${CSRCS_TIME_OBJCREATION})
+  endif()
+
   nuttx_add_application(
     NAME
     uikit_demo
