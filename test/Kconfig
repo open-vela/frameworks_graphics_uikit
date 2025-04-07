@@ -31,6 +31,24 @@ config UIKIT_DEMO_FONT_STRESS
 	depends on LV_USE_VECTOR_GRAPHIC
 	default n
 
+config UIKIT_DEMO_BENCHMARK
+	bool "Enable benchmark"
+	default n
+
+if UIKIT_DEMO_BENCHMARK
+
+config UIKIT_DEMO_BENCHMARK_FREETYPE_FONT_PATH
+	string "Path to Freetype font file which is used in benchmark test"
+	default "./lvgl/demos/benchmark/assets/NotoSansSC-Regular.ttf"
+	depends on UIKIT_DEMO_BENCHMARK && LV_USE_FREETYPE
+
+config UIKIT_DEMO_BENCHMARK_ASSETS_PATH
+	string "Path to asset files which are used in benchmark test"
+	default "A:lvgl/demos/benchmark/assets/"
+	depends on UIKIT_DEMO_BENCHMARK
+
+endif # UIKIT_DEMO_BENCHMARK
+
 if UIKIT_DEMO_VIDEO
 
 config UIKIT_DEFAULT_VIDEO_PATH

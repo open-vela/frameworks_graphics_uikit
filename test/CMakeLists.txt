@@ -51,6 +51,13 @@ if(CONFIG_UIKIT_DEMO)
     list(APPEND CSRCS ${CSRCS_TIME_OBJCREATION})
   endif()
 
+  if(CONFIG_UIKIT_DEMO_BENCHMARK)
+    file(GLOB_RECURSE CSRCS_BENCHMARK
+      "benchmark/*.c"
+      "benchmark/assets/*.c")
+    list(APPEND CSRCS ${CSRCS_BENCHMARK})
+  endif()
+
   nuttx_add_application(
     NAME
     uikit_demo
