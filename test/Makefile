@@ -27,6 +27,11 @@ ifeq ($(CONFIG_UIKIT_DEMO_FONT_STRESS), y)
 CSRCS += $(wildcard font/*.c)
 endif
 
+ifeq ($(CONFIG_UIKIT_DEMO_BENCHMARK), y)
+CSRCS += $(wildcard benchmark/*.c)
+CSRCS += $(wildcard benchmark/assets/*.c)
+endif
+
 ifeq ($(and $(CONFIG_SCHED_INSTRUMENTATION),$(CONFIG_LV_USE_PROFILER)), y)
 CFLAGS += "-DLV_PROFILER_BEGIN=sched_note_beginex(NOTE_TAG_GRAPHICS, __func__)"
 CFLAGS += "-DLV_PROFILER_END=sched_note_endex(NOTE_TAG_GRAPHICS, __func__)"
