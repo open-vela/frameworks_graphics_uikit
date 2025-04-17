@@ -117,6 +117,10 @@ config UIKIT_ANIMATION_VIEW_PLAYER
 	depends on VG_ANIMATION_VIEW
 	default n
 
+config UIKIT_KEYBOARD
+	bool "Enable keyboard"
+	default n
+
 source "$APPSDIR/frameworks/graphics/uikit/test/Kconfig"
 
 endif # UIKIT

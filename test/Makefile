@@ -15,6 +15,10 @@ CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/cmark-gfm/src
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/cmark-gfm/extensions
 endif
 
+ifeq ($(CONFIG_UIKIT_KEYBOARD), y)
+CSRCS += $(wildcard keyboard/*.c)
+endif
+
 ifeq ($(CONFIG_UIKIT_DEMO_TIME_OBJCREATION), y)
 CSRCS += $(shell find -L creation -name "*.c")
 endif
