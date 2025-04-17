@@ -34,6 +34,11 @@
 #ifdef CONFIG_UIKIT_MARKDOWN
 #include "markdown/markdown_test.h"
 #endif
+
+#ifdef CONFIG_UIKIT_KEYBOARD
+#include "keyboard/keyboard_demo.h"
+#endif
+
 /*********************
  *      DEFINES
  *********************/
@@ -88,6 +93,10 @@ static const demo_entry_info_t demos_entry_info[] = {
 
 #ifdef CONFIG_UIKIT_MARKDOWN
     { "markdown", .entry_cb = uikit_demo_markdown },
+#endif
+
+#ifdef CONFIG_UIKIT_KEYBOARD
+    { "keyboard", .entry_cb = uikit_demo_keyboard },
 #endif
     { "", .entry_cb = NULL }
 };

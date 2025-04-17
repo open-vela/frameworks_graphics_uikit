@@ -13,11 +13,12 @@ extern "C" {
 #ifdef CONFIG_UIKIT
 #include "uikit/uikit_async.h"
 #include "uikit/uikit_font_manager.h"
+#include "uikit/uikit_keyboard.h"
+#include "uikit/uikit_markdown.h"
 #include "uikit/uikit_qrscan.h"
 #include "uikit/uikit_vector_shapes.h"
 #include "uikit/video/uikit_video.h"
 #include "uikit/video/uikit_vtun.h"
-#include "uikit/uikit_markdown.h"
 
 /*********************
  *      DEFINES
