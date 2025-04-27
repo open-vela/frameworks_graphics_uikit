@@ -38,7 +38,6 @@ typedef struct benchmark_context {
     lv_font_t* freetype_font_bitmap;
     lv_font_t* freetype_font_outline;
     lv_font_t* tinyttf_font;
-    lv_obj_t* label_perf;
     uint32_t scene_act;
     uint32_t rnd_act;
 } benchmark_context_t;
@@ -728,11 +727,6 @@ static benchmark_context_t* benchmark_context_init(void)
 #endif
 
     context->scene_act = 0;
-    context->label_perf = lv_label_create(lv_layer_top());
-    lv_obj_set_style_bg_opa(context->label_perf, LV_OPA_COVER, 0);
-    lv_obj_set_style_bg_color(context->label_perf, lv_color_white(), 0);
-    lv_obj_set_style_text_color(context->label_perf, lv_color_black(), 0);
-    lv_obj_set_width(context->label_perf, lv_pct(100));
 
     return context;
 }
@@ -752,7 +746,6 @@ static void benchmark_context_deinit(benchmark_context_t* context)
         lv_tiny_ttf_destroy(context->tinyttf_font);
     }
 #endif
-    lv_obj_delete(context->label_perf);
     lv_free(context);
 }
 
@@ -766,7 +759,6 @@ void uikit_demo_benchmark(char* info[], int size, void* param)
     lv_obj_set_style_text_color(scr, lv_color_black(), 0);
     lv_obj_set_style_bg_color(scr, lv_palette_lighten(LV_PALETTE_GREY, 4), 0);
     lv_obj_set_style_pad_all(lv_screen_active(), 8, 0);
-    lv_obj_set_style_pad_top(lv_screen_active(), 48, 0);
     lv_obj_set_style_pad_gap(lv_screen_active(), 8, 0);
 
     load_scene(context);
@@ -774,9 +766,9 @@ void uikit_demo_benchmark(char* info[], int size, void* param)
     lv_timer_create(next_scene_timer_cb, scenes[0].scene_time, context);
 
 #if LV_USE_PERF_MONITOR
-    lv_subject_add_observer_obj(&sysmon_perf.subject, sysmon_perf_observer_cb, context->label_perf, context);
+    lv_subject_add_observer_obj(&sysmon_perf.subject, sysmon_perf_observer_cb, scr, context);
 #else
-    lv_label_set_text(context->label_perf, "LV_USE_PERF_MONITOR is not enabled");
+    LV_LOG_WARN("LV_USE_PERF_MONITOR is not enabled, Benchmark will not show any data.");
 #endif
 }
 
@@ -817,6 +809,7 @@ static void next_scene_timer_cb(lv_timer_t* timer)
 
     load_scene(context);
     if (scenes[context->scene_act].scene_time == 0) {
+        lv_subject_remove_all_obj(&sysmon_perf.subject, lv_screen_active());
         benchmark_context_deinit(context);
         lv_timer_delete(timer);
         summary_create();
@@ -829,25 +822,8 @@ static void next_scene_timer_cb(lv_timer_t* timer)
 static void sysmon_perf_observer_cb(lv_observer_t* observer, lv_subject_t* subject)
 {
     const lv_sysmon_perf_info_t* info = lv_subject_get_pointer(subject);
-    lv_obj_t* label = lv_observer_get_target(observer);
     /*LVGL version 9.0 does not support function lv_observer_get_user_data()*/
     benchmark_context_t* context = (benchmark_context_t*)observer->user_data;
-
-    char scene_name[64];
-    if (scenes[context->scene_act].name[0] != '\0') {
-        lv_snprintf(scene_name, sizeof(scene_name), "%s: ", scenes[context->scene_act].name);
-    } else {
-        scene_name[0] = '\0';
-    }
-
-    lv_label_set_text_fmt(label,
-        "%s"
-        "%" LV_PRIu32 " FPS, %" LV_PRIu32 "%% CPU\n"
-        "refr. %" LV_PRIu32 " ms = %" LV_PRIu32 "ms render + %" LV_PRIu32 " ms flush",
-        scene_name,
-        info->calculated.fps, info->calculated.cpu,
-        info->calculated.render_avg_time + info->calculated.flush_avg_time,
-        info->calculated.render_avg_time, info->calculated.flush_avg_time);
 
     /*Ignore the first call as it contains data from the previous scene*/
     if (scenes[context->scene_act].measurement_cnt != 0) {
@@ -1145,70 +1121,24 @@ static void rnd_reset(benchmark_context_t* context)
 static int32_t rnd_next(benchmark_context_t* context, int32_t min, int32_t max)
 {
     static const uint32_t rnd_map[] = {
-        0xbd13204f,
-        0x67d8167f,
-        0x20211c99,
-        0xb0a7cc05,
-        0x06d5c703,
-        0xeafb01a7,
-        0xd0473b5c,
-        0xc999aaa2,
-        0x86f9d5d9,
-        0x294bdb29,
-        0x12a3c207,
-        0x78914d14,
-        0x10a30006,
-        0x6134c7db,
-        0x194443af,
-        0x142d1099,
-        0x376292d5,
-        0x20f433c5,
-        0x074d2a59,
-        0x4e74c293,
-        0x072a0810,
-        0xdd0f136d,
-        0x5cca6dbc,
-        0x623bfdd8,
-        0xb645eb2f,
-        0xbe50894a,
-        0xc9b56717,
-        0xe0f912c8,
-        0x4f6b5e24,
-        0xfe44b128,
-        0xe12d57a8,
-        0x9b15c9cc,
-        0xab2ae1d3,
-        0xb4dc5074,
-        0x67d457c8,
-        0x8e46b00c,
-        0xa29a1871,
-        0xcee40332,
-        0x80f93aa1,
-        0x85286096,
-        0x09bd6b49,
-        0x95072088,
-        0x2093924b,
-        0x6a27328f,
-        0xa796079b,
-        0xc3b488bc,
-        0xe29bcce0,
-        0x07048a4c,
-        0x7d81bd99,
-        0x27aacb30,
-        0x44fc7a0e,
-        0xa2382241,
-        0x8357a17d,
-        0x97e9c9cc,
-        0xad10ff52,
-        0x9923fc5c,
-        0x8f2c840a,
-        0x20356ba2,
-        0x7997a677,
-        0x9a7f1800,
-        0x35c7562b,
-        0xd901fe51,
-        0x8f4e053d,
-        0xa5b94923,
+        /* clang-format off */
+        0xbd13204f, 0x67d8167f, 0x20211c99, 0xb0a7cc05,
+        0x06d5c703, 0xeafb01a7, 0xd0473b5c, 0xc999aaa2,
+        0x86f9d5d9, 0x294bdb29, 0x12a3c207, 0x78914d14,
+        0x10a30006, 0x6134c7db, 0x194443af, 0x142d1099,
+        0x376292d5, 0x20f433c5, 0x074d2a59, 0x4e74c293,
+        0x072a0810, 0xdd0f136d, 0x5cca6dbc, 0x623bfdd8,
+        0xb645eb2f, 0xbe50894a, 0xc9b56717, 0xe0f912c8,
+        0x4f6b5e24, 0xfe44b128, 0xe12d57a8, 0x9b15c9cc,
+        0xab2ae1d3, 0xb4dc5074, 0x67d457c8, 0x8e46b00c,
+        0xa29a1871, 0xcee40332, 0x80f93aa1, 0x85286096,
+        0x09bd6b49, 0x95072088, 0x2093924b, 0x6a27328f,
+        0xa796079b, 0xc3b488bc, 0xe29bcce0, 0x07048a4c,
+        0x7d81bd99, 0x27aacb30, 0x44fc7a0e, 0xa2382241,
+        0x8357a17d, 0x97e9c9cc, 0xad10ff52, 0x9923fc5c,
+        0x8f2c840a, 0x20356ba2, 0x7997a677, 0x9a7f1800,
+        0x35c7562b, 0xd901fe51, 0x8f4e053d, 0xa5b94923,
+        /* clang-format on */
     };
 
     if (min == max)
