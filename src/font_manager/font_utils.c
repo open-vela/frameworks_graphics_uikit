@@ -151,10 +151,6 @@ failed:
         cJSON_Delete(cjson);
     }
 
-    if (json_obj) {
-        lv_free(json_obj);
-    }
-
     return NULL;
 }
 
