@@ -6,6 +6,7 @@
 menuconfig UIKIT
 	bool "UIKit"
 	default n
+	depends on GRAPHICS_LVGL
 	---help---
 		Enable UIKit
 
