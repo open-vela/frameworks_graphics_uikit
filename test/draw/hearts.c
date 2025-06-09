@@ -14,7 +14,7 @@
 #include "draw_demos.h"
 #include "lvgl.h"
 
-#if LV_USE_VECTOR_GRAPHIC
+#if LV_USE_VECTOR_GRAPHIC || LV_USE_VECTOR_GRAPHIC_OPTIMIZE
 #include <stdlib.h>
 #include <sys/time.h>
 #include <time.h>
