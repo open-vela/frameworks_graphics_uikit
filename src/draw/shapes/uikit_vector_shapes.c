@@ -9,7 +9,7 @@
  *********************/
 #include "uikit/uikit_vector_shapes.h"
 
-#if LV_USE_VECTOR_GRAPHIC
+#if LV_USE_VECTOR_GRAPHIC || LV_USE_VECTOR_GRAPHIC_OPTIMIZE
 
 /*********************
  *      DEFINES

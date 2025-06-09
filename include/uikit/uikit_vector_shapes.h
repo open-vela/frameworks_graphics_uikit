@@ -8,7 +8,7 @@
 
 #include <lvgl/lvgl.h>
 
-#if LV_USE_VECTOR_GRAPHIC
+#if LV_USE_VECTOR_GRAPHIC || LV_USE_VECTOR_GRAPHIC_OPTIMIZE
 
 #ifdef __cplusplus
 extern "C" {

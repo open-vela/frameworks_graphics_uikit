@@ -23,12 +23,14 @@ config UIKIT_DEMO_VIDEO
 
 config UIKIT_DEMO_VECTOR_DRAW
 	bool "Enable vector complex draw demos"
-	depends on LV_USE_VECTOR_GRAPHIC
+	depends on LV_USE_VECTOR_GRAPHIC || LV_USE_VECTOR_GRAPHIC_OPTIMIZE
+
 	default n
 
 config UIKIT_DEMO_FONT_STRESS
 	bool "Enable font stress demo"
-	depends on LV_USE_VECTOR_GRAPHIC
+	depends on LV_USE_VECTOR_GRAPHIC || LV_USE_VECTOR_GRAPHIC_OPTIMIZE
+
 	default n
 
 config UIKIT_DEMO_BENCHMARK
