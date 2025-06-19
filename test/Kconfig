@@ -64,4 +64,8 @@ config UIKIT_DEMO_TIME_OBJCREATION
 	bool "Time object creation demo"
 	default n
 
+config UIKIT_DEMO_INPUT
+	bool "Input demo"
+	default n
+
 endif # UIKIT_DEMO

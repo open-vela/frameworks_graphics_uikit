@@ -11,6 +11,7 @@ extern "C" {
 #include "uikit/uikit_conf.h"
 
 #ifdef CONFIG_UIKIT
+#include "uikit/input/uikit_input.h"
 #include "uikit/uikit_async.h"
 #include "uikit/uikit_font_manager.h"
 #include "uikit/uikit_keyboard.h"

@@ -18,6 +18,10 @@ typedef struct _vg_global_t {
     vg_video_vtable_t* video_vtable;
 #endif
 
+#if UIKIT_INPUT_METHOD
+    vg_input_context_ops_t* input_context_ops;
+#endif
+
     void* user_data;
 } vg_global_t;
 

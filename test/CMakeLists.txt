@@ -58,6 +58,16 @@ if(CONFIG_UIKIT_DEMO)
     list(APPEND CSRCS ${CSRCS_BENCHMARK})
   endif()
 
+  if(CONFIG_UIKIT_KEYBOARD)
+    file(GLOB_RECURSE CSRCS_KEYBOARD "keyboard/*.c")
+    list(APPEND CSRCS ${CSRCS_KEYBOARD})
+  endif()
+
+  if(CONFIG_UIKIT_DEMO_INPUT)
+    file(GLOB_RECURSE CSRCS_INPUT "input/*.c")
+    list(APPEND CSRCS ${CSRCS_INPUT})
+  endif()
+
   nuttx_add_application(
     NAME
     uikit_demo

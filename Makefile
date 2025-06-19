@@ -58,6 +58,10 @@ ifneq ($(CONFIG_UIKIT_KEYBOARD),)
 CSRCS += $(wildcard src/keyboard/*.c)
 endif
 
+ifneq ($(CONFIG_UIKIT_INPUT_METHOD),)
+CSRCS += $(wildcard src/input/*.c)
+endif
+
 endif #CONFIG_UIKIT
 
 ASRCS := $(wildcard $(ASRCS))

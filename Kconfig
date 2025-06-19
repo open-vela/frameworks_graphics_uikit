@@ -122,6 +122,37 @@ config UIKIT_KEYBOARD
 	bool "Enable keyboard"
 	default n
 
+config UIKIT_INPUT_METHOD
+	bool "Enable input method"
+	default n
+
+if UIKIT_INPUT_METHOD
+
+choice UIKIT_INPUT_METHOD_TYPE_CHOICE
+	prompt "Choose input method type"
+	default UIKIT_INPUT_METHOD_TYPE_NONE
+	---help---
+		Select the input method type
+
+	config UIKIT_INPUT_METHOD_TYPE_KEYBOARD
+		bool "Keyboard"
+		depends on UIKIT_KEYBOARD
+	config UIKIT_INPUT_METHOD_TYPE_FRAMEWORK
+		bool "Framework"
+	config UIKIT_INPUT_METHOD_TYPE_NONE
+		bool "None"
+endchoice
+
+config UIKIT_INPUT_METHOD_DEFAULT_TYPE
+    int
+    default 0 if UIKIT_INPUT_METHOD_TYPE_KEYBOARD
+    default 1 if UIKIT_INPUT_METHOD_TYPE_FRAMEWORK
+    default 2 if UIKIT_INPUT_METHOD_TYPE_NONE
+    ---help---
+		Input method type (read-only, configured via selection)
+
+endif # UIKIT_INPUT_METHOD
+
 source "$APPSDIR/frameworks/graphics/uikit/test/Kconfig"
 
 endif # UIKIT

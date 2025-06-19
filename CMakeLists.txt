@@ -54,6 +54,16 @@ if(CONFIG_UIKIT)
     list(APPEND CSRCS ${CSRCS_PLAYER})
   endif()
 
+  if(CONFIG_UIKIT_KEYBOARD)
+    file(GLOB CSRCS_KEYBOARD src/keyboard/*.c)
+    list(APPEND CSRCS ${CSRCS_KEYBOARD})
+  endif()
+
+  if(CONFIG_UIKIT_INPUT_METHOD)
+    file(GLOB CSRCS_INPUT src/input/*.c)
+    list(APPEND CSRCS ${CSRCS_INPUT})
+  endif()
+
   file(GLOB CSRCS_DRAW src/draw/shapes/*.c)
   list(APPEND CSRCS_DRAW src/uikit_async.c)
   list(APPEND CSRCS_DRAW src/uikit.c)

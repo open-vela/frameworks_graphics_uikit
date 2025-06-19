@@ -15,6 +15,10 @@ CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/cmark-gfm/src
 CFLAGS += ${INCDIR_PREFIX}$(APPDIR)/external/cmark-gfm/cmark-gfm/extensions
 endif
 
+ifeq ($(CONFIG_UIKIT_DEMO_INPUT), y)
+CSRCS += $(wildcard input/*.c)
+endif
+
 ifeq ($(CONFIG_UIKIT_KEYBOARD), y)
 CSRCS += $(wildcard keyboard/*.c)
 endif

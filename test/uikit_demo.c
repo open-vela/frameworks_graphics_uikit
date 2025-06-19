@@ -47,6 +47,10 @@
 #include "font/font_stress_demo.h"
 #endif
 
+#ifdef CONFIG_UIKIT_DEMO_INPUT
+#include "input/input_demo.h"
+#endif
+
 /*********************
  *      DEFINES
  *********************/
@@ -113,6 +117,10 @@ static const demo_entry_info_t demos_entry_info[] = {
 
 #ifdef CONFIG_UIKIT_DEMO_FONT_STRESS
     { "font", .entry_cb = uikit_demo_font_stress_entry },
+#endif
+
+#ifdef CONFIG_UIKIT_DEMO_INPUT
+    { "input", .entry_cb = uikit_demo_input },
 #endif
 
     { "", .entry_cb = NULL }
