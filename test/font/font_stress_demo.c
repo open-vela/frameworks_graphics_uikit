@@ -53,6 +53,13 @@ typedef struct {
     int len;
 } my_outline_t;
 
+static const char* font_name_arr[] = {
+    "MiSans-Regular",
+    "MiSans-Medium",
+    "MiSans-Demibold",
+    "UNKNOWN_FONT_NAME"
+};
+
 /**********************
  *  STATIC PROTOTYPES
  **********************/
@@ -85,6 +92,8 @@ void uikit_demo_font_stress_config_init(uikit_demo_font_stress_config_t* config)
     lv_memzero(config, sizeof(uikit_demo_font_stress_config_t));
     config->loop_cnt = 10000;
     config->label_cnt = 128;
+    config->font_name_arr = font_name_arr;
+    config->font_cnt = sizeof(font_name_arr) / sizeof(font_name_arr[0]);
 }
 
 void uikit_demo_font_stress(const uikit_demo_font_stress_config_t* config)
@@ -111,6 +120,13 @@ void uikit_demo_font_stress(const uikit_demo_font_stress_config_t* config)
 #endif
 
     lv_timer_create(stress_timer_cb, 10, &ctx);
+}
+
+void uikit_demo_font_stress_entry(char* info[], int size, void* param)
+{
+    uikit_demo_font_stress_config_t config;
+    uikit_demo_font_stress_config_init(&config);
+    uikit_demo_font_stress(&config);
 }
 
 /**********************

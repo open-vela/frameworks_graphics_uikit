@@ -37,6 +37,8 @@ void uikit_demo_font_stress_config_init(uikit_demo_font_stress_config_t* config)
 
 void uikit_demo_font_stress(const uikit_demo_font_stress_config_t* config);
 
+void uikit_demo_font_stress_entry(char* info[], int size, void* param);
+
 /**********************
  *      MACROS
  **********************/
