@@ -43,6 +43,10 @@
 #include "benchmark/uikit_demo_benchmark.h"
 #endif
 
+#ifdef CONFIG_UIKIT_DEMO_FONT_STRESS
+#include "font/font_stress_demo.h"
+#endif
+
 /*********************
  *      DEFINES
  *********************/
@@ -105,6 +109,10 @@ static const demo_entry_info_t demos_entry_info[] = {
 
 #ifdef CONFIG_UIKIT_DEMO_BENCHMARK
     { "benchmark", .entry_cb = uikit_demo_benchmark },
+#endif
+
+#ifdef CONFIG_UIKIT_DEMO_FONT_STRESS
+    { "font", .entry_cb = uikit_demo_font_stress_entry },
 #endif
 
     { "", .entry_cb = NULL }
