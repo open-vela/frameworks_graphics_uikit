@@ -188,24 +188,24 @@ static void span_text_cb(benchmark_context_t* context)
 #if LV_USE_SVG
 static void svg_tiger_cb(benchmark_context_t* context)
 {
-    svg_create(context, CONFIG_UIKIT_DEMO_BENCHMARK_ASSETS_PATH "svg_tiger.svg");
+    svg_create(context, CONFIG_UIKIT_DEMO_BENCHMARK_PATH "assets/svg_tiger.svg");
 }
 
 static void svg_linear_gradient_cb(benchmark_context_t* context)
 {
-    svg_create(context, CONFIG_UIKIT_DEMO_BENCHMARK_ASSETS_PATH "svg_lineargradient.svg");
+    svg_create(context, CONFIG_UIKIT_DEMO_BENCHMARK_PATH "assets/svg_lineargradient.svg");
 }
 
 static void svg_radial_gradient_cb(benchmark_context_t* context)
 {
-    svg_create(context, CONFIG_UIKIT_DEMO_BENCHMARK_ASSETS_PATH "svg_radialgradient.svg");
+    svg_create(context, CONFIG_UIKIT_DEMO_BENCHMARK_PATH "assets/svg_radialgradient.svg");
 }
 #endif
 
 static void img_fs_bin_origin_cb(benchmark_context_t* context)
 {
     lv_obj_t* img = lv_image_create(lv_screen_active());
-    lv_image_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_ASSETS_PATH "bin_demo.bin");
+    lv_image_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_PATH "assets/bin_demo.bin");
 
     shake_anim(context, img, lv_display_get_vertical_resolution(NULL) / 3);
 }
@@ -213,7 +213,7 @@ static void img_fs_bin_origin_cb(benchmark_context_t* context)
 static void img_fs_bin_I8_cb(benchmark_context_t* context)
 {
     lv_obj_t* img = lv_image_create(lv_screen_active());
-    lv_image_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_ASSETS_PATH "bin_demo_I8.bin");
+    lv_image_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_PATH "assets/bin_demo_I8.bin");
 
     shake_anim(context, img, lv_display_get_vertical_resolution(NULL) / 3);
 }
@@ -221,7 +221,7 @@ static void img_fs_bin_I8_cb(benchmark_context_t* context)
 static void img_fs_bin_A8_cb(benchmark_context_t* context)
 {
     lv_obj_t* img = lv_image_create(lv_screen_active());
-    lv_image_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_ASSETS_PATH "bin_demo_A8.bin");
+    lv_image_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_PATH "assets/bin_demo_A8.bin");
 
     shake_anim(context, img, lv_display_get_vertical_resolution(NULL) / 3);
 }
@@ -230,7 +230,7 @@ static void img_fs_bin_A8_cb(benchmark_context_t* context)
 static void img_fs_rle_cb(benchmark_context_t* context)
 {
     lv_obj_t* img = lv_image_create(lv_screen_active());
-    lv_image_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_ASSETS_PATH "rle_demo.bin");
+    lv_image_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_PATH "assets/rle_demo.bin");
 
     shake_anim(context, img, lv_display_get_vertical_resolution(NULL) / 3);
 }
@@ -240,7 +240,7 @@ static void img_fs_rle_cb(benchmark_context_t* context)
 static void img_fs_jpg_cb(benchmark_context_t* context)
 {
     lv_obj_t* img = lv_image_create(lv_screen_active());
-    lv_image_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_ASSETS_PATH "jpg_demo.jpg");
+    lv_image_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_PATH "assets/jpg_demo.jpg");
 
     shake_anim(context, img, lv_display_get_vertical_resolution(NULL) / 3);
 }
@@ -250,7 +250,7 @@ static void img_fs_jpg_cb(benchmark_context_t* context)
 static void img_fs_png_cb(benchmark_context_t* context)
 {
     lv_obj_t* img = lv_image_create(lv_screen_active());
-    lv_image_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_ASSETS_PATH "png_demo.png");
+    lv_image_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_PATH "assets/png_demo.png");
 
     shake_anim(context, img, lv_display_get_vertical_resolution(NULL) / 3);
 }
@@ -260,7 +260,7 @@ static void img_fs_png_cb(benchmark_context_t* context)
 static void img_fs_gif_cb(benchmark_context_t* context)
 {
     lv_obj_t* img = lv_gif_create(lv_screen_active());
-    lv_gif_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_ASSETS_PATH "gif_demo.gif");
+    lv_gif_set_src(img, CONFIG_UIKIT_DEMO_BENCHMARK_PATH "assets/gif_demo.gif");
 
     shake_anim(context, img, lv_display_get_vertical_resolution(NULL) / 3);
 }
@@ -719,7 +719,7 @@ static benchmark_context_t* benchmark_context_init(void)
     }
 #endif
 #if LV_USE_TINY_TTF && LV_TINY_TTF_FILE_SUPPORT
-    context->tinyttf_font = lv_tiny_ttf_create_file(CONFIG_UIKIT_DEMO_BENCHMARK_ASSETS_PATH "NotoSansSC-Regular.ttf",
+    context->tinyttf_font = lv_tiny_ttf_create_file(CONFIG_UIKIT_DEMO_BENCHMARK_PATH "assets/NotoSansSC-Regular.ttf",
         LV_TEST_FONT_SIZE);
     if (context->tinyttf_font == NULL) {
         LV_LOG_ERROR("tinyTTF font creation failed!");
