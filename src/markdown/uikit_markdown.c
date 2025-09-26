@@ -380,11 +380,12 @@ void add_text(vg_markdown_t* mark, const char* text)
             lv_span_set_text(span, text);
     }
 
-    if (mark->heading_style_cb)
-        mark->heading_style_cb(&span->style, ctx->heading_level);
-    else
-        default_markdown_heading_style_cb(&span->style, ctx->heading_level);
-
+    if (ctx->heading_level > 0) {
+        if (mark->heading_style_cb)
+            mark->heading_style_cb(&span->style, ctx->heading_level);
+        else
+            default_markdown_heading_style_cb(&span->style, ctx->heading_level);
+    }
     if (ctx->emphasis_level > 0) {
         if (mark->text_deco_style_cb)
             mark->text_deco_style_cb(&span->style, VG_MARKDOWN_DECOR_EM);
