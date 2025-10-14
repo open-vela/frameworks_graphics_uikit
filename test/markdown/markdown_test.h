@@ -12,7 +12,7 @@ extern "C" {
 /**********************
  * GLOBAL PROTOTYPES
  **********************/
-void uikit_demo_markdown(char * info[], int size, void * param);
+void uikit_demo_markdown(char* info[], int size, void* param);
 
 #ifdef __cplusplus
 } /* extern "C" */
