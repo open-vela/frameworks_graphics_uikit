@@ -167,10 +167,14 @@ static const void* get_imgfont_path(const lv_font_t* font, uint32_t unicode,
     font_emoji_t* emoji = font->user_data;
     LV_ASSERT_NULL(emoji);
 
-    if (unicode >= emoji->unicode_range.begin && unicode <= emoji->unicode_range.end) {
-        static char path[PATH_MAX];
-        generate_path(emoji, unicode, path, sizeof(path));
-        return path;
+    for (int i = 0; i < emoji->unicode_range.arr_size; i++) {
+        unicode_range_t* range = &emoji->unicode_range.arr[i];
+
+        if (unicode >= range->begin && unicode <= range->end) {
+            static char path[PATH_MAX];
+            generate_path(emoji, unicode, path, sizeof(path));
+            return path;
+        }
     }
 
     return NULL;

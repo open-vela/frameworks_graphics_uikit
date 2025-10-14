@@ -32,6 +32,16 @@ typedef struct _lv_freetype_info_t {
 typedef struct _font_utils_json_obj_t font_utils_json_obj_t;
 
 typedef struct {
+    uint32_t begin;
+    uint32_t end;
+} unicode_range_t;
+
+typedef struct {
+    unicode_range_t* arr;
+    int arr_size;
+} unicode_range_config_t;
+
+typedef struct {
     char font_name[UIKIT_FONT_NAME_MAX];
     char ext[UIKIT_FONT_EXT_MAX];
     char path[PATH_MAX];
@@ -44,11 +54,8 @@ typedef struct {
         uint16_t min;
         uint16_t max;
     } match_size;
-    struct
-    {
-        uint32_t begin;
-        uint32_t end;
-    } unicode_range;
+
+    unicode_range_config_t unicode_range;
 } font_emoji_t;
 
 typedef struct {

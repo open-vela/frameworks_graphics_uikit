@@ -228,13 +228,69 @@ font_emoji_config_t* font_utils_json_get_emoji_config(font_utils_json_obj_t* jso
         }
 
         cJSON* unicode_range = cJSON_GetObjectItem(item, JSON_ITEM_STR_UNICODE_RANGE);
-        JSON_GET_VALUE_INT(unicode_range, emoji->unicode_range.begin, JSON_ITEM_STR_BEGIN);
-        JSON_GET_VALUE_INT(unicode_range, emoji->unicode_range.end, JSON_ITEM_STR_END);
+        if (!unicode_range) {
+            LV_LOG_WARN(JSON_ITEM_STR_UNICODE_RANGE " is empty");
+            goto failed;
+        }
 
-        /* check unicode_range */
-        if (emoji->unicode_range.begin > emoji->unicode_range.end) {
-            LV_LOG_WARN("unicode_range.begin(%" LV_PRIu32 ") > unicode_range.end(%" LV_PRIu32 ")",
-                emoji->unicode_range.begin, emoji->unicode_range.end);
+        if (cJSON_IsObject(unicode_range)) {
+            emoji->unicode_range.arr_size = 1;
+            emoji->unicode_range.arr = lv_malloc(sizeof(unicode_range_t));
+            LV_ASSERT_MALLOC(emoji->unicode_range.arr);
+            if (!emoji->unicode_range.arr) {
+                LV_LOG_ERROR("malloc failed for unicode_range.arr");
+                goto failed;
+            }
+            lv_memzero(emoji->unicode_range.arr, sizeof(unicode_range_t));
+
+            JSON_GET_VALUE_INT(unicode_range, emoji->unicode_range.arr[0].begin, JSON_ITEM_STR_BEGIN);
+            JSON_GET_VALUE_INT(unicode_range, emoji->unicode_range.arr[0].end, JSON_ITEM_STR_END);
+
+            /* check unicode_range */
+            if (emoji->unicode_range.arr[0].begin > emoji->unicode_range.arr[0].end) {
+                LV_LOG_WARN("unicode_range.begin(%" LV_PRIu32 ") > unicode_range.end(%" LV_PRIu32 ")",
+                    emoji->unicode_range.arr[0].begin, emoji->unicode_range.arr[0].end);
+            }
+        } else if (cJSON_IsArray(unicode_range)) {
+            int unicode_range_arr_size = cJSON_GetArraySize(unicode_range);
+
+            /* check unicode_range_arr_size */
+            if (!unicode_range_arr_size) {
+                LV_LOG_WARN(JSON_ITEM_STR_UNICODE_RANGE " is empty");
+                goto failed;
+            }
+
+            /* create unicode_range_arr */
+            emoji->unicode_range.arr_size = unicode_range_arr_size;
+            emoji->unicode_range.arr = lv_malloc(sizeof(unicode_range_t) * unicode_range_arr_size);
+            LV_ASSERT_MALLOC(emoji->unicode_range.arr);
+            if (!emoji->unicode_range.arr) {
+                LV_LOG_ERROR("malloc failed for unicode_range.arr");
+                goto failed;
+            }
+            lv_memzero(emoji->unicode_range.arr, sizeof(unicode_range_t) * unicode_range_arr_size);
+
+            /* set unicode_range */
+            for (int j = 0; j < unicode_range_arr_size; j++) {
+                cJSON* range_item = cJSON_GetArrayItem(unicode_range, j);
+                if (!range_item || !cJSON_IsObject(range_item)) {
+                    LV_LOG_ERROR("can't get unicode_range_item [%d]", j);
+                    goto failed;
+                }
+
+                unicode_range_t* range = &emoji->unicode_range.arr[j];
+                JSON_GET_VALUE_INT(range_item, range->begin, JSON_ITEM_STR_BEGIN);
+                JSON_GET_VALUE_INT(range_item, range->end, JSON_ITEM_STR_END);
+
+                /* check unicode_range */
+                if (range->begin > range->end) {
+                    LV_LOG_WARN("unicode_range.begin(%" LV_PRIu32 ") > unicode_range.end(%" LV_PRIu32 ")",
+                        range->begin, range->end);
+                }
+            }
+        } else {
+            LV_LOG_ERROR("unicode_range must be an object or array");
+            goto failed;
         }
     }
 
@@ -337,6 +393,13 @@ void font_utils_json_emoji_config_free(font_emoji_config_t* config)
 {
     LV_ASSERT_NULL(config);
     if (config->emoji_arr) {
+        for (int i = 0; i < config->emoji_arr_size; i++) {
+            font_emoji_t* emoji = &config->emoji_arr[i];
+            if (emoji->unicode_range.arr) {
+                lv_free(emoji->unicode_range.arr);
+                emoji->unicode_range.arr = NULL;
+            }
+        }
         lv_free(config->emoji_arr);
         config->emoji_arr = NULL;
     }

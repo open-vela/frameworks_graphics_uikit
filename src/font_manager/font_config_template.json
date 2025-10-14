@@ -13,6 +13,22 @@
             }
         },
         {
+            "font-name": "Emoji_Local",
+            "path": "/resource/system/emoji/",
+            "ext": ".bin",
+            "match-size": {
+                "min": 40,
+                "max": 49
+            },
+            "unicode-range": [{
+                "begin": 40960,
+                "end": 41060
+            }, {
+                "begin": 126980,
+                "end": 1270000
+            }]
+        },
+        {
             "font-name": "Emoji_WeChat",
             "path": "/resource/system/wechat/emoji24/",
             "ext": ".png",
