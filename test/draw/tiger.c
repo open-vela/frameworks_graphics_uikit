@@ -21,7 +21,7 @@
 /**********************
  *      TYPEDEFS
  **********************/
-static inline suseconds_t get_time()
+static inline suseconds_t get_time(void)
 {
     struct timeval t;
     gettimeofday(&t, 0);
