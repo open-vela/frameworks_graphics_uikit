@@ -33,7 +33,9 @@ static vg_input_context_ops_t g_input_context_ops;
 /* input app's properity */
 static vg_input_context_t* g_focus_input_context = NULL;
 
-static void event_cb(lv_event_t* e)
+#if UIKIT_INPUT_METHOD_DEFAULT_TYPE == 1
+const char* buf[18] = { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "clean" };
+static void input_event_cb(lv_event_t* e)
 {
     lv_event_code_t code = lv_event_get_code(e);
 
@@ -43,12 +45,29 @@ static void event_cb(lv_event_t* e)
             return;
         }
         char* text = (char*)lv_event_get_user_data(e);
-        g_focus_input_context->text_changed_callback(g_focus_input_context, text);
+        if (strcmp(text, "clean") == 0) {
+            g_focus_input_context->text_changed_callback(g_focus_input_context, "");
+            return;
+        }
+
+        lv_obj_t* input = (lv_obj_t*)(g_focus_input_context->user_data);
+        if (input == NULL) {
+            return;
+        }
+
+        const char* cont = vg_input_get_text(input);
+        size_t len = strlen(cont);
+        char* new_str = (char*)lv_malloc_zeroed(len + 2);
+        lv_memcpy(new_str, cont, len);
+        strncat(new_str, text, 1);
+        g_focus_input_context->text_changed_callback(g_focus_input_context, new_str);
+        lv_free(new_str);
         break;
     default:
         break;
     }
 }
+#endif
 
 void uikit_demo_input(char* info[], int size, void* param)
 {
@@ -63,11 +82,12 @@ void uikit_demo_input(char* info[], int size, void* param)
 
     lv_obj_t* input1 = vg_input_create(lv_screen_active());
     lv_obj_align(input1, LV_ALIGN_TOP_LEFT, 80, 80);
-    vg_input_set_text(input1, "Hello world");
     lv_obj_set_style_border_width(input1, 1, 0);
     lv_obj_set_style_border_color(input1, lv_color_hex(0xaaaaaa), 0);
     lv_obj_set_style_border_opa(input1, LV_OPA_COVER, 0);
-    lv_obj_set_size(input1, 180, 40);
+    vg_input_set_placeholder_text(input1, "placeholder");
+    lv_obj_set_size(input1, 100, 40);
+    vg_input_set_keyboard_font(input1, "MiSans-Regular");
 
     lv_obj_t* input2 = vg_input_create(lv_screen_active());
     lv_obj_align(input2, LV_ALIGN_TOP_RIGHT, -80, 80);
@@ -75,22 +95,24 @@ void uikit_demo_input(char* info[], int size, void* param)
     lv_obj_set_style_border_width(input2, 1, 0);
     lv_obj_set_style_border_color(input2, lv_color_hex(0xaaaaaa), 0);
     lv_obj_set_style_border_opa(input2, LV_OPA_COVER, 0);
-    lv_obj_set_size(input2, 180, 40);
+    lv_obj_set_size(input2, 100, 40);
+    vg_input_set_keyboard_font(input2, "MiSans-Regular");
 
+#if UIKIT_INPUT_METHOD_DEFAULT_TYPE == 1
     lv_obj_t* label = lv_label_create(lv_screen_active());
     lv_obj_align(label, LV_ALIGN_CENTER, 0, 50);
-    lv_label_set_text(label, "set text-----------------------------------------------------------------------------------");
+    lv_label_set_text(label, "set text---------------------------------------------------------------------------");
 
-    for (int i = 0; i < 10; i++) {
-        char ch = 'A' + i;
+    for (int i = 0; i < 18; i++) {
         lv_obj_t* btn = lv_button_create(lv_screen_active());
-        lv_obj_align(btn, LV_ALIGN_CENTER, -225 + i * 50, 100);
+        lv_obj_align(btn, LV_ALIGN_CENTER, -125 + i % 6 * 50, 100 + i / 6 * 50);
         lv_obj_set_size(btn, 40, 40);
         lv_obj_t* btn_label = lv_label_create(btn);
-        lv_label_set_text(btn_label, &ch);
+        lv_label_set_text(btn_label, buf[i]);
         lv_obj_center(btn_label);
-        lv_obj_add_event_cb(btn, event_cb, LV_EVENT_ALL, lv_label_get_text(btn_label));
+        lv_obj_add_event_cb(btn, input_event_cb, LV_EVENT_ALL, (void*)buf[i]);
     }
+#endif
 }
 
 vg_input_context_t* input_create(void* user_data)

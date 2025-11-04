@@ -50,7 +50,7 @@ void uikit_demo_keyboard(char* info[], int size, void* param)
 
     vg_keyboard_set_key_text_color(kb, lv_color_make(255, 255, 255), LV_OPA_COVER, COMMON_KEY | ENTER_KEY);
 
-    vg_keyboard_set_font(kb, LV_FONT_DEFAULT);
+    vg_keyboard_set_font(kb, "MiSans-Regular");
 }
 
 #endif /*CONFIG_UIKIT_KEYBOARD*/

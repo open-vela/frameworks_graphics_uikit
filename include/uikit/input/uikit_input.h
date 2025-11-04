@@ -81,6 +81,7 @@ typedef struct {
     vg_input_context_t* context;
     lv_obj_t* kb_obj;
     bool focus_lost;
+    bool kb_disable;
     void* user_data;
 } vg_input_t;
 
@@ -103,6 +104,21 @@ lv_obj_t* vg_input_create(lv_obj_t* parent);
  * @return void
  */
 void vg_input_set_text(lv_obj_t* obj, const char* text);
+
+/**
+ * Get the text of the input
+ * @param obj pointer to a input object
+ * @return the text of the input
+ */
+const char* vg_input_get_text(lv_obj_t* obj);
+
+/**
+ * Set the placeholder text of the input
+ * @param obj pointer to a input object
+ * @param text the placeholder text to be displayed
+ * @return void
+ */
+void vg_input_set_placeholder_text(lv_obj_t* obj, const char* text);
 
 /**
  * Set the property of input keyboard
@@ -131,6 +147,14 @@ void vg_input_set_keyboard_font(lv_obj_t* obj, const char* font_name);
  * @return return event id
  */
 bool vg_input_is_focus_lost(lv_obj_t* obj);
+
+/**
+ * Disable the keyboard
+ * @param obj pointer to a input object
+ * @param disable true to disable the keyboard, false to enable the keyboard
+ * @return void
+ */
+void vg_input_disable_keyboard(lv_obj_t* obj, bool disable);
 
 #endif
 

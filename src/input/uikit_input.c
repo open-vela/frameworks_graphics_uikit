@@ -53,6 +53,13 @@ static void vg_input_constructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
     vg_input_t* input = (vg_input_t*)obj;
     input->kb_obj = NULL;
     input->focus_lost = false;
+    input->kb_disable = false;
+
+    lv_obj_add_flag(obj, LV_OBJ_FLAG_EVENT_BUBBLE);
+
+    lv_obj_set_style_anim_duration(obj, 500, LV_PART_CURSOR);
+    lv_obj_set_style_border_color(obj, lv_palette_main(LV_PALETTE_GREY), LV_PART_CURSOR);
+    lv_obj_set_style_border_side(obj, LV_BORDER_SIDE_LEFT, LV_PART_CURSOR);
 
     /* input method type default */
     vg_input_set_method_type(obj, UIKIT_INPUT_METHOD_DEFAULT_TYPE);
@@ -112,8 +119,11 @@ static void vg_input_event(const lv_obj_class_t* class_p, lv_event_t* e)
                 return;
             }
             input->focus_lost = false;
-            g_input_context_ops->require(input->context, lv_textarea_get_text((lv_obj_t*)input));
+            if (!input->kb_disable) {
+                g_input_context_ops->require(input->context, lv_textarea_get_text((lv_obj_t*)input));
+            }
         }
+        lv_obj_set_style_border_width((lv_obj_t*)input, 2, LV_PART_CURSOR);
         break;
     case LV_EVENT_DEFOCUSED:
         if (input->im_type == VG_INPUT_METHOD_TYPE_KEYBOARD) {
@@ -131,7 +141,12 @@ static void vg_input_event(const lv_obj_class_t* class_p, lv_event_t* e)
                 return;
             }
             g_input_context_ops->set_focus_lost_callback(input->context, vg_input_focus_lost);
+            /* lost focus */
+            if (!input->focus_lost) {
+                return;
+            }
         }
+        lv_obj_set_style_border_width((lv_obj_t*)input, 0, LV_PART_CURSOR);
         break;
     case LV_EVENT_READY:
         /* input ready */
@@ -159,6 +174,20 @@ void vg_input_set_text(lv_obj_t* obj, const char* text)
     LV_LOG_USER("vg_input_set_text: %s", text);
 
     lv_textarea_set_text(obj, text);
+}
+
+const char* vg_input_get_text(lv_obj_t* obj)
+{
+    LV_LOG_USER("vg_input_get_text");
+
+    return lv_textarea_get_text(obj);
+}
+
+void vg_input_set_placeholder_text(lv_obj_t* obj, const char* text)
+{
+    LV_LOG_USER("vg_input_set_placeholder_text: %s", text);
+
+    lv_textarea_set_placeholder_text(obj, text);
 }
 
 void vg_input_set_method_type(lv_obj_t* obj, vg_input_method_type_t type)
@@ -267,6 +296,16 @@ void vg_input_focus_lost(vg_input_context_t* im)
     lv_obj_send_event((lv_obj_t*)input, LV_EVENT_DEFOCUSED, NULL);
 
     input->focus_lost = true;
+}
+
+void vg_input_disable_keyboard(lv_obj_t* obj, bool disable)
+{
+    vg_input_t* input = (vg_input_t*)obj;
+    if (input == NULL) {
+        return;
+    }
+
+    input->kb_disable = disable;
 }
 
 #endif
