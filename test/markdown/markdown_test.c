@@ -14,6 +14,7 @@
 #include "markdown_test.h"
 #include <cmark-gfm.h>
 #include <latexmath.h>
+#include <lvgl/src/lvgl_private.h>
 #include <table.h>
 
 static lv_font_t* fonts[6] = { 0 };
@@ -78,7 +79,16 @@ static void timer_cb(lv_timer_t* timer)
         lv_timer_delete(timer);
     }
 
-    vg_markdown_set_data(obj, markdown_txt, count);
+    uint32_t ofs = 0;
+    uint32_t temp_count = count;
+    while (temp_count-- > 0 && lv_text_encoded_next(markdown_txt, &ofs))
+        ;
+
+    if (ofs > str_len) {
+        ofs = str_len;
+    }
+
+    vg_markdown_set_data(obj, markdown_txt, ofs);
     const int32_t bottom = lv_obj_get_scroll_bottom(obj);
     if (bottom > 0) {
         lv_obj_scroll_by(obj, 0, -bottom, LV_ANIM_OFF);
