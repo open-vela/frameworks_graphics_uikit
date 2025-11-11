@@ -69,24 +69,18 @@ static void timer_cb(lv_timer_t* timer)
 {
     lv_obj_t* obj = lv_timer_get_user_data(timer);
 
-    static uint32_t count = 0;
-    count += lv_rand(2, 10);
-
+    static uint32_t ofs = 0;
     const uint32_t str_len = strlen(markdown_txt);
 
-    if (count >= str_len) {
-        count = str_len;
-        lv_timer_delete(timer);
+    uint32_t count = lv_rand(2, 10);
+    while (count-- > 0) {
+        if (lv_text_encoded_next(markdown_txt, &ofs) == 0) {
+            lv_timer_delete(timer);
+            break;
+        }
     }
 
-    uint32_t ofs = 0;
-    uint32_t temp_count = count;
-    while (temp_count-- > 0 && lv_text_encoded_next(markdown_txt, &ofs))
-        ;
-
-    if (ofs > str_len) {
-        ofs = str_len;
-    }
+    ofs = (ofs > str_len) ? str_len : ofs;
 
     vg_markdown_set_data(obj, markdown_txt, ofs);
     const int32_t bottom = lv_obj_get_scroll_bottom(obj);
