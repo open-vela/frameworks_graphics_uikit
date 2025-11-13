@@ -481,7 +481,7 @@ static font_refer_node_t* font_manager_search_refer_node(font_manager_t* manager
     return NULL;
 }
 
-static lv_font_t* font_manager_create_font_warpper(font_manager_t* manager, const lv_freetype_info_t* ft_info)
+static lv_font_t* font_manager_create_font_wrapper(font_manager_t* manager, const lv_freetype_info_t* ft_info)
 {
     lv_font_t* font = NULL;
 #if UIKIT_FONT_USE_EMOJI
@@ -529,7 +529,7 @@ static lv_font_t* font_manager_create_font_warpper(font_manager_t* manager, cons
     return font;
 }
 
-static void font_manager_delete_font_warpper(font_manager_t* manager, font_refer_node_t* refer_node)
+static void font_manager_delete_font_wrapper(font_manager_t* manager, font_refer_node_t* refer_node)
 {
 #if UIKIT_FONT_USE_EMOJI
     if (IS_EMOJI_NAME(refer_node->ft_info.name)) {
@@ -560,7 +560,7 @@ static font_refer_node_t* font_manager_request_font(font_manager_t* manager, con
         return refer_node;
     }
 
-    lv_font_t* font = font_manager_create_font_warpper(manager, ft_info);
+    lv_font_t* font = font_manager_create_font_wrapper(manager, ft_info);
     if (!font) {
         return NULL;
     }
@@ -597,7 +597,7 @@ static bool font_manager_drop_font(font_manager_t* manager, font_refer_node_t* r
     }
 
     /* if if ref_cnt is about to be 0, free font resource */
-    font_manager_delete_font_warpper(manager, refer_node);
+    font_manager_delete_font_wrapper(manager, refer_node);
     refer_node->font_p = NULL;
 
     /* free refer_node */
