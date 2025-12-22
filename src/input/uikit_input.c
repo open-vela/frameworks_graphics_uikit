@@ -74,8 +74,16 @@ static void vg_input_destructor(const lv_obj_class_t* class_p, lv_obj_t* obj)
 
     vg_input_t* input = (vg_input_t*)obj;
 
-    if (g_input_context_ops && g_input_context_ops->destroy) {
-        g_input_context_ops->destroy(input->context);
+    if (input->im_type == VG_INPUT_METHOD_TYPE_KEYBOARD) {
+        if (input->kb_obj == NULL) {
+            return;
+        }
+        lv_obj_delete(input->kb_obj);
+        input->kb_obj = NULL;
+    } else if (input->im_type == VG_INPUT_METHOD_TYPE_FRAMEWORK) {
+        if (g_input_context_ops && g_input_context_ops->destroy) {
+            g_input_context_ops->destroy(input->context);
+        }
     }
 
     LV_TRACE_OBJ_CREATE("finish");
