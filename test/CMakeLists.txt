@@ -19,6 +19,8 @@
 # ##############################################################################
 
 if(CONFIG_UIKIT_DEMO)
+  nuttx_add_prebuilt(APP_TARGETS uikit_demo)
+
   set(INCDIR)
   list(APPEND INCDIR ${NUTTX_APPS_DIR}/graphics/lvgl)
   set(CSRCS uikit_demo.c)

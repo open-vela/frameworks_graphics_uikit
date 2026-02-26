@@ -19,6 +19,8 @@
 # ##############################################################################
 
 if(CONFIG_UIKIT)
+  nuttx_add_prebuilt(BIN_TARGETS uikit EXPORT_FILES include)
+
   set(INCDIR ${CMAKE_CURRENT_LIST_DIR}/include)
   set(CSRCS)
 
@@ -73,9 +75,9 @@ if(CONFIG_UIKIT)
   # Library Configuration
   # ############################################################################
 
-  nuttx_add_library(uikit STATIC)
-  target_sources(uikit PRIVATE ${CSRCS})
-  target_include_directories(uikit PRIVATE ${INCDIR} ${DEPENDS_LIBS_INCDIR})
+  nuttx_library_ifndef(SKIP_PREBUILT uikit)
+  nuttx_sources(${CSRCS})
+  nuttx_include_directories(${INCDIR} ${DEPENDS_LIBS_INCDIR})
 
   set_property(
     TARGET nuttx
